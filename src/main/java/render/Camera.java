@@ -15,7 +15,7 @@ public class Camera extends Entity {
 
     public Matrix4f getViewMatrix() {
         assert EntityManager.hasComponent(this, TransformationComponent.class);
-        return new Matrix4f().identity();
+        return new Matrix4f().identity(); // FIXME
     }
 
     public Matrix4f getProjectionMatrix() {

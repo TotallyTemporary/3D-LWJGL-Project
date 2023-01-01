@@ -19,7 +19,14 @@ import java.util.Random;
 public class Main {
 
     public static void main(String[] args) {
-        var display = new Display("A display.", 800, 600, -1, true, Display.DisplayMode.WINDOWED);
+        var displaySettings = new Display.DisplaySettings(
+                "A display", // title
+                800, 600,    // resolution
+                -1,          // monitor? (-1 gets primary)
+                true,        // vsync
+                Display.DisplayMode.WINDOWED
+        );
+        var display = new Display(displaySettings);
         GLFWErrorCallback.createPrint(System.err).set();
         GL30.glClearColor(0.2f, 0.3f, 0.4f, 0f);
 

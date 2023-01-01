@@ -9,16 +9,42 @@ import java.nio.IntBuffer;
 
 public class Display {
 
+    /**
+     * Represents the display mode of a window.
+     * @apiNote FULLSCREEN_BORDERLESS ignores passed resolution and uses the resolution of the monitor.
+     * @apiNote FULLSCREEN can be considered "sluggish" as it has to change the resolution of the monitor to match.
+     */
     public enum DisplayMode {
         FULLSCREEN, WINDOWED, FULLSCREEN_BORDERLESS
     }
+
+    /**
+     * Represents the settings passed to a Display to generate a window.
+     * @param title Displayed at the top of the window.
+     * @param width Horizontal resolution
+     * @param height Vertical resolution
+     * @param monitor Index of monitor to launch this window on, pass -1 to choose primary monitor.
+     * @param vsync  true=enable vsync, false=disable vsync
+     * @param displayMode chooses displaymode for this window.
+     * @see DisplayMode
+     */
+    public record DisplaySettings (
+        String title,
+        int width, int height,
+        long monitor,
+        boolean vsync,
+        DisplayMode displayMode
+    ) { }
 
     private long window;
     private int width, height;
     private long monitor;
 
-    public Display(String title, int width, int height, long monitor, boolean vsync, DisplayMode mode) {
-        var NULL = 0;
+    public Display(DisplaySettings settings) {
+        // unpack settings ; these values will be updated as we go.
+        int width = settings.width, height = settings.height;
+        var monitor = settings.monitor;
+        var mode = settings.displayMode;
 
         if (!GLFW.glfwInit())
             throw new IllegalStateException("Unable to initialize GLFW");
@@ -47,11 +73,11 @@ public class Display {
 
         // don't pass in a monitor if we want a windowed display.
         if (mode == DisplayMode.WINDOWED) {
-            monitor = NULL;
+            monitor = 0;
         }
 
-        long window = GLFW.glfwCreateWindow(width, height, title, monitor, NULL);
-        if (window == NULL) {
+        long window = GLFW.glfwCreateWindow(width, height, settings.title, monitor, 0);
+        if (window == 0) {
             throw new IllegalStateException("Could not create a GLFW window.");
         }
 
@@ -75,7 +101,7 @@ public class Display {
         GL.createCapabilities();
         GL30.glViewport(0, 0, width, height);
 
-        int swapInterval = vsync ? 1 : 0;
+        int swapInterval = settings.vsync ? 1 : 0;
         GLFW.glfwSwapInterval(swapInterval);
 
         this.width = width;

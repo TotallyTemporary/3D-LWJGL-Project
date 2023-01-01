@@ -2,11 +2,17 @@ package entity;
 
 import java.util.HashMap;
 
+/**
+ * This class should be used statically. It handles relationships between entities and components.
+ * Entities are just a wrapper for a UUID.
+ */
 public class EntityManager {
     private static HashMap<Class<? extends Component>, HashMap<Entity, Component>> map = new HashMap<>();
     private static HashMap<Class<? extends Component>, Boolean> updatedThisFrame = new HashMap<>();
 
-    // start a frame.
+    /**
+     * Calls start() on all components and resets the map of already updated classes.
+     */
     public static void start() {
         // nothing has been updated yet.
         for (var clazz : map.keySet()) {
@@ -16,7 +22,9 @@ public class EntityManager {
         map.forEach((clazz, classMap) -> { classMap.forEach((entity, component) -> component.start()); });
     }
 
-    // update all comps not updated yet this frame.
+    /**
+     * Calls stop() for all components, and also calls apply() on all components not yet updated.
+     */
     public static void stop() {
         for (var clazz : map.keySet()) {
             if (!updatedThisFrame.get(clazz)) {
@@ -38,6 +46,7 @@ public class EntityManager {
         classMap.put(entity, component);
     }
 
+    /** Attempts to remove a component from an entity. NOTE: Do not call from entity update. */
     public static boolean removeComponent(Entity entity, Component component) {
         var clazz = component.getClass();
         var classMap = map.get(clazz);
@@ -45,6 +54,7 @@ public class EntityManager {
         return classMap.remove(entity, component);
     }
 
+    /** Attemps to remove all components associated with an entity. NOTE: Do not call from entity update. */
     public static void removeEntity(Entity entity) {
         map.entrySet().forEach(entry -> entry.getValue().remove(entity));
     }

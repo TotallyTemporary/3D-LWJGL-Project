@@ -7,6 +7,11 @@ import shader.Shader;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+/**
+ * A model represents something that can be rendered.
+ * It should be built by creating the model and calling .addSomething -methods to add VBOs.
+ * Example: [var model = new Model().addPosition3D(vertices);]
+ */
 public class Model {
     private int vao;
     private int numberOfVBOs = 0;

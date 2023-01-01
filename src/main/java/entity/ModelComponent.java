@@ -2,6 +2,9 @@ package entity;
 
 import render.Model;
 
+/** Component wrapper for Model.
+ * @see Model
+ * */
 public class ModelComponent extends Component {
 
     private Model model;
