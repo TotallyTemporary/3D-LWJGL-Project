@@ -1,6 +1,8 @@
 package main;
 
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
@@ -67,9 +69,11 @@ public class Display {
             // center window on monitor
             GLFW.glfwSetWindowPos(window, (mWidth - wWidth.get()) / 2, (mHeight - wHeight.get()) / 2);
         }
-
         GLFW.glfwShowWindow(window);
         GLFW.glfwMakeContextCurrent(window);
+
+        GL.createCapabilities();
+        GL30.glViewport(0, 0, width, height);
 
         int swapInterval = vsync ? 1 : 0;
         GLFW.glfwSwapInterval(swapInterval);

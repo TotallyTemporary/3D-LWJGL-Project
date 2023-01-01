@@ -11,6 +11,7 @@ import java.nio.file.Path;
 public class Shader {
 
     private int program;
+    public int getProgram() { return program; }
 
     public Shader(String vertexShaderPath, String fragmentShaderPath) {
         // compile shaders
@@ -45,6 +46,10 @@ public class Shader {
         }
 
         this.program = program;
+
+        // clean up shaders now that they've been linked to the program
+        GL30.glDeleteShader(vertexShader);
+        GL30.glDeleteShader(fragmentShader);
     }
 
     private int compileShader(String source, int type) {
