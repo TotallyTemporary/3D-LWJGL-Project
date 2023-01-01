@@ -63,6 +63,11 @@ public class Main {
                 0.5f,
                 1000f
         );
+        EntityManager.addComponent(camera, new TransformationComponent(
+                new Vector3f(0, 0, 0),
+                new Vector3f(0, 0, 0),
+                1f
+        ));
 
         var renderer = new Renderer();
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {

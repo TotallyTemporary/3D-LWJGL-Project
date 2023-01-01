@@ -4,18 +4,20 @@ import entity.Entity;
 import entity.EntityManager;
 import entity.TransformationComponent;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 public class Camera extends Entity {
 
     private Matrix4f projectionMatrix = new Matrix4f();
+    private Matrix4f viewMatrix       = new Matrix4f();
 
     public Camera(float FOV, float aspect, float near, float far) {
         calcProjectionMatrix(FOV, aspect, near, far);
     }
 
     public Matrix4f getViewMatrix() {
-        assert EntityManager.hasComponent(this, TransformationComponent.class);
-        return new Matrix4f().identity(); // FIXME
+        calcViewMatrix();
+        return viewMatrix;
     }
 
     public Matrix4f getProjectionMatrix() {
@@ -24,6 +26,17 @@ public class Camera extends Entity {
 
     private void calcProjectionMatrix(float fov, float aspect, float near, float far) {
         projectionMatrix.setPerspective(fov, aspect, near, far);
+    }
+
+    private void calcViewMatrix() {
+        var transform = EntityManager.getComponent(this, TransformationComponent.class);
+        assert transform != null;
+        var pos = transform.getPosition();
+        // view matrix basically does the inverse of a transformation matrix.
+        viewMatrix.identity()
+                .rotate(transform.getRotation().x, new Vector3f(1, 0, 0))
+                .rotate(transform.getRotation().y, new Vector3f(0, 1, 0))
+                .translate(-pos.x, -pos.y, -pos.z);
     }
 
 }

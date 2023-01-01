@@ -10,5 +10,5 @@ out vec3 pass_colour;
 void main()
 {
     pass_colour = vec3(aPos.xy, (aPos.x + aPos.y)/2);
-    gl_Position = projectionMatrix * transformationMatrix * vec4(aPos.xyz, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * transformationMatrix * vec4(aPos.xyz, 1.0);
 }
