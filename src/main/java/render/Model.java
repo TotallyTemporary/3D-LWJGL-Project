@@ -6,6 +6,8 @@ import shader.Shader;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A model represents something that can be rendered.
@@ -19,6 +21,7 @@ public class Model {
     private boolean hasIndexBuffer = false;
 
     private Shader shader;
+    private List<Texture> textures = new ArrayList<>();
 
     public Model() {
         this.vao = GL30.glGenVertexArrays();
@@ -27,6 +30,11 @@ public class Model {
 
     public Model setShader(Shader shader) {
         this.shader = shader;
+        return this;
+    }
+
+    public Model setTexture(Texture texture) {
+        this.textures.add(texture);
         return this;
     }
 
@@ -47,6 +55,17 @@ public class Model {
         if (this.vertexCount == -1) {
             this.vertexCount = positions.length/3;
         }
+        return this;
+    }
+
+    public Model addTextureCoords2D(float[] textureCoords) {
+        int attribNum = numberOfVBOs++;
+        int vbo = makeVBO();
+        var buf = toFloatBuffer(textureCoords);
+        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, buf, GL30.GL_STATIC_DRAW);
+        GL30.glVertexAttribPointer(attribNum, 2, GL30.GL_FLOAT, false, 2 * Float.BYTES, 0);
+
+        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
         return this;
     }
 
@@ -85,6 +104,15 @@ public class Model {
         return buf;
     }
 
+    public Model end() {
+        // load all the textures into the shader
+        for (var texture : textures) {
+            shader.addUniform(texture.name);
+        }
+
+        return this;
+    }
+
     public int getVAO() {
         return vao;
     }
@@ -103,5 +131,9 @@ public class Model {
 
     public Shader getShader() {
         return shader;
+    }
+
+    public List<Texture> getTextures() {
+        return textures;
     }
 }

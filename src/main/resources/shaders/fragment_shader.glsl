@@ -1,8 +1,12 @@
 #version 330 core
-in vec3 pass_colour;
+in vec2 pass_textureCoords;
 out vec4 FragColor;
+
+uniform sampler2DArray arrayTexture;
 
 void main()
 {
-    FragColor = vec4(pass_colour.xyz, 1.0f);
+    FragColor = texture(arrayTexture, vec3(pass_textureCoords.xy, 0));
+    // FragColor = vec4(pass_textureCoords.xy, 0.0, 1.0);
+    // FragColor = texture(arrayTexture, vec2(pass_textureCoords.x, 1.0 - pass_textureCoords.y));
 } 

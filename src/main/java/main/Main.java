@@ -5,12 +5,9 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL30;
-import render.Camera;
-import render.Model;
-import render.Renderer;
+import render.*;
 import shader.Shader;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 public class Main {
@@ -38,10 +35,32 @@ public class Main {
         var model = new Model()
                     .addPosition3D(TestCube.vertices)
                     .addIndices(TestCube.indices)
-                    .setShader(shader);
+                    .addTextureCoords2D(TestCube.textureCoords)
+                    .setShader(shader)
+                    //.setTexture(new BasicTexture("src/main/resources/blocks_atlas.png", "arrayTexture"))
+                    .setTexture(new ArrayTexture(
+                            "src/main/resources/blocks_array.png",
+                            "arrayTexture", 16, 16)
+                    )
+                /*.setTexture(new ArrayTexture(
+                        "src/main/resources/blocks_atlas.png",
+                        "arrayTexture",
+                        256, 256))*/
+                .end();
+
+        var mainBlock = new Entity();
+        EntityManager.addComponent(mainBlock, new ModelComponent(model));
+        EntityManager.addComponent(mainBlock, new TransformationComponent(
+                new Vector3f(0, 0, -10f),
+                new Vector3f(0, 0, 0),
+                2f
+        ));
+        EntityManager.addComponent(mainBlock, new TestSpinComponent());
+
+        /*
         var r = new Random();
         r.setSeed(System.currentTimeMillis());
-        for (var i = 0; i < 10_000; i++) {
+        for (var i = 0; i < 200; i++) {
             var entity = new Entity();
             EntityManager.addComponent(entity, new ModelComponent(model));
             EntityManager.addComponent(entity, new TransformationComponent(
@@ -50,7 +69,7 @@ public class Main {
                     1f
             ));
             EntityManager.addComponent(entity, new TestSpinComponent());
-        }
+        }*/
 
         var camera = new Camera(
                 (float) Math.toRadians(60f),

@@ -22,6 +22,12 @@
             </plugins>
         </pluginManagement>
     </build>
+    <repositories>
+        <repository>
+            <id>clojars.org</id>
+            <url>https://clojars.org/repo</url>
+        </repository>
+    </repositories>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
@@ -46,6 +52,12 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.l33tlabs.twl</groupId>
+            <artifactId>pngdecoder</artifactId>
+            <version>1.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl</artifactId>

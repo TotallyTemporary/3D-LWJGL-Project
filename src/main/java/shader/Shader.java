@@ -29,10 +29,17 @@ public class Shader {
         GL30.glUniformMatrix4fv(id, false, mat4x4buf);
     }
 
+    public void setInt(String name, int value) {
+        var id = uniforms.get(name);
+        if (id == null) {
+            throw new IllegalStateException("No uniform with name " + name);
+        }
+        GL30.glUniform1i(id, value);
+    }
+
     public Shader addUniform(String name) {
         int id = GL30.glGetUniformLocation(program, name);
         uniforms.put(name, id);
-
         return this;
     }
 

@@ -3,7 +3,7 @@ package entity;
 import main.Timer;
 
 public class TestSpinComponent extends Component {
-    final float SPEED = 1/1000f;
+    final float SPEED = 1/3_000f;
 
     @Override public void start() {}
     @Override public void stop() {}

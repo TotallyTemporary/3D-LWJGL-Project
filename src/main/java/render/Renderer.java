@@ -47,6 +47,16 @@ public class Renderer {
             model.getShader().setMatrix4f("projectionMatrix", projectionMatrix);
             model.getShader().setMatrix4f("viewMatrix", viewMatrix);
 
+            // bind textures
+            int unit = 0;
+            for (Texture tex : model.getTextures()) {
+                GL30.glActiveTexture(GL30.GL_TEXTURE0 + unit);
+                GL30.glBindTexture(tex.getType(), tex.getTexture());
+                model.getShader().setInt(tex.getName(), unit);
+
+                unit++;
+            }
+
             GL30.glBindVertexArray(model.getVAO()); // bind model, activate vbos
             for (int i = 0; i < model.getNumberOfVBOs(); i++)
                 GL30.glEnableVertexAttribArray(i);
