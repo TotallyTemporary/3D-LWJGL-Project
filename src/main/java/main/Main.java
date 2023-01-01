@@ -13,10 +13,13 @@ import render.Model;
 import render.Renderer;
 import shader.Shader;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 public class Main {
 
     public static void main(String[] args) {
-        var display = new Display("A display.", 800, 600, -1, false, Display.DisplayMode.WINDOWED);
+        var display = new Display("A display.", 800, 600, -1, true, Display.DisplayMode.WINDOWED);
         GLFWErrorCallback.createPrint(System.err).set();
         GL30.glClearColor(0.2f, 0.3f, 0.4f, 0f);
 
@@ -28,19 +31,24 @@ public class Main {
                 .addUniform("projectionMatrix")
                 .addUniform("viewMatrix");
 
-        var entity = new Entity();
-        EntityManager.addComponent(entity, new ModelComponent(
-            new Model()
-                .addPosition3D(TestCube.vertices)
-                .addIndices(TestCube.indices)
-                .setShader(shader)
-        ));
+        var entities = new ArrayList<Entity>();
+        var model = new Model()
+                    .addPosition3D(TestCube.vertices)
+                    .addIndices(TestCube.indices)
+                    .setShader(shader);
+        var r = new Random();
+        r.setSeed(System.currentTimeMillis());
+        for (var i = 0; i < 200; i++) {
+            var entity = new Entity();
+            EntityManager.addComponent(entity, new ModelComponent(model));
+            EntityManager.addComponent(entity, new TransformationComponent(
+                    new Vector3f(r.nextInt(100)-50, r.nextInt(100)-50, -r.nextInt(50)),
+                    new Vector3f(r.nextFloat(), r.nextFloat(), r.nextFloat()),
+                    1f
+            ));
 
-        EntityManager.addComponent(entity, new TransformationComponent(
-                new Vector3f(0, 0, -10f),
-                new Vector3f(0, 0, 0),
-                1f
-        ));
+            entities.add(entity);
+        }
 
         var camera = new Camera(
                 (float) Math.toRadians(60f),
@@ -50,17 +58,14 @@ public class Main {
         );
 
         var renderer = new Renderer();
-        int count = 0;
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             // update
             EntityManager.start();
-            count++;
-            EntityManager.getComponent(entity, TransformationComponent.class)
-                            .setRotation(new Vector3f(count / 1000f, count / 1000f, count / 1000f));
-            EntityManager.stop();
 
             // render
             renderer.render(camera);
+            EntityManager.stop();
+
 
             // glfw shit
             GLFW.glfwSwapBuffers(display.getWindow());

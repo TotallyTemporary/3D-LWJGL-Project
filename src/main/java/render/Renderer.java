@@ -40,18 +40,20 @@ public class Renderer {
 
         // render
         map.forEach((model, entities) -> {
-            // enable and bind and all that shit
+            // start shader, load matrices
             GL30.glUseProgram(model.getShader().getProgram());
             model.getShader().setMatrix4f("projectionMatrix", projectionMatrix);
             model.getShader().setMatrix4f("viewMatrix", viewMatrix);
 
-            GL30.glBindVertexArray(model.getVAO());
+            GL30.glBindVertexArray(model.getVAO()); // bind model, activate vbos
             for (int i = 0; i < model.getNumberOfVBOs(); i++)
                 GL30.glEnableVertexAttribArray(i);
+
 
             for (var entity : entities) {
                 render(entity, model);
             }
+
 
             // disable everything
             for (int i = 0; i < model.getNumberOfVBOs(); i++)

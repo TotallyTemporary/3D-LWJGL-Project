@@ -22,6 +22,10 @@ public class TransformationComponent extends Component {
 
     // assume this gets called right before rendering.
     @Override public void apply(Entity entity) {
+        var speed = 1/100f;
+        this.rotation.x += speed;
+        this.rotation.y += speed;
+        this.rotation.z += speed;
         calculateTransformationMatrix();
     }
 
