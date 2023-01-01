@@ -4,6 +4,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
+import render.Model;
 import shader.Shader;
 
 public class Main {
@@ -18,19 +19,17 @@ public class Main {
                 "src/main/resources/shaders/fragment_shader.glsl"
         );
 
-        var triangle = new TestTriangle();
+        // var model = new TestTriangle();
+        var model = new TestRectangle();
 
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
 
-            triangle.render(shader);
+            model.render(shader);
 
             GLFW.glfwSwapBuffers(display.getWindow());
             GLFW.glfwPollEvents();
             Timer.fpsTimerUpdate();
-
-            // int error = GL30.glGetError();
-            // System.out.println(error);
         }
 
         display.destroy();
