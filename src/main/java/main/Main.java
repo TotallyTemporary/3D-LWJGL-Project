@@ -1,10 +1,13 @@
 package main;
 
+import entity.Entity;
+import entity.EntityManager;
+import entity.ModelComponent;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
 import render.Model;
+import render.Renderer;
 import shader.Shader;
 
 public class Main {
@@ -19,14 +22,22 @@ public class Main {
                 "src/main/resources/shaders/fragment_shader.glsl"
         );
 
-        // var model = new TestTriangle();
-        var model = new TestRectangle();
+        var entity = new Entity();
+        EntityManager.addComponent(entity, new ModelComponent(
+            new Model()
+                .addPosition3D(TestRectangle.vertices)
+                .addIndices(TestRectangle.indices)
+                .setShader(shader)
+        ));
 
+        var renderer = new Renderer();
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
+            EntityManager.start();
 
-            model.render(shader);
+            renderer.render();
 
+            EntityManager.stop();
             GLFW.glfwSwapBuffers(display.getWindow());
             GLFW.glfwPollEvents();
             Timer.fpsTimerUpdate();

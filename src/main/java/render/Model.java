@@ -2,19 +2,27 @@ package render;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL30;
+import shader.Shader;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public class Model {
-
     private int vao;
     private int numberOfVBOs = 0;
     private int vertexCount = -1;
+    private boolean hasIndexBuffer = false;
+
+    private Shader shader;
 
     public Model() {
         this.vao = GL30.glGenVertexArrays();
         GL30.glBindVertexArray(this.vao);
+    }
+
+    public Model setShader(Shader shader) {
+        this.shader = shader;
+        return this;
     }
 
     public Model addPosition3D(float[] positions) {
@@ -47,6 +55,7 @@ public class Model {
         GL30.glBufferData(GL30.GL_ELEMENT_ARRAY_BUFFER, buf, GL30.GL_STATIC_DRAW);
 
         this.vertexCount = indices.length;
+        this.hasIndexBuffer = true;
         return this;
     }
 
@@ -81,5 +90,13 @@ public class Model {
 
     public int getVertexCount() {
         return vertexCount;
+    }
+
+    public boolean hasIndexBuffer() {
+        return hasIndexBuffer;
+    }
+
+    public Shader getShader() {
+        return shader;
     }
 }
