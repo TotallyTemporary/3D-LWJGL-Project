@@ -5,7 +5,6 @@ import entity.EntityManager;
 import entity.ModelComponent;
 import entity.TransformationComponent;
 import org.lwjgl.opengl.GL30;
-import shader.Shader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +16,6 @@ public class Renderer {
     private void prepare() {
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
         GL30.glEnable(GL30.GL_DEPTH_TEST);
-        EntityManager.updateComponents(TransformationComponent.class); // calc all transformation matrices
     }
 
     public void render(Camera camera) {

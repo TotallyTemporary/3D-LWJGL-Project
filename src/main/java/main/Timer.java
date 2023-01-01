@@ -2,19 +2,17 @@ package main;
 
 public class Timer {
 
-    private static long lastTime = System.currentTimeMillis();
-    private static int counter = 0;
+    private static long lastTime = System.nanoTime();
+    private static long delta = 0;
 
-    public static int fpsTimerUpdate() {
-        counter++;
-        long now = System.currentTimeMillis();
-        if (now - lastTime > 1000) {
-            System.out.println("fps: " + counter);
+    public static void tick() {
+        var now = System.nanoTime();
+        delta = now - lastTime;
+        lastTime = now;
+    }
 
-            counter = 0;
-            lastTime = now;
-        }
-        return counter;
+    public static float getFrametimeMillis() {
+        return delta / 1_000_000f;
     }
 
 }

@@ -1,9 +1,6 @@
 package main;
 
-import entity.Entity;
-import entity.EntityManager;
-import entity.ModelComponent;
-import entity.TransformationComponent;
+import entity.*;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -38,7 +35,6 @@ public class Main {
                 .addUniform("projectionMatrix")
                 .addUniform("viewMatrix");
 
-        var entities = new ArrayList<Entity>();
         var model = new Model()
                     .addPosition3D(TestCube.vertices)
                     .addIndices(TestCube.indices)
@@ -53,8 +49,7 @@ public class Main {
                     new Vector3f(r.nextFloat(), r.nextFloat(), r.nextFloat()),
                     1f
             ));
-
-            entities.add(entity);
+            EntityManager.addComponent(entity, new TestSpinComponent());
         }
 
         var camera = new Camera(
@@ -72,18 +67,17 @@ public class Main {
         var renderer = new Renderer();
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             // update
+            Timer.tick();
             EntityManager.start();
+            EntityManager.stop();
 
             // render
             renderer.render(camera);
-            EntityManager.stop();
 
 
             // glfw shit
             GLFW.glfwSwapBuffers(display.getWindow());
             GLFW.glfwPollEvents();
-
-            Timer.fpsTimerUpdate();
         }
 
         display.destroy();
