@@ -21,4 +21,14 @@ public class Entity {
         return uuid;
     }
 
+    @Override
+    public int hashCode() {
+        return this.uuid.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return this.uuid.equals(other);
+    }
+
 }

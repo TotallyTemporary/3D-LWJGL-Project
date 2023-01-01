@@ -7,6 +7,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.FloatBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -18,15 +19,14 @@ public class Shader {
 
     private HashMap<String, Integer> uniforms = new HashMap<>();
 
+    private static FloatBuffer mat4x4buf = BufferUtils.createFloatBuffer(16);
     public void setMatrix4f(String name, Matrix4f matrix) {
-        // TODO make this less worse :D (maybe using memory stack or reusing the floatbuffer)
-        var buf = BufferUtils.createFloatBuffer(16);
-        matrix.get(buf);
+        matrix.get(mat4x4buf);
         var id = uniforms.get(name);
         if (id == null) {
             throw new IllegalStateException("No uniform variable with name " + name);
         }
-        GL30.glUniformMatrix4fv(id, false, buf);
+        GL30.glUniformMatrix4fv(id, false, mat4x4buf);
     }
 
     public Shader addUniform(String name) {

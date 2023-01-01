@@ -20,10 +20,10 @@ public class Main {
 
     public static void main(String[] args) {
         var displaySettings = new Display.DisplaySettings(
-                "A display", // title
+                "A display",   // title
                 800, 600,    // resolution
                 -1,          // monitor? (-1 gets primary)
-                true,        // vsync
+                false,       // vsync
                 Display.DisplayMode.WINDOWED
         );
         var display = new Display(displaySettings);
@@ -45,7 +45,7 @@ public class Main {
                     .setShader(shader);
         var r = new Random();
         r.setSeed(System.currentTimeMillis());
-        for (var i = 0; i < 200; i++) {
+        for (var i = 0; i < 10_000; i++) {
             var entity = new Entity();
             EntityManager.addComponent(entity, new ModelComponent(model));
             EntityManager.addComponent(entity, new TransformationComponent(

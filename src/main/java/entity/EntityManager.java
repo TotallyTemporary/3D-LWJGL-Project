@@ -19,7 +19,11 @@ public class EntityManager {
             updatedThisFrame.put(clazz, false);
         }
         // start all comps
-        map.forEach((clazz, classMap) -> { classMap.forEach((entity, component) -> component.start()); });
+        for (var hashMap : map.values()) {
+            for (var comp : hashMap.values()) {
+                comp.start();
+            }
+        }
     }
 
     /**
@@ -32,7 +36,11 @@ public class EntityManager {
             }
         }
         // stop all comps
-        map.forEach((clazz, classMap) -> { classMap.forEach((entity, component) -> component.stop()); });
+        for (var hashMap : map.values()) {
+            for (var comp : hashMap.values()) {
+                comp.stop();
+            }
+        }
     }
 
     public static void addComponent(Entity entity, Component component) {
@@ -79,6 +87,8 @@ public class EntityManager {
         updatedThisFrame.put(clazz, true);
         var classMap = map.get(clazz);
         if (classMap == null) return;
-        classMap.forEach((entity, component) -> component.apply(entity));
+        for (var entry : classMap.entrySet()) {
+            entry.getValue().apply(entry.getKey());
+        }
     }
 }

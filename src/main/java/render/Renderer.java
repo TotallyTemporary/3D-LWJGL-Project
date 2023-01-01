@@ -27,19 +27,23 @@ public class Renderer {
 
         // combine so that we have a map from 1 model to multiple entities
         var map = new HashMap<Model, ArrayList<Entity>>();
-        EntityManager.getComponents(ModelComponent.class)
-                .forEach((entity, component) -> {
-            var model = component.getModel();
+        for (var entry : EntityManager.getComponents(ModelComponent.class).entrySet()) {
+            var entity = entry.getKey();
+            var model = entry.getValue().getModel();
             var modelEntities = map.get(model);
+
             if (modelEntities == null) {
                 modelEntities = new ArrayList<>();
                 map.put(model, modelEntities);
             }
             modelEntities.add(entity);
-        });
+        }
 
         // render
-        map.forEach((model, entities) -> {
+        for (var entry : map.entrySet()) {
+            var model = entry.getKey();
+            var entities = entry.getValue();
+
             // start shader, load matrices
             GL30.glUseProgram(model.getShader().getProgram());
             model.getShader().setMatrix4f("projectionMatrix", projectionMatrix);
@@ -60,7 +64,7 @@ public class Renderer {
                 GL30.glDisableVertexAttribArray(i);
             GL30.glBindVertexArray(0);
             GL30.glUseProgram(0);
-        });
+        }
     }
 
     private void render(Entity entity, Model model) {
