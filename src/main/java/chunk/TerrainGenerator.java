@@ -1,18 +1,22 @@
 package chunk;
 
-import entity.EntityManager;
-import org.joml.Vector3f;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class TerrainGenerator {
 
-    public static void loadChunk(Chunk chunk) {
-        generateTerrain(chunk);
-        generateModelData(chunk);
-        chunk.setStatus(Chunk.Status.WAIT_NEIGHBORS);
+    private static final Queue<Chunk> chunkGenQueue = new ArrayDeque<>();
+
+    public static void loadChunks() {
+        Chunk chunk;
+        while ((chunk = chunkGenQueue.poll()) != null) {
+            generateTerrain(chunk);
+            chunk.setStatus(Chunk.Status.WAIT_NEIGHBORS);
+        }
+    }
+
+    public static void addChunk(Chunk chunk) {
+        chunk.setStatus(Chunk.Status.TERRAIN_GENERATING);
+        chunkGenQueue.add(chunk);
     }
 
     private static void generateTerrain(Chunk chunk) {
@@ -31,56 +35,4 @@ public class TerrainGenerator {
 
         chunk.setBlocks(blocks);
     }
-
-    private static void generateModelData(Chunk chunk) {
-        var blocks = chunk.getBlocks();
-        List<Float> verticesBuffer = new ArrayList<>();
-        List<Float> textureCoordsBuffer = new ArrayList<>();
-        for (int x = 0; x < Chunk.SIZE; x++)
-        for (int y = 0; y < Chunk.SIZE; y++)
-        for (int z = 0; z < Chunk.SIZE; z++) {
-            var block = Block.getBlock(blocks[x][y][z]);
-            if (block == Block.AIR) continue;
-            for (int face = 0; face < 6; face++) {
-                var vertices = to3DVectors(block.getFace(face).getVertices());
-                for (var vertex : vertices) {
-                    verticesBuffer.add(vertex.x + x);
-                    verticesBuffer.add(vertex.y + y);
-                    verticesBuffer.add(vertex.z + z);
-                }
-
-                for (var textureCoord : block.getFace(face).getTextureCoords()) {
-                    textureCoordsBuffer.add(textureCoord);
-                }
-            }
-        }
-
-        EntityManager.addComponent(chunk, new ChunkModelDataComponent(
-                toPrimitive(verticesBuffer),
-                toPrimitive(textureCoordsBuffer)
-        ));
-    }
-
-    private static ArrayList<Vector3f> to3DVectors(float[] somePositions) {
-        var lst = new ArrayList<Vector3f>();
-        for (int i = 0; i < somePositions.length/3; i++) {
-            lst.add(new Vector3f(
-                    somePositions[i*3  ],
-                    somePositions[i*3+1],
-                    somePositions[i*3+2]
-            ));
-        }
-
-        return lst;
-    }
-
-    private static float[] toPrimitive(Collection<Float> coll) {
-        var ret = new float[coll.size()];
-        int i = 0;
-        for (float f : coll) {
-            ret[i++] = f;
-        }
-        return ret;
-    }
-
 }

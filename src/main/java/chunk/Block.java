@@ -3,9 +3,9 @@ package chunk;
 import java.lang.reflect.InvocationTargetException;
 
 public enum Block {
-    AIR(0, null),
-    STONE(1, makeFaces(DefaultBlockFace.class, new int[] { 1, 1, 1, 1, 1, 1 }));
-
+    INVALID(0, null),
+    AIR(1, makeFaces(NoBlockFace.class, new int[] { -1, -1, -1, -1, -1, -1 })),
+    STONE(2, makeFaces(DefaultBlockFace.class, new int[] { 1, 1, 1, 1, 1, 1 }));
 
     private byte id;
     private BlockFace[] faces;
@@ -23,7 +23,13 @@ public enum Block {
         return id;
     }
 
-    private static final Block[] vals = Block.values();
+    private static final Block[] vals = new Block[Byte.MAX_VALUE];
+    static {
+        for (var block : Block.values()) {
+            vals[block.getID()] = block;
+        }
+    }
+
     public static Block getBlock(byte id) {
         return vals[id];
     }

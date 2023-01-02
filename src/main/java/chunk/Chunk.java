@@ -17,12 +17,30 @@ public class Chunk extends Entity {
         );
     }
 
+    public static Vector3i worldPosToBlockPos(Vector3f pos) {
+        return new Vector3i(
+            (int) pos.x & (SIZE-1),
+            (int) pos.y & (SIZE-1),
+            (int) pos.z & (SIZE-1)
+        );
+    }
+
+    public static Vector3i blockPosToWorldPos(Vector3i pos, Chunk chunk) {
+        return new Vector3i(
+            pos.x + chunk.getChunkPos().x * SIZE,
+            pos.y + chunk.getChunkPos().y * SIZE,
+            pos.z + chunk.getChunkPos().z * SIZE
+        );
+    }
+
     public enum Status {
         NONE(0),                  // this chunk does not exist.
-        TERRAIN_GEN(1),           // generating blocks
+        TERRAIN_GENERATING(1),    // generating blocks
         WAIT_NEIGHBORS(2),        // wait for neighbors to generate their terrain
-        LOADING(3),               // queued to load into a model in memory
-        FINAL(4);                 // chunk can be rendered.
+        MESH_GENERATING(3),       // generating vertices and other model data
+        PREPARED(4),              // vertices done
+        MESH_LOADING(5),          // queued to load into a model in memory
+        FINAL(6);                 // chunk can be rendered.
 
         public int urgency;
         private Status(int urgency) { this.urgency = urgency; }
@@ -47,15 +65,26 @@ public class Chunk extends Entity {
     }
 
     public void setStatus(Status status) {
-        System.out.println(chunkPos + ": " + status);
         this.status = status;
     }
 
-    public byte[][][] getBlocks() {
-        return blocks;
+    public byte getBlock(int x, int y, int z) {
+        if (!isInsideChunk(x, y, z)) return Block.INVALID.getID();
+        else return blocks[x][y][z];
+    }
+
+    public byte getBlock(Vector3i pos) {
+        return getBlock(pos.x, pos.y, pos.z);
     }
 
     public void setBlocks(byte[][][] blocks) {
         this.blocks = blocks;
+    }
+
+    private boolean isInsideChunk(int x, int y, int z) {
+        if (x >= SIZE || x < 0 ||
+            y >= SIZE || y < 0 ||
+            z >= SIZE || z < 0) return false;
+        return true;
     }
 }

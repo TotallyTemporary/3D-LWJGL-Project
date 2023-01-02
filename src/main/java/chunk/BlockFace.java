@@ -2,7 +2,12 @@ package chunk;
 
 public abstract class BlockFace {
     public enum Direction {
-        UP, DOWN, LEFT, RIGHT, FRONT, BACK
+        UP, LEFT, FRONT, BACK, RIGHT, DOWN;
+
+        private static final Direction[] vals = Direction.values();
+        public Direction opposite() {
+            return vals[5-this.ordinal()];
+        }
     }
 
     protected int blockID;
@@ -15,5 +20,6 @@ public abstract class BlockFace {
 
     public float[] getVertices() { return new float[0]; }
     public float[] getTextureCoords() { return new float[0]; }
+    public boolean isTransparent() { return true; }
 
 }

@@ -1,51 +1,48 @@
 package chunk;
 
-import entity.EntityManager;
-import entity.ModelComponent;
-import entity.TestSpinComponent;
-import entity.TransformationComponent;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import render.Model;
-import render.Texture;
-import shader.Shader;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.Queue;
 
 public class ChunkLoader {
 
-    private Shader shader;
-    private Texture terrainTexture;
+    private static final int LOAD_RADIUS = 3;
 
-    private int loadRadius = 3;
-    private HashMap<Vector3i, Chunk> chunks = new HashMap<>();
+    private static HashMap<Vector3i, Chunk> chunks = new HashMap<>();
+    private static Queue<Chunk> modelLoadQueue = new ArrayDeque<>();
 
-    public ChunkLoader(Shader shader, Texture terrainTexture) {
-        this.shader = shader;
-        this.terrainTexture = terrainTexture;
-    }
-
-    public int update(Vector3f playerPos) {
+    public static int update(Vector3f playerPos) {
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
 
         int updatedCount = 0;
-        for (int x = playerChunkPos.x-loadRadius; x < playerChunkPos.x+loadRadius+1; x++)
-        for (int y = playerChunkPos.y-loadRadius; y < playerChunkPos.y+loadRadius+1; y++)
-        for (int z = playerChunkPos.z-loadRadius; z < playerChunkPos.z+loadRadius+1; z++)
+        for (int x = playerChunkPos.x - LOAD_RADIUS; x < playerChunkPos.x + LOAD_RADIUS +1; x++)
+        for (int y = playerChunkPos.y - LOAD_RADIUS; y < playerChunkPos.y + LOAD_RADIUS +1; y++)
+        for (int z = playerChunkPos.z - LOAD_RADIUS; z < playerChunkPos.z + LOAD_RADIUS +1; z++)
         {
             var pos = new Vector3i(x, y, z);
-            var status = getStatus(pos);
+            var chunk = chunks.get(pos);
+            if (chunk == null) {
+                chunk = new Chunk(pos);
+                chunks.put(pos, chunk);
+            }
 
-            switch (status) {
+            switch (chunk.getStatus()) {
                 case NONE           -> {
-                    startTerrainGen(pos);
+                    TerrainGenerator.addChunk(chunk);
                     updatedCount++;
                 }
                 case WAIT_NEIGHBORS -> {
-                    var updated = doNeighborCheck(pos);
-                    if (updated) {
+                    if (canGenerateModel(pos)) {
+                        TerrainModelGenerator.addChunk(chunk);
                         updatedCount++;
                     }
+                }
+                case PREPARED -> {
+                    TerrainModelLoader.addChunk(chunk);
+                    updatedCount++;
                 }
             }
         }
@@ -53,60 +50,17 @@ public class ChunkLoader {
         return updatedCount;
     }
 
-    private Chunk.Status getStatus(Vector3i pos) {
-        var chunk = chunks.get(pos);
-        if (chunk == null) return Chunk.Status.NONE;
-        else return chunk.getStatus();
-    }
-
-    private void startTerrainGen(Vector3i pos) {
-        // initalize chunk if needed
-        var chunk = chunks.get(pos);
-        if (chunk == null) {
-            chunk = new Chunk(pos);
-            chunks.put(pos, chunk);
-        }
-
-        // place chunk into terraingen queue, this is preparing for multithreading.
-        chunk.setStatus(Chunk.Status.TERRAIN_GEN);
-        TerrainGenerator.loadChunk(chunk);
-    }
-
-    private boolean doNeighborCheck(Vector3i pos) {
-        for (var neighbor : neighbors(pos)) {
-            // terrain generating or no chunk.
-            if (getStatus(neighbor).urgency <= Chunk.Status.TERRAIN_GEN.urgency) {
+    private static boolean canGenerateModel(Vector3i pos) {
+        for (var neighborPos : neighbors(pos)) {
+            var neighbor = chunks.get(neighborPos);
+            if (neighbor == null || neighbor.getStatus().urgency < Chunk.Status.WAIT_NEIGHBORS.urgency) {
                 return false;
             }
         }
-        loadChunkModel(pos);
         return true;
     }
 
-    private void loadChunkModel(Vector3i pos) {
-        var chunk = chunks.get(pos);
-        chunk.setStatus(Chunk.Status.LOADING);
-
-        var chunkModelData = EntityManager.getComponent(chunk, ChunkModelDataComponent.class);
-        var model = new Model()
-                .addPosition3D(chunkModelData.positions)
-                .addTextureCoords3D(chunkModelData.textureCoordinates)
-                .setTexture(terrainTexture)
-                .setShader(shader)
-                .end();
-        EntityManager.removeComponent(chunk, chunkModelData);
-        EntityManager.addComponent(chunk, new ModelComponent(model));
-
-        EntityManager.addComponent(chunk, new TransformationComponent(
-                new Vector3f(pos.x * Chunk.SIZE, pos.y * Chunk.SIZE, pos.z * Chunk.SIZE),
-                new Vector3f(0, 0, 0),
-                1f
-        ));
-
-        chunk.setStatus(Chunk.Status.FINAL);
-    }
-
-    private Vector3i[] neighbors(Vector3i pos) {
+    private static Vector3i[] neighbors(Vector3i pos) {
         return new Vector3i[]{
             new Vector3i(pos.x+1, pos.y, pos.z),
             new Vector3i(pos.x-1, pos.y, pos.z),
@@ -115,6 +69,23 @@ public class ChunkLoader {
             new Vector3i(pos.x, pos.y, pos.z+1),
             new Vector3i(pos.x, pos.y, pos.z-1)
         };
+    }
+
+    public static byte getBlockAt(Vector3f pos) {
+        var chunkPos = Chunk.worldPosToChunkPos(pos);
+        var chunkRemainderPos = Chunk.worldPosToBlockPos(pos);
+
+        var chunk = chunks.get(chunkPos);
+        if (chunk == null) return Block.INVALID.getID();
+        return chunk.getBlock(chunkRemainderPos);
+    }
+
+    public static byte getBlockAt(Vector3i pos) {
+        return getBlockAt(new Vector3f(pos.x, pos.y, pos.z));
+    }
+
+    public static byte getBlockAt(int x, int y, int z) {
+        return getBlockAt(new Vector3f(x, y, z));
     }
 
 }

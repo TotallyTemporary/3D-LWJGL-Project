@@ -1,6 +1,6 @@
 package main;
 
-import chunk.ChunkLoader;
+import chunk.*;
 import entity.*;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -49,12 +49,17 @@ public class Main {
                 1f
         ));
 
-        var chunkLoader = new ChunkLoader(shader, blocksTexture);
         var renderer = new Renderer();
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             // update
             Timer.tick();
-            chunkLoader.update(new Vector3f(0, 0, 0));
+            ChunkLoader.update(new Vector3f(0, 0, 0));
+
+            // generate and load chunks
+            TerrainGenerator.loadChunks();
+            TerrainModelGenerator.loadChunks();
+            TerrainModelLoader.loadChunks(shader, blocksTexture);
+
             EntityManager.start();
             EntityManager.stop();
 
