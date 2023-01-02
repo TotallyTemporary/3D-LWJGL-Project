@@ -1,5 +1,6 @@
 package chunk;
 
+import entity.EntityManager;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -54,8 +55,10 @@ public class TerrainGenerator {
             }
         }
 
-        chunk.setModel(toPrimitive(verticesBuffer),
-                       toPrimitive(textureCoordsBuffer));
+        EntityManager.addComponent(chunk, new ChunkModelDataComponent(
+                toPrimitive(verticesBuffer),
+                toPrimitive(textureCoordsBuffer)
+        ));
     }
 
     private static ArrayList<Vector3f> to3DVectors(float[] somePositions) {

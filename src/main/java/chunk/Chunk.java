@@ -32,10 +32,6 @@ public class Chunk extends Entity {
     private Status status;
     private byte[][][] blocks;
 
-    // TODO make this prettier
-    private float[] positions;
-    private float[] textureCoords;
-
     public Chunk(Vector3i chunkPos) {
         super();
         this.chunkPos = chunkPos;
@@ -61,18 +57,5 @@ public class Chunk extends Entity {
 
     public void setBlocks(byte[][][] blocks) {
         this.blocks = blocks;
-    }
-
-    public void setModel(float[] positions, float[] textureCoords) {
-        this.positions = positions;
-        this.textureCoords = textureCoords;
-    }
-
-    public float[] getPositions() {
-        return positions;
-    }
-
-    public float[] getTextureCoords() {
-        return textureCoords;
     }
 }

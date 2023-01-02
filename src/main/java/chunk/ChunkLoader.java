@@ -10,9 +10,7 @@ import render.Model;
 import render.Texture;
 import shader.Shader;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Vector;
 
 public class ChunkLoader {
 
@@ -29,17 +27,15 @@ public class ChunkLoader {
 
     public int update(Vector3f playerPos) {
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
-        int chunkX = playerChunkPos.x;
-        int chunkY = playerChunkPos.y;
-        int chunkZ = playerChunkPos.z;
 
         int updatedCount = 0;
-        for (int x = chunkX-loadRadius; x < chunkX+loadRadius+1; x++)
-        for (int y = chunkY-loadRadius; y < chunkY+loadRadius+1; y++)
-        for (int z = chunkZ-loadRadius; z < chunkZ+loadRadius+1; z++)
+        for (int x = playerChunkPos.x-loadRadius; x < playerChunkPos.x+loadRadius+1; x++)
+        for (int y = playerChunkPos.y-loadRadius; y < playerChunkPos.y+loadRadius+1; y++)
+        for (int z = playerChunkPos.z-loadRadius; z < playerChunkPos.z+loadRadius+1; z++)
         {
             var pos = new Vector3i(x, y, z);
             var status = getStatus(pos);
+
             switch (status) {
                 case NONE           -> {
                     startTerrainGen(pos);
@@ -91,12 +87,14 @@ public class ChunkLoader {
         var chunk = chunks.get(pos);
         chunk.setStatus(Chunk.Status.LOADING);
 
+        var chunkModelData = EntityManager.getComponent(chunk, ChunkModelDataComponent.class);
         var model = new Model()
-                .addPosition3D(chunk.getPositions())
-                .addTextureCoords3D(chunk.getTextureCoords())
+                .addPosition3D(chunkModelData.positions)
+                .addTextureCoords3D(chunkModelData.textureCoordinates)
                 .setTexture(terrainTexture)
                 .setShader(shader)
                 .end();
+        EntityManager.removeComponent(chunk, chunkModelData);
         EntityManager.addComponent(chunk, new ModelComponent(model));
 
         EntityManager.addComponent(chunk, new TransformationComponent(
@@ -104,6 +102,8 @@ public class ChunkLoader {
                 new Vector3f(0, 0, 0),
                 1f
         ));
+
+        chunk.setStatus(Chunk.Status.FINAL);
     }
 
     private Vector3i[] neighbors(Vector3i pos) {
