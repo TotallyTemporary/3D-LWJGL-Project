@@ -1,5 +1,6 @@
 package main;
 
+import chunk.ChunkLoader;
 import entity.*;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -32,44 +33,9 @@ public class Main {
                 .addUniform("projectionMatrix")
                 .addUniform("viewMatrix");
 
-        var model = new Model()
-                    .addPosition3D(TestCube.vertices)
-                    .addIndices(TestCube.indices)
-                    .addTextureCoords2D(TestCube.textureCoords)
-                    .setShader(shader)
-                    //.setTexture(new BasicTexture("src/main/resources/blocks_atlas.png", "arrayTexture"))
-                    .setTexture(new ArrayTexture(
+        var blocksTexture = new ArrayTexture(
                             "src/main/resources/blocks_array.png",
-                            "arrayTexture", 16, 16)
-                    )
-                /*.setTexture(new ArrayTexture(
-                        "src/main/resources/blocks_atlas.png",
-                        "arrayTexture",
-                        256, 256))*/
-                .end();
-
-        var mainBlock = new Entity();
-        EntityManager.addComponent(mainBlock, new ModelComponent(model));
-        EntityManager.addComponent(mainBlock, new TransformationComponent(
-                new Vector3f(0, 0, -10f),
-                new Vector3f(0, 0, 0),
-                2f
-        ));
-        EntityManager.addComponent(mainBlock, new TestSpinComponent());
-
-        /*
-        var r = new Random();
-        r.setSeed(System.currentTimeMillis());
-        for (var i = 0; i < 200; i++) {
-            var entity = new Entity();
-            EntityManager.addComponent(entity, new ModelComponent(model));
-            EntityManager.addComponent(entity, new TransformationComponent(
-                    new Vector3f(r.nextInt(100)-50, r.nextInt(100)-50, -r.nextInt(50)),
-                    new Vector3f(r.nextFloat(), r.nextFloat(), r.nextFloat()),
-                    1f
-            ));
-            EntityManager.addComponent(entity, new TestSpinComponent());
-        }*/
+                            "arrayTexture", 16, 16);
 
         var camera = new Camera(
                 (float) Math.toRadians(60f),
@@ -83,10 +49,12 @@ public class Main {
                 1f
         ));
 
+        var chunkLoader = new ChunkLoader(shader, blocksTexture);
         var renderer = new Renderer();
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             // update
             Timer.tick();
+            chunkLoader.update(new Vector3f(0, 0, 0));
             EntityManager.start();
             EntityManager.stop();
 

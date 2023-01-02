@@ -10,6 +10,8 @@ public class EntityManager {
     private static HashMap<Class<? extends Component>, HashMap<Entity, Component>> map = new HashMap<>();
     private static HashMap<Class<? extends Component>, Boolean> updatedThisFrame = new HashMap<>();
 
+    // TODO: Entity can't have multiple of the same component, evaluate if bug or not.
+
     /**
      * Calls start() on all components and resets the map of already updated classes.
      */
@@ -80,7 +82,12 @@ public class EntityManager {
     }
 
     public static <T extends Component> HashMap<Entity, T> getComponents(Class<T> clazz) {
-        return (HashMap<Entity, T>) map.get(clazz);
+        var classMap = (HashMap<Entity, T>) map.get(clazz);
+        if (classMap == null) {
+            classMap = new HashMap<Entity, T>();
+            map.put(clazz, (HashMap<Entity, Component>) classMap);
+        }
+        return classMap;
     }
 
     public static void updateComponents(Class<? extends Component> clazz) {

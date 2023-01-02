@@ -58,6 +58,17 @@ public class Model {
         return this;
     }
 
+    public Model addTextureCoords3D(float[] textureCoords) {
+        int attribNum = numberOfVBOs++;
+        int vbo = makeVBO();
+        var buf = toFloatBuffer(textureCoords);
+        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, buf, GL30.GL_STATIC_DRAW);
+        GL30.glVertexAttribPointer(attribNum, 3, GL30.GL_FLOAT, false, 3 * Float.BYTES, 0);
+
+        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
+        return this;
+    }
+
     public Model addTextureCoords2D(float[] textureCoords) {
         int attribNum = numberOfVBOs++;
         int vbo = makeVBO();
