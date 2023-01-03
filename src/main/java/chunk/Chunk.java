@@ -77,7 +77,7 @@ public class Chunk extends Entity {
     private Vector3i chunkPos;
     private Status status;
     private byte[] blocks;
-    private List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(6, (WeakReference<Chunk>) null));
+    private List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(6, null));
 
     public Chunk(Vector3i chunkPos) {
         super();
@@ -123,10 +123,9 @@ public class Chunk extends Entity {
     }
 
     private boolean isInsideChunk(int x, int y, int z) {
-        if (x >= SIZE || x < 0 ||
-            y >= SIZE || y < 0 ||
-            z >= SIZE || z < 0) return false;
-        return true;
+        return x < SIZE && x >= 0 &&
+                y < SIZE && y >= 0 &&
+                z < SIZE && z >= 0;
     }
 
     public Chunk getNeighbor(int index) {

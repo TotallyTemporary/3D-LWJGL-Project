@@ -38,7 +38,7 @@ public class TerrainModelGenerator {
             var block = Block.getBlock(chunk.getBlock(x, y, z));
             for (int index = 0; index < 6; index++) {
                 var face = block.getFace(index);
-                if (!isFaceVisible(chunk, block, face, x, y, z)) continue;
+                if (!isFaceVisible(chunk, face, x, y, z)) continue;
 
                 for (var vertex : to3DVectors(face.getVertices())) {
                     verticesBuffer.add(vertex.x + x);
@@ -68,7 +68,7 @@ public class TerrainModelGenerator {
         return lst;
     }
 
-    private static boolean isFaceVisible(Chunk chunk, Block block, BlockFace face, int x, int y, int z) {
+    private static boolean isFaceVisible(Chunk chunk, BlockFace face, int x, int y, int z) {
         if (face == null) return false;
 
         var obscuringBlock = Block.getBlock(switch (face.direction) {

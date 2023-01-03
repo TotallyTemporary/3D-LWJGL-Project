@@ -3,9 +3,7 @@ package chunk;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
-import java.util.ArrayDeque;
 import java.util.HashMap;
-import java.util.Queue;
 
 public class ChunkLoader {
 

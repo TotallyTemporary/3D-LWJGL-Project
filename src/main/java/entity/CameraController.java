@@ -1,6 +1,5 @@
 package entity;
 
-import chunk.Chunk;
 import main.Keyboard;
 import main.Timer;
 import org.joml.Vector3f;

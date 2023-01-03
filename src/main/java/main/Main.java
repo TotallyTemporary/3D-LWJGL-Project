@@ -3,14 +3,11 @@ package main;
 import chunk.*;
 import entity.*;
 import org.joml.Vector3f;
-import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL30;
 import render.*;
 import shader.Shader;
-
-import java.util.Random;
 
 public class Main {
 
@@ -73,7 +70,7 @@ public class Main {
             renderer.render(camera);
 
 
-            // glfw shit
+            // glfw stuff
             GLFW.glfwSwapBuffers(display.getWindow());
             GLFW.glfwPollEvents();
         }
