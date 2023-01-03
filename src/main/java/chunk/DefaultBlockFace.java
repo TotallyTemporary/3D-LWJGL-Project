@@ -11,21 +11,21 @@ public class DefaultBlockFace extends BlockFace {
     * https://gist.github.com/jackmott/6e06daa504b070da1ce1ec580e4af59b
     * so i didn't have to write all these out manually. */
     private static float[] FRONT_VERTS = {
-        0f, 0f, 0f,
+        1f, 1f, 0f,
         1f, 0f, 0f,
-        1f, 1f, 0f,
-        1f, 1f, 0f,
+        0f, 0f, 0f,
+        0f, 0f, 0f,
         0f, 1f, 0f,
-        0f, 0f, 0f
+        1f, 1f, 0f,
     };
 
     private static float[] FRONT_TEX = {
-        0f, 1f,
+        1f, 0f,
         1f, 1f,
-        1f, 0f,
-        1f, 0f,
+        0f, 1f,
+        0f, 1f,
         0f, 0f,
-        0f, 1f
+        1f, 0f
     };
 
     private static float[] BACK_VERTS = {
@@ -65,30 +65,30 @@ public class DefaultBlockFace extends BlockFace {
     };
 
     private static float[] RIGHT_VERTS = {
-        1f, 1f, 1f,
+        1f, 0f, 0f,
         1f, 1f, 0f,
-        1f, 0f, 0f,
-        1f, 0f, 0f,
+        1f, 1f, 1f,
+        1f, 1f, 1f,
         1f, 0f, 1f,
-        1f, 1f, 1f
+        1f, 0f, 0f,
     };
 
     private static float[] RIGHT_TEX = {
-        0f, 0f,
+        1f, 1f,
         1f, 0f,
-        1f, 1f,
-        1f, 1f,
+        0f, 0f,
+        0f, 0f,
         0f, 1f,
-        0f, 0f
+        1f, 1f
     };
 
     private static float[] TOP_VERTS = {
-        0f, 1f, 0f,
+        1f, 1f, 1f,
         1f, 1f, 0f,
-        1f, 1f, 1f,
-        1f, 1f, 1f,
+        0f, 1f, 0f,
+        0f, 1f, 0f,
         0f, 1f, 1f,
-        0f, 1f, 0f
+        1f, 1f, 1f
     };
 
     private static float[] TOP_TEX = {

@@ -15,6 +15,20 @@ import java.util.List;
  * Example: [var model = new Model().addPosition3D(vertices);]
  */
 public class Model {
+    // some static stuff to prevent memory leaks
+    private static ArrayList<Integer> vaos = new ArrayList<>();
+    private static ArrayList<Integer> vbos = new ArrayList<>();
+
+    public static void destroy() {
+        for (var vao : vaos) {
+            GL30.glDeleteVertexArrays(vao);
+        }
+
+        for (var vbo : vbos) {
+            GL30.glDeleteBuffers(vbo);
+        }
+    }
+
     private int vao;
     private int numberOfVBOs = 0;
     private int vertexCount = -1;

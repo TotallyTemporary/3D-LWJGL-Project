@@ -2,6 +2,7 @@ package render;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL30;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -56,5 +57,8 @@ public abstract class Texture {
         return name;
     }
 
+    public void destroy() {
+        GL30.glDeleteTextures(this.id);
+    }
 
 }

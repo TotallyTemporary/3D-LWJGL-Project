@@ -54,6 +54,8 @@ public class Main {
         TerrainGenerator.start();
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             // GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
+            GL30.glCullFace(GL30.GL_BACK);
+            GL30.glEnable(GL30.GL_CULL_FACE);
 
             // update
             Timer.tick();
@@ -80,6 +82,9 @@ public class Main {
         }
         TerrainGenerator.stop();
         TerrainModelGenerator.stop();
+        Model.destroy();
+        blocksTexture.destroy();
+
         display.destroy();
         GLFW.glfwTerminate();
     }
