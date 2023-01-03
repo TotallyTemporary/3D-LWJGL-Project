@@ -12,7 +12,7 @@ import java.util.List;
 public class Chunk extends Entity {
 
     // static stuff at the top here
-    public final static int SIZE_BITS = 4;
+    public final static int SIZE_BITS = 6;
     public final static int SIZE = 1 << SIZE_BITS;
 
     public static Vector3i worldPosToChunkPos(Vector3f pos) {

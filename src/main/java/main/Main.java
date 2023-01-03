@@ -20,7 +20,7 @@ public class Main {
                 800, 600,    // resolution
                 -1,          // monitor? (-1 gets primary)
                 false,       // vsync
-                Display.DisplayMode.WINDOWED
+                Display.DisplayMode.FULLSCREEN_BORDERLESS
         );
         var display = new Display(displaySettings);
         GLFWErrorCallback.createPrint(System.err).set();
@@ -55,7 +55,7 @@ public class Main {
         var renderer = new Renderer();
         Thread.sleep(5000);
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
-            GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
+            // GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
 
             // update
             Timer.tick();

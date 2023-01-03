@@ -3,9 +3,13 @@ package chunk;
 import java.lang.reflect.InvocationTargetException;
 
 public enum Block {
+    // UP, LEFT, FRONT, BACK, RIGHT, DOWN;
+
     INVALID(0, new BlockFace[]{ null, null, null, null, null, null }),
     AIR    (1, new BlockFace[]{ null, null, null, null, null, null }),
-    STONE  (2, makeFaces(DefaultBlockFace.class, new int[] { 1, 1, 1, 1, 1, 1 }));
+    GRASS  (2, makeFaces(DefaultBlockFace.class, new int[] { 0, 3, 3, 3, 3, 2 })),
+    STONE  (3, makeFaces(DefaultBlockFace.class, new int[] { 1, 1, 1, 1, 1, 1 })),
+    DIRT   (4, makeFaces(DefaultBlockFace.class, new int[] { 2, 2, 2, 2, 2, 2 }));
 
     static {
         // for some reason calculating this in the constructor makes the enum null.

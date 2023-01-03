@@ -31,22 +31,20 @@ public class TerrainGenerator {
         {
             var index = Chunk.toIndex(chunkX, chunkY, chunkZ);
             var worldPos = Chunk.blockPosToWorldPos(new Vector3i(chunkX, chunkY, chunkZ), chunk);
-
+            var terrainLevel = (int) (10 * Math.sin((worldPos.x + worldPos.z)/100d));
 
             var block = Block.AIR.getID();
 
-
-            if (chunkX % 3 == 0 &&
-                chunkY % 3 == 0 &&
-                chunkZ % 3 == 0) {
+            if (worldPos.y == terrainLevel) {
+                block = Block.GRASS.getID();
+            } else if (terrainLevel-3 < worldPos.y && worldPos.y < terrainLevel) {
+                block = Block.DIRT.getID();
+            } else if (worldPos.y <= terrainLevel-3){
                 block = Block.STONE.getID();
             }
 
             blocks[index] = block;
         }
-
-        blocks[0] = Block.STONE.getID();
-        blocks[1] = Block.STONE.getID();
 
         chunk.setBlocks(blocks);
     }

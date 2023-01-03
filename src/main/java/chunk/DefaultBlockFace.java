@@ -20,12 +20,12 @@ public class DefaultBlockFace extends BlockFace {
     };
 
     private static float[] FRONT_TEX = {
-        0f, 0f,
-        1f, 0f,
-        1f, 1f,
-        1f, 1f,
         0f, 1f,
-        0f, 0f
+        1f, 1f,
+        1f, 0f,
+        1f, 0f,
+        0f, 0f,
+        0f, 1f
     };
 
     private static float[] BACK_VERTS = {
@@ -38,12 +38,12 @@ public class DefaultBlockFace extends BlockFace {
     };
 
     private static float[] BACK_TEX = {
-        0f, 0f,
-        1f, 0f,
-        1f, 1f,
-        1f, 1f,
         0f, 1f,
-        0f, 0f
+        1f, 1f,
+        1f, 0f,
+        1f, 0f,
+        0f, 0f,
+        0f, 1f
     };
 
     private static float[] LEFT_VERTS = {
@@ -56,12 +56,12 @@ public class DefaultBlockFace extends BlockFace {
     };
 
     private static float[] LEFT_TEX = {
+        0f, 0f,
         1f, 0f,
         1f, 1f,
+        1f, 1f,
         0f, 1f,
-        0f, 1f,
-        0f, 0f,
-        1f, 0f
+        0f, 0f
     };
 
     private static float[] RIGHT_VERTS = {
@@ -74,12 +74,12 @@ public class DefaultBlockFace extends BlockFace {
     };
 
     private static float[] RIGHT_TEX = {
+        0f, 0f,
         1f, 0f,
         1f, 1f,
+        1f, 1f,
         0f, 1f,
-        0f, 1f,
-        0f, 0f,
-        1f, 0f
+        0f, 0f
     };
 
     private static float[] TOP_VERTS = {

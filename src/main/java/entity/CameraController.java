@@ -21,10 +21,10 @@ public class CameraController extends Component {
 
         Vector3f deltaPos = new Vector3f(0, 0, 0);
         Vector3f deltaRot = new Vector3f(0, 0, 0);
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_W)) deltaPos.z += move;
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_S)) deltaPos.z -= move;
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_A)) deltaPos.x += move;
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_D)) deltaPos.x -= move;
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_W)) deltaPos.z -= move;
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_S)) deltaPos.z += move;
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_A)) deltaPos.x -= move;
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_D)) deltaPos.x += move;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_SPACE))      deltaPos.y += move;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) deltaPos.y -= move;
 
