@@ -25,12 +25,6 @@ public class TerrainGenerator {
         // generate blocks
         byte[] blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
 
-        var heightMap = new float[Chunk.SIZE][Chunk.SIZE];
-        for (int x = 0; x < Chunk.SIZE; x++)
-        for (int z = 0; z < Chunk.SIZE; z++) {
-            heightMap[x][z] = 1000 * (int) Math.sin(x + z);
-        }
-
         for (int chunkX = 0; chunkX < Chunk.SIZE; chunkX++)
         for (int chunkY = 0; chunkY < Chunk.SIZE; chunkY++)
         for (int chunkZ = 0; chunkZ < Chunk.SIZE; chunkZ++)
@@ -40,7 +34,11 @@ public class TerrainGenerator {
 
 
             var block = Block.AIR.getID();
-            if (worldPos.y <= heightMap[chunkX][chunkZ]) {
+
+
+            if (chunkX % 3 == 0 &&
+                chunkY % 3 == 0 &&
+                chunkZ % 3 == 0) {
                 block = Block.STONE.getID();
             }
 

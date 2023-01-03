@@ -3,6 +3,7 @@ package main;
 import chunk.*;
 import entity.*;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL30;
@@ -23,6 +24,7 @@ public class Main {
         );
         var display = new Display(displaySettings);
         GLFWErrorCallback.createPrint(System.err).set();
+        Keyboard.init(display.getWindow());
         GL30.glClearColor(0.2f, 0.3f, 0.4f, 0f);
 
         var shader = new Shader(
@@ -48,10 +50,13 @@ public class Main {
                 new Vector3f(0, 0, 0),
                 1f
         ));
+        EntityManager.addComponent(camera, new CameraController());
 
         var renderer = new Renderer();
         Thread.sleep(5000);
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
+            GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
+
             // update
             Timer.tick();
             ChunkLoader.update(new Vector3f(0, 0, 0));

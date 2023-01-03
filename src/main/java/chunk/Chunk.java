@@ -12,7 +12,7 @@ import java.util.List;
 public class Chunk extends Entity {
 
     // static stuff at the top here
-    public final static int SIZE_BITS = 6;
+    public final static int SIZE_BITS = 4;
     public final static int SIZE = 1 << SIZE_BITS;
 
     public static Vector3i worldPosToChunkPos(Vector3f pos) {
@@ -39,14 +39,15 @@ public class Chunk extends Entity {
         );
     }
 
+    // UP, LEFT, FRONT, BACK, RIGHT, DOWN;
     public static Vector3i[] neighbors(Vector3i pos) {
         return new Vector3i[]{
-            new Vector3i(pos.x+1, pos.y, pos.z),
-            new Vector3i(pos.x-1, pos.y, pos.z),
             new Vector3i(pos.x, pos.y+1, pos.z),
-            new Vector3i(pos.x, pos.y-1, pos.z),
+            new Vector3i(pos.x-1, pos.y, pos.z),
+            new Vector3i(pos.x, pos.y, pos.z-1),
             new Vector3i(pos.x, pos.y, pos.z+1),
-            new Vector3i(pos.x, pos.y, pos.z-1)
+            new Vector3i(pos.x+1, pos.y, pos.z),
+            new Vector3i(pos.x, pos.y-1, pos.z),
         };
     }
 
@@ -104,7 +105,7 @@ public class Chunk extends Entity {
     }
 
     public void setStatus(Status status) {
-        System.out.println(status);
+        // System.out.println(this.chunkPos + ", " + status);
         this.status = status;
     }
 

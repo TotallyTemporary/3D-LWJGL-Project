@@ -118,6 +118,8 @@ public class DefaultBlockFace extends BlockFace {
         0f, 1f
     };
 
+    public boolean isTransparent() { return false; }
+
     public float[] getVertices() {
         return switch (this.direction) {
             case UP    -> TOP_VERTS;

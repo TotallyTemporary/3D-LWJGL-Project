@@ -48,14 +48,10 @@ public class TerrainModelGenerator {
                 textureCoordsBuffer.addArray(face.getTextureCoords());
             }
         }
+
         EntityManager.addComponent(chunk, new ChunkModelDataComponent(
                 verticesBuffer.toValueArray(),
                 textureCoordsBuffer.toValueArray()
-        ));
-
-        EntityManager.addComponent(chunk, new ChunkModelDataComponent(
-            toPrimitive(verticesBuffer),
-            toPrimitive(textureCoordsBuffer)
         ));
     }
 
@@ -72,15 +68,6 @@ public class TerrainModelGenerator {
         return lst;
     }
 
-    private static float[] toPrimitive(Collection<Float> coll) {
-        var ret = new float[coll.size()];
-        int i = 0;
-        for (float f : coll) {
-            ret[i++] = f;
-        }
-        return ret;
-    }
-
     private static boolean isFaceVisible(Chunk chunk, Block block, BlockFace face, int x, int y, int z) {
         if (face == null) return false;
 
@@ -92,12 +79,13 @@ public class TerrainModelGenerator {
             case FRONT -> getBlockSafe(chunk, new Vector3i(x, y, z-1));
             case BACK  -> getBlockSafe(chunk, new Vector3i(x, y, z+1));
         });
+
         if (!obscuringBlock.getHasTransparentFace()) return false;
 
         var oppositeDirection = face.direction.opposite().ordinal();
         var oppositeFace = obscuringBlock.getFace(oppositeDirection);
-        if (oppositeFace == null || !oppositeFace.isTransparent()) {
-            return false;
+        if (oppositeFace == null || oppositeFace.isTransparent()) {
+            return true;
         }
 
         return true;
