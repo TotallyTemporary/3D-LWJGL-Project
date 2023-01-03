@@ -55,8 +55,6 @@ public class Main {
         EntityManager.addComponent(camera, new CameraController());
 
         var renderer = new Renderer();
-        TerrainModelGenerator.start();
-        TerrainGenerator.start();
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_K)) {
                 GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
@@ -78,7 +76,6 @@ public class Main {
             EntityManager.stop();
 
             TerrainModelLoader.loadChunks(shader, blocksTexture);
-            // TerrainModelLoader.
             ChunkLoader.stopUpdate();
             // end update
 
@@ -90,8 +87,6 @@ public class Main {
             GLFW.glfwSwapBuffers(display.getWindow());
             GLFW.glfwPollEvents();
         }
-        TerrainGenerator.stop();
-        TerrainModelGenerator.stop();
         Model.destroy();
         blocksTexture.destroy();
         shader.destroy();

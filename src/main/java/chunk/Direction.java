@@ -1,15 +1,18 @@
 package chunk;
 
-public enum Direction {
-    UP, LEFT, FRONT, BACK, RIGHT, DOWN;
+public class Direction {
 
-    public static final Direction[] vals = Direction.values();
+    // the poor man's enum
+    // at least this is considered a "constant expression" smh
+    public static final int
+            UP = 0,
+            LEFT = 1,
+            FRONT = 2,
+            BACK = 3,
+            RIGHT = 4,
+            DOWN = 5;
 
-    public Direction opposite() {
-        return vals[opposite(this.ordinal())];
-    }
-
-    public static int opposite(int index) {
-        return 5-index;
+    public static int opposite(int dir) {
+        return 5-dir;
     }
 }

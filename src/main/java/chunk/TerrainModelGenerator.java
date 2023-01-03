@@ -8,27 +8,29 @@ import org.joml.Vector3i;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class TerrainModelGenerator {
 
     public record Tuple<X, Y>(X x, Y y) {}
 
-    private static Thread thread;
-    private static boolean running = false;
-
-    private static final LinkedBlockingQueue<Chunk> chunkLoadQueue = new LinkedBlockingQueue<>();
+    private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
     private static final ConcurrentLinkedQueue<Tuple<Chunk, ChunkModelDataComponent>> doneQueue = new ConcurrentLinkedQueue<>();
 
-    private static FloatList verticesBuffer = new FloatList();
-    private static FloatList textureCoordsBuffer = new FloatList();
+    private static final ThreadLocal<FloatList> verticesBufferLocal = ThreadLocal.withInitial(() -> new FloatList());
+    private static final ThreadLocal<FloatList> textureCoordsBufferLocal = ThreadLocal.withInitial(() -> new FloatList());
 
+    // adds a chunk to the queue
     public static void addChunk(Chunk chunk) {
-        if (!chunkLoadQueue.contains(chunk)) {
-            chunkLoadQueue.add(chunk);
-        }
+        executor.submit(() -> {
+            var comp = generateModelData(chunk);
+            doneQueue.add(new Tuple<>(chunk, comp));
+        });
     }
 
+    // call this to remove processed chunks (EntityManager can only be used on the main thread)
     public static void removeChunks() {
         Tuple<Chunk, ChunkModelDataComponent> entry;
         while ((entry = doneQueue.poll()) != null) {
@@ -37,33 +39,10 @@ public class TerrainModelGenerator {
         }
     }
 
-    public static void start() {
-        running = true;
-        thread = new Thread(TerrainModelGenerator::loadChunks);
-        thread.start();
-    }
-
-    public static void stop() {
-        running = false;
-        try {
-            thread.interrupt();
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void loadChunks() {
-        while (running) {
-            try {
-                var chunk = chunkLoadQueue.take();
-                var data = generateModelData(chunk);
-                doneQueue.add(new Tuple(chunk, data));
-            } catch (InterruptedException e) {}
-        }
-    }
-
     private static ChunkModelDataComponent generateModelData(Chunk chunk) {
+        var verticesBuffer = verticesBufferLocal.get();
+        var textureCoordsBuffer = textureCoordsBufferLocal.get();
+
         resetFloatList(verticesBuffer);
         resetFloatList(textureCoordsBuffer);
 
@@ -73,13 +52,17 @@ public class TerrainModelGenerator {
             var block = Block.getBlock(chunk.getBlock(x, y, z));
             for (int index = 0; index < 6; index++) {
                 var face = block.getFace(index);
-                if (!isFaceVisible(chunk, face, x, y, z)) continue;
+                if (face == null) continue;
+                if (!isFaceVisible(chunk, index, x, y, z)) continue;
 
-                for (var vertex : to3DVectors(face.getVertices())) {
-                    verticesBuffer.add(vertex.x + x);
-                    verticesBuffer.add(vertex.y + y);
-                    verticesBuffer.add(vertex.z + z);
+                float[] vertices = face.getVertices();
+                float[] transformedVertices = new float[vertices.length];
+                for (int i = 0; i < vertices.length/3; i++) {
+                    transformedVertices[3*i  ] = (vertices[3*i  ] + x);
+                    transformedVertices[3*i+1] = (vertices[3*i+1] + y);
+                    transformedVertices[3*i+2] = (vertices[3*i+2] + z);
                 }
+                verticesBuffer.addArray(transformedVertices);
                 textureCoordsBuffer.addArray(face.getTextureCoords());
             }
         }
@@ -90,35 +73,20 @@ public class TerrainModelGenerator {
         );
     }
 
-    private static ArrayList<Vector3f> to3DVectors(float[] somePositions) {
-        var lst = new ArrayList<Vector3f>();
-        for (int i = 0; i < somePositions.length/3; i++) {
-            lst.add(new Vector3f(
-                    somePositions[i*3  ],
-                    somePositions[i*3+1],
-                    somePositions[i*3+2]
-            ));
-        }
-
-        return lst;
-    }
-
-    private static boolean isFaceVisible(Chunk chunk, BlockFace face, int x, int y, int z) {
-        if (face == null) return false;
-
-        var obscuringBlock = Block.getBlock(switch (face.direction) {
-            case UP    -> getBlockSafe(chunk, new Vector3i(x, y+1, z));
-            case DOWN  -> getBlockSafe(chunk, new Vector3i(x, y-1, z));
-            case LEFT  -> getBlockSafe(chunk, new Vector3i(x-1, y, z));
-            case RIGHT -> getBlockSafe(chunk, new Vector3i(x+1, y, z));
-            case FRONT -> getBlockSafe(chunk, new Vector3i(x, y, z-1));
-            case BACK  -> getBlockSafe(chunk, new Vector3i(x, y, z+1));
+    private static boolean isFaceVisible(Chunk chunk, int faceIndex, int x, int y, int z) {
+        var obscuringBlock = Block.getBlock(switch (faceIndex) {
+            case Direction.UP    -> getBlockSafe(chunk, new Vector3i(x, y+1, z));
+            case Direction.DOWN  -> getBlockSafe(chunk, new Vector3i(x, y-1, z));
+            case Direction.LEFT  -> getBlockSafe(chunk, new Vector3i(x-1, y, z));
+            case Direction.RIGHT -> getBlockSafe(chunk, new Vector3i(x+1, y, z));
+            case Direction.FRONT -> getBlockSafe(chunk, new Vector3i(x, y, z-1));
+            case Direction.BACK  -> getBlockSafe(chunk, new Vector3i(x, y, z+1));
+            default -> throw new IllegalStateException("Unexpected value: " + faceIndex);
         });
 
         if (!obscuringBlock.getHasTransparentFace()) return false;
 
-        var oppositeDirection = face.direction.opposite().ordinal();
-        var oppositeFace = obscuringBlock.getFace(oppositeDirection);
+        var oppositeFace = obscuringBlock.getFace(Direction.opposite(faceIndex));
         if (oppositeFace == null || oppositeFace.isTransparent()) {
             return true;
         }
@@ -145,4 +113,15 @@ public class TerrainModelGenerator {
             e.printStackTrace();
         }
     }
+    /* maybe use this if toValueArray is slow? visualvm shows it as slow, intellij doesn't.
+    private static float[] getValues(FloatList lst) throws NoSuchFieldException, IllegalAccessException {
+        int end = lst.size();
+        Field values = lst.getClass().getDeclaredField("values");
+        values.setAccessible(true);
+        float[] arr = (float[]) values.get(lst);
+        float[] newArr = new float[lst.size()];
+        System.arraycopy(arr, 0, newArr, 0, lst.size());
+        return newArr;
+    }
+     */
 }

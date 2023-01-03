@@ -68,10 +68,10 @@ public enum Block {
     * */
     private static BlockFace[] makeFaces(Class<? extends BlockFace> clazz, int[] indices) {
         try {
-            var constructor = clazz.getDeclaredConstructor(Integer.class, Direction.class);
+            var constructor = clazz.getDeclaredConstructor(Integer.class, Integer.class);
             var faces = new BlockFace[6];
             for (int i = 0; i < 6; i++) {
-                faces[i] = constructor.newInstance(indices[i], Direction.values()[i]);
+                faces[i] = constructor.newInstance(indices[i], i);
             }
             return faces;
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {

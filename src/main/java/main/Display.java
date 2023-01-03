@@ -81,18 +81,15 @@ public class Display {
             throw new IllegalStateException("Could not create a GLFW window.");
         }
 
-        // center window on monitor
+        // center window
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            // get window width and height
             IntBuffer wWidth = stack.mallocInt(1);
             IntBuffer wHeight = stack.mallocInt(1);
             GLFW.glfwGetWindowSize(window, wWidth, wHeight);
 
-            // get monitor width and height
             int mWidth = vidMode.width();
             int mHeight = vidMode.height();
 
-            // center window on monitor
             GLFW.glfwSetWindowPos(window, (mWidth - wWidth.get()) / 2, (mHeight - wHeight.get()) / 2);
         }
         GLFW.glfwShowWindow(window);

@@ -3,7 +3,7 @@ package chunk;
 public class DefaultBlockFace extends BlockFace {
 
     /* This class represents a cubic block. It has flat rectangles for faces in all directions. */
-    public DefaultBlockFace(Integer blockID, Direction direction) {
+    public DefaultBlockFace(Integer blockID, Integer direction) {
         super(blockID, direction);
     }
 
@@ -122,24 +122,26 @@ public class DefaultBlockFace extends BlockFace {
 
     public float[] getVertices() {
         return switch (this.direction) {
-            case UP    -> TOP_VERTS;
-            case DOWN  -> BOTTOM_VERTS;
-            case LEFT  -> LEFT_VERTS;
-            case RIGHT -> RIGHT_VERTS;
-            case FRONT -> FRONT_VERTS;
-            case BACK  -> BACK_VERTS;
+            case Direction.UP    -> TOP_VERTS;
+            case Direction.DOWN  -> BOTTOM_VERTS;
+            case Direction.LEFT  -> LEFT_VERTS;
+            case Direction.RIGHT -> RIGHT_VERTS;
+            case Direction.FRONT -> FRONT_VERTS;
+            case Direction.BACK  -> BACK_VERTS;
+            default -> throw new IllegalStateException("Unexpected value: " + this.direction);
         };
 
     }
 
     public float[] getTextureCoords() {
         return addBlockIndex(switch (this.direction) {
-            case UP    -> TOP_TEX;
-            case DOWN  -> BOTTOM_TEX;
-            case LEFT  -> LEFT_TEX;
-            case RIGHT -> RIGHT_TEX;
-            case FRONT -> FRONT_TEX;
-            case BACK  -> BACK_TEX;
+            case Direction.UP    -> TOP_TEX;
+            case Direction.DOWN  -> BOTTOM_TEX;
+            case Direction.LEFT  -> LEFT_TEX;
+            case Direction.RIGHT -> RIGHT_TEX;
+            case Direction.FRONT -> FRONT_TEX;
+            case Direction.BACK  -> BACK_TEX;
+            default -> throw new IllegalStateException("Unexpected value: " + this.direction);
         });
     }
 
