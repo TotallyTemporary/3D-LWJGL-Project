@@ -5,9 +5,11 @@ import entity.EntityManager;
 import entity.ModelComponent;
 import entity.TransformationComponent;
 import org.lwjgl.opengl.GL30;
+import shader.Shader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class Renderer {
 
@@ -23,54 +25,57 @@ public class Renderer {
         var viewMatrix = camera.getViewMatrix();
         var projectionMatrix = camera.getProjectionMatrix();
 
-        // combine so that we have a map from 1 model to multiple entities
-        var map = new HashMap<Model, ArrayList<Entity>>();
-        for (var entry : EntityManager.getComponents(ModelComponent.class).entrySet()) {
-            var entity = entry.getKey();
-            var model = entry.getValue().getModel();
-            var modelEntities = map.get(model);
+        // 1 model for multiple entities
+        var modelMap = EntityManager.getComponents(ModelComponent.class)
+                .keySet().stream()
+                .collect(Collectors.groupingBy(
+                        entity -> EntityManager.getComponent(entity, ModelComponent.class).getModel()
+                ));
 
-            if (modelEntities == null) {
-                modelEntities = new ArrayList<>();
-                map.put(model, modelEntities);
-            }
-            modelEntities.add(entity);
-        }
+        // 1 shader for multiple models
+        var shaderMap = modelMap.keySet().stream()
+                .collect(Collectors.groupingBy(model -> model.getShader()));
 
         // render
-        for (var entry : map.entrySet()) {
-            var model = entry.getKey();
-            var entities = entry.getValue();
+        for (var shaderEntry : shaderMap.entrySet()) {
+            var shader = shaderEntry.getKey();
+            var models = shaderEntry.getValue();
 
             // start shader, load matrices
-            GL30.glUseProgram(model.getShader().getProgram());
-            model.getShader().setMatrix4f("projectionMatrix", projectionMatrix);
-            model.getShader().setMatrix4f("viewMatrix", viewMatrix);
+            GL30.glUseProgram(shader.getProgram());
+            shader.setMatrix4f("projectionMatrix", projectionMatrix);
+            shader.setMatrix4f("viewMatrix", viewMatrix);
 
-            // bind textures
-            int unit = 0;
-            for (Texture tex : model.getTextures()) {
-                GL30.glActiveTexture(GL30.GL_TEXTURE0 + unit);
-                GL30.glBindTexture(tex.getType(), tex.getTexture());
-                model.getShader().setInt(tex.getName(), unit);
+            for (var modelEntry : modelMap.entrySet()) {
+                var model = modelEntry.getKey();
+                var entities = modelEntry.getValue();
 
-                unit++;
+                // bind textures
+                int unit = 0;
+                for (Texture tex : model.getTextures()) {
+                    GL30.glActiveTexture(GL30.GL_TEXTURE0 + unit);
+                    GL30.glBindTexture(tex.getType(), tex.getTexture());
+                    model.getShader().setInt(tex.getName(), unit);
+
+                    unit++;
+                }
+
+                GL30.glBindVertexArray(model.getVAO()); // bind model, activate vbos
+                for (int i = 0; i < model.getNumberOfVBOs(); i++)
+                    GL30.glEnableVertexAttribArray(i);
+
+
+                for (var entity : entities) {
+                    render(entity, model);
+                }
+
+
+                // disable everything
+                for (int i = 0; i < model.getNumberOfVBOs(); i++)
+                    GL30.glDisableVertexAttribArray(i);
+                GL30.glBindVertexArray(0);
             }
-
-            GL30.glBindVertexArray(model.getVAO()); // bind model, activate vbos
-            for (int i = 0; i < model.getNumberOfVBOs(); i++)
-                GL30.glEnableVertexAttribArray(i);
-
-
-            for (var entity : entities) {
-                render(entity, model);
-            }
-
-
-            // disable everything
-            for (int i = 0; i < model.getNumberOfVBOs(); i++)
-                GL30.glDisableVertexAttribArray(i);
-            GL30.glBindVertexArray(0);
+            // disable shader
             GL30.glUseProgram(0);
         }
     }

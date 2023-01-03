@@ -8,6 +8,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Chunk extends Entity {
 
@@ -76,6 +77,7 @@ public class Chunk extends Entity {
 
     private Vector3i chunkPos;
     private Status status;
+    private boolean isAllAir; // if a chunk is all air, we don't store blocks.
     private byte[] blocks;
     private List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(6, null));
 
@@ -105,11 +107,11 @@ public class Chunk extends Entity {
     }
 
     public void setStatus(Status status) {
-        // System.out.println(this.chunkPos + ", " + status);
         this.status = status;
     }
 
     public byte getBlock(int x, int y, int z) {
+        if (isAllAir) return Block.AIR.getID();
         if (!isInsideChunk(x, y, z)) return Block.INVALID.getID();
         else return blocks[toIndex(x, y, z)];
     }
@@ -120,6 +122,10 @@ public class Chunk extends Entity {
 
     public void setBlocks(byte[] blocks) {
         this.blocks = blocks;
+    }
+
+    public void isAllAir() {
+        this.isAllAir = true;
     }
 
     private boolean isInsideChunk(int x, int y, int z) {

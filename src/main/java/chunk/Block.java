@@ -9,7 +9,9 @@ public enum Block {
     AIR    (1, new BlockFace[]{ null, null, null, null, null, null }),
     GRASS  (2, makeFaces(DefaultBlockFace.class, new int[] { 0, 3, 3, 3, 3, 2 })),
     STONE  (3, makeFaces(DefaultBlockFace.class, new int[] { 1, 1, 1, 1, 1, 1 })),
-    DIRT   (4, makeFaces(DefaultBlockFace.class, new int[] { 2, 2, 2, 2, 2, 2 }));
+    DIRT   (4, makeFaces(DefaultBlockFace.class, new int[] { 2, 2, 2, 2, 2, 2 })),
+
+    BEDROCK(19, makeFaces(DefaultBlockFace.class, new int[] { 19, 19, 19, 19, 19, 19 }));
 
     static {
         // for some reason calculating this in the constructor makes the enum null.

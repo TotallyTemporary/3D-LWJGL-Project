@@ -4,16 +4,18 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ChunkLoader {
 
-    private static final int LOAD_RADIUS = 4;
-
+    private static final int LOAD_RADIUS = 8;
     private static HashMap<Vector3i, Chunk> chunks = new HashMap<>();
 
-    public static int update(Vector3f playerPos) {
+    public static int startUpdate(Vector3f playerPos) {
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
 
+        // update chunks
         int updatedCount = 0;
         // start from the inside and loop outside
         for (int radius = 0; radius < LOAD_RADIUS; radius++)
@@ -29,6 +31,11 @@ public class ChunkLoader {
         return updatedCount;
     }
 
+    public static void stopUpdate() {
+        TerrainGenerator.removeChunks();
+        TerrainModelGenerator.removeChunks();
+    }
+
     private static boolean doUpdateChunk(int x, int y, int z) {
         var pos = new Vector3i(x, y, z);
         var chunk = chunks.get(pos);
@@ -39,16 +46,19 @@ public class ChunkLoader {
 
         switch (chunk.getStatus()) {
             case NONE           -> {
+                chunk.setStatus(Chunk.Status.TERRAIN_GENERATING);
                 TerrainGenerator.addChunk(chunk);
                 return true;
             }
             case WAIT_NEIGHBORS -> {
                 if (canGenerateModel(chunk)) {
+                    chunk.setStatus(Chunk.Status.MESH_GENERATING);
                     TerrainModelGenerator.addChunk(chunk);
                     return true;
                 }
             }
             case PREPARED -> {
+                chunk.setStatus(Chunk.Status.MESH_LOADING);
                 TerrainModelLoader.addChunk(chunk);
                 return true;
             }

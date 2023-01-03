@@ -17,7 +17,7 @@ public class Main {
                 800, 600,    // resolution
                 -1,          // monitor? (-1 gets primary)
                 false,       // vsync
-                Display.DisplayMode.FULLSCREEN_BORDERLESS
+                Display.DisplayMode.WINDOWED
         );
         var display = new Display(displaySettings);
         GLFWErrorCallback.createPrint(System.err).set();
@@ -43,38 +43,43 @@ public class Main {
                 1000f
         );
         EntityManager.addComponent(camera, new TransformationComponent(
-                new Vector3f(0, 0, 0),
+                new Vector3f(0, 70f, 0),
                 new Vector3f(0, 0, 0),
                 1f
         ));
         EntityManager.addComponent(camera, new CameraController());
 
         var renderer = new Renderer();
-        Thread.sleep(5000);
+        TerrainModelGenerator.start();
+        TerrainGenerator.start();
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             // GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
 
             // update
             Timer.tick();
-            ChunkLoader.update(new Vector3f(0, 0, 0));
-
-            // generate and load chunks
-            TerrainGenerator.loadChunks();
-            TerrainModelGenerator.loadChunks();
-            TerrainModelLoader.loadChunks(shader, blocksTexture);
+            {
+                var transform = EntityManager.getComponent(camera, TransformationComponent.class);
+                ChunkLoader.startUpdate(transform.getPosition());
+            }
 
             EntityManager.start();
             EntityManager.stop();
 
+            TerrainModelLoader.loadChunks(shader, blocksTexture);
+            // TerrainModelLoader.
+            ChunkLoader.stopUpdate();
+            // end update
+
             // render
             renderer.render(camera);
-
+            GLFW.glfwSetWindowTitle(display.getWindow(), (int) Timer.getFrametimeMillis() + " ms");
 
             // glfw stuff
             GLFW.glfwSwapBuffers(display.getWindow());
             GLFW.glfwPollEvents();
         }
-
+        TerrainGenerator.stop();
+        TerrainModelGenerator.stop();
         display.destroy();
         GLFW.glfwTerminate();
     }

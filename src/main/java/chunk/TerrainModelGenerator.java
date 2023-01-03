@@ -7,28 +7,63 @@ import org.joml.Vector3i;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class TerrainModelGenerator {
 
-    private static final Queue<Chunk> chuckLoadQueue = new ArrayDeque<>();
+    public record Tuple<X, Y>(X x, Y y) {}
+
+    private static Thread thread;
+    private static boolean running = false;
+
+    private static final LinkedBlockingQueue<Chunk> chunkLoadQueue = new LinkedBlockingQueue<>();
+    private static final ConcurrentLinkedQueue<Tuple<Chunk, ChunkModelDataComponent>> doneQueue = new ConcurrentLinkedQueue<>();
 
     private static FloatList verticesBuffer = new FloatList();
     private static FloatList textureCoordsBuffer = new FloatList();
 
     public static void addChunk(Chunk chunk) {
-        chunk.setStatus(Chunk.Status.MESH_GENERATING);
-        chuckLoadQueue.add(chunk);
-    }
-
-    public static void loadChunks() {
-        Chunk chunk;
-        while ((chunk = chuckLoadQueue.poll()) != null) {
-            generateModelData(chunk);
-            chunk.setStatus(Chunk.Status.PREPARED);
+        if (!chunkLoadQueue.contains(chunk)) {
+            chunkLoadQueue.add(chunk);
         }
     }
 
-    private static void generateModelData(Chunk chunk) {
+    public static void removeChunks() {
+        Tuple<Chunk, ChunkModelDataComponent> entry;
+        while ((entry = doneQueue.poll()) != null) {
+            EntityManager.addComponent(entry.x, entry.y);
+            entry.x.setStatus(Chunk.Status.PREPARED);
+            // System.out.println(entry.y.positions.length);
+        }
+    }
+
+    public static void start() {
+        running = true;
+        thread = new Thread(TerrainModelGenerator::loadChunks);
+        thread.start();
+    }
+
+    public static void stop() {
+        running = false;
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void loadChunks() {
+        while (running) {
+            try {
+                var chunk = chunkLoadQueue.take();
+                var data = generateModelData(chunk);
+                doneQueue.add(new Tuple(chunk, data));
+            } catch (InterruptedException e) {}
+        }
+    }
+
+    private static ChunkModelDataComponent generateModelData(Chunk chunk) {
         resetFloatList(verticesBuffer);
         resetFloatList(textureCoordsBuffer);
 
@@ -49,10 +84,10 @@ public class TerrainModelGenerator {
             }
         }
 
-        EntityManager.addComponent(chunk, new ChunkModelDataComponent(
-                verticesBuffer.toValueArray(),
-                textureCoordsBuffer.toValueArray()
-        ));
+        return new ChunkModelDataComponent(
+            verticesBuffer.toValueArray(),
+            textureCoordsBuffer.toValueArray()
+        );
     }
 
     private static ArrayList<Vector3f> to3DVectors(float[] somePositions) {
@@ -110,5 +145,4 @@ public class TerrainModelGenerator {
             e.printStackTrace();
         }
     }
-
 }
