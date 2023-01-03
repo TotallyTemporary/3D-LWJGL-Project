@@ -3,3 +3,4 @@ hs_err_pid*.log
 *.iml
 target
 .idea
+/lwjglx-debug-1.0.0.jar

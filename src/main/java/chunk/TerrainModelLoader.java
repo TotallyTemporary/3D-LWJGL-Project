@@ -28,21 +28,24 @@ public class TerrainModelLoader {
         int count = 0;
         while ((chunk = modelLoadQueue.poll()) != null) {
             var chunkModelData = EntityManager.getComponent(chunk, ChunkModelDataComponent.class);
-            var model = new Model()
-                .addPosition3D(chunkModelData.positions)
-                .addTextureCoords3D(chunkModelData.textureCoordinates)
-                .setTexture(terrainTexture)
-                .setShader(shader)
-                .end();
             EntityManager.removeComponent(chunk, chunkModelData);
+
+            if (chunkModelData.positions.length != 0) {
+                 var model = new Model()
+                    .addPosition3D(chunkModelData.positions)
+                    .addTextureCoords3D(chunkModelData.textureCoordinates)
+                    .setTexture(terrainTexture)
+                    .setShader(shader)
+                    .end();
             EntityManager.addComponent(chunk, new ModelComponent(model));
 
-            var pos = chunk.getChunkPos();
-            EntityManager.addComponent(chunk, new TransformationComponent(
-                    new Vector3f(pos.x * Chunk.SIZE, pos.y * Chunk.SIZE, pos.z * Chunk.SIZE),
-                    new Vector3f(0, 0, 0),
-                    1f
-            ));
+                var pos = chunk.getChunkPos();
+                EntityManager.addComponent(chunk, new TransformationComponent(
+                        new Vector3f(pos.x * Chunk.SIZE, pos.y * Chunk.SIZE, pos.z * Chunk.SIZE),
+                        new Vector3f(0, 0, 0),
+                        1f
+                ));
+            }
 
             chunk.setStatus(Chunk.Status.FINAL);
 

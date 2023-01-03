@@ -22,6 +22,10 @@ public class Keyboard {
         });
     }
 
+    public static void destroy(long window) {
+        GLFW.glfwSetKeyCallback(window, null).free();
+    }
+
     public static boolean isKeyDown(int keycode) {
         var key = keys.get(keycode);
         if (key == null) return false;

@@ -102,4 +102,8 @@ public class Shader {
 
         return shader;
     }
+
+    public void destroy() {
+        GL30.glDeleteProgram(this.program);
+    }
 }

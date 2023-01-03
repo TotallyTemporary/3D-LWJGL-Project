@@ -23,6 +23,7 @@ public class TerrainGenerator {
     public static void stop() {
         running = false;
         try {
+            thread.interrupt();
             thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();

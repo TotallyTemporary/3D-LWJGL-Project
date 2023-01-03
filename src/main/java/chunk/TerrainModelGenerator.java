@@ -34,7 +34,6 @@ public class TerrainModelGenerator {
         while ((entry = doneQueue.poll()) != null) {
             EntityManager.addComponent(entry.x, entry.y);
             entry.x.setStatus(Chunk.Status.PREPARED);
-            // System.out.println(entry.y.positions.length);
         }
     }
 
@@ -47,6 +46,7 @@ public class TerrainModelGenerator {
     public static void stop() {
         running = false;
         try {
+            thread.interrupt();
             thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();

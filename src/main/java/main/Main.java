@@ -5,13 +5,18 @@ import entity.*;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.Configuration;
 import render.*;
 import shader.Shader;
 
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
+        Configuration.DEBUG_STACK.set(true);
+        Configuration.DEBUG.set(true);
+
         var displaySettings = new Display.DisplaySettings(
                 "A display",   // title
                 800, 600,    // resolution
@@ -84,8 +89,12 @@ public class Main {
         TerrainModelGenerator.stop();
         Model.destroy();
         blocksTexture.destroy();
+        shader.destroy();
 
+        Keyboard.destroy(display.getWindow());
+        GL.setCapabilities(null);
         display.destroy();
+        GLFW.glfwSetErrorCallback(null).free();
         GLFW.glfwTerminate();
     }
 
