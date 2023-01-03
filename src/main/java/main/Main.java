@@ -14,8 +14,8 @@ import shader.Shader;
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
-        Configuration.DEBUG_STACK.set(true);
-        Configuration.DEBUG.set(true);
+        // Configuration.DEBUG_STACK.set(true);
+        // Configuration.DEBUG.set(true);
 
         var displaySettings = new Display.DisplaySettings(
                 "A display",   // title
@@ -58,7 +58,12 @@ public class Main {
         TerrainModelGenerator.start();
         TerrainGenerator.start();
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
-            // GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
+            if (Keyboard.isKeyDown(GLFW.GLFW_KEY_K)) {
+                GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
+            } else {
+                GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_FILL);
+            }
+
             GL30.glCullFace(GL30.GL_BACK);
             GL30.glEnable(GL30.GL_CULL_FACE);
 
