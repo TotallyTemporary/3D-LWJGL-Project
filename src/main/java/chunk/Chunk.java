@@ -4,9 +4,15 @@ import entity.Entity;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class Chunk extends Entity {
 
-    public final static int SIZE_BITS = 4;
+    // static stuff at the top here
+    public final static int SIZE_BITS = 6;
     public final static int SIZE = 1 << SIZE_BITS;
 
     public static Vector3i worldPosToChunkPos(Vector3f pos) {
@@ -33,6 +39,25 @@ public class Chunk extends Entity {
         );
     }
 
+    public static Vector3i[] neighbors(Vector3i pos) {
+        return new Vector3i[]{
+            new Vector3i(pos.x+1, pos.y, pos.z),
+            new Vector3i(pos.x-1, pos.y, pos.z),
+            new Vector3i(pos.x, pos.y+1, pos.z),
+            new Vector3i(pos.x, pos.y-1, pos.z),
+            new Vector3i(pos.x, pos.y, pos.z+1),
+            new Vector3i(pos.x, pos.y, pos.z-1)
+        };
+    }
+
+    public static int toIndex(int x, int y, int z) {
+        return z*SIZE*SIZE + y*SIZE + x;
+    }
+
+    public static int toIndex(Vector3i pos) {
+        return toIndex(pos.x, pos.y, pos.z);
+    }
+
     public enum Status {
         NONE(0),                  // this chunk does not exist.
         TERRAIN_GENERATING(1),    // generating blocks
@@ -46,14 +71,28 @@ public class Chunk extends Entity {
         private Status(int urgency) { this.urgency = urgency; }
     }
 
+    // chunk instance stuff below
+
     private Vector3i chunkPos;
     private Status status;
-    private byte[][][] blocks;
+    private byte[] blocks;
+    private List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(6, (WeakReference<Chunk>) null));
 
     public Chunk(Vector3i chunkPos) {
         super();
         this.chunkPos = chunkPos;
         this.status = Status.NONE;
+
+        // get all surrounding neighbors, add them as neighbor and add us as their neighbor.
+        var index = 0;
+        for (var neighborPos : neighbors(chunkPos)) {
+            var neighbor = ChunkLoader.getChunkAt(neighborPos);
+            if (neighbor != null) {
+                setNeighbor(neighbor, index);
+                neighbor.setNeighbor(this, Direction.opposite(index));
+            }
+            index++;
+        }
     }
 
     public Vector3i getChunkPos() {
@@ -65,19 +104,20 @@ public class Chunk extends Entity {
     }
 
     public void setStatus(Status status) {
+        System.out.println(status);
         this.status = status;
     }
 
     public byte getBlock(int x, int y, int z) {
         if (!isInsideChunk(x, y, z)) return Block.INVALID.getID();
-        else return blocks[x][y][z];
+        else return blocks[toIndex(x, y, z)];
     }
 
     public byte getBlock(Vector3i pos) {
         return getBlock(pos.x, pos.y, pos.z);
     }
 
-    public void setBlocks(byte[][][] blocks) {
+    public void setBlocks(byte[] blocks) {
         this.blocks = blocks;
     }
 
@@ -86,5 +126,15 @@ public class Chunk extends Entity {
             y >= SIZE || y < 0 ||
             z >= SIZE || z < 0) return false;
         return true;
+    }
+
+    public Chunk getNeighbor(int index) {
+        var ref = neighbors.get(index);
+        if (ref == null) return null;
+        else return ref.get();
+    }
+
+    public void setNeighbor(Chunk chunk, int index) {
+        neighbors.set(index, new WeakReference<>(chunk));
     }
 }

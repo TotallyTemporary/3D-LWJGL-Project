@@ -3,16 +3,34 @@ package chunk;
 import java.lang.reflect.InvocationTargetException;
 
 public enum Block {
-    INVALID(0, null),
-    AIR(1, makeFaces(NoBlockFace.class, new int[] { -1, -1, -1, -1, -1, -1 })),
-    STONE(2, makeFaces(DefaultBlockFace.class, new int[] { 1, 1, 1, 1, 1, 1 }));
+    INVALID(0, new BlockFace[]{ null, null, null, null, null, null }),
+    AIR    (1, new BlockFace[]{ null, null, null, null, null, null }),
+    STONE  (2, makeFaces(DefaultBlockFace.class, new int[] { 1, 1, 1, 1, 1, 1 }));
+
+    static {
+        // for some reason calculating this in the constructor makes the enum null.
+        for (var block : Block.values()) {
+            block.hasTransparentFace = false;
+            for (var face : block.faces) {
+                if (face == null || face.isTransparent()) block.hasTransparentFace = true;
+            }
+        }
+    }
 
     private byte id;
     private BlockFace[] faces;
 
+    private boolean hasTransparentFace;
+
     Block(int id, BlockFace[] faces) {
         this.id = (byte) id;
         this.faces = faces;
+
+        this.hasTransparentFace = true;
+    }
+
+    public boolean getHasTransparentFace() {
+        return this.hasTransparentFace;
     }
 
     public BlockFace getFace(int index) {
@@ -44,10 +62,10 @@ public enum Block {
     * */
     private static BlockFace[] makeFaces(Class<? extends BlockFace> clazz, int[] indices) {
         try {
-            var constructor = clazz.getDeclaredConstructor(Integer.class, BlockFace.Direction.class);
+            var constructor = clazz.getDeclaredConstructor(Integer.class, Direction.class);
             var faces = new BlockFace[6];
             for (int i = 0; i < 6; i++) {
-                faces[i] = constructor.newInstance(indices[i], BlockFace.Direction.values()[i]);
+                faces[i] = constructor.newInstance(indices[i], Direction.values()[i]);
             }
             return faces;
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {

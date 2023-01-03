@@ -1,5 +1,7 @@
 package chunk;
 
+import org.joml.Vector3i;
+
 import java.util.*;
 
 public class TerrainGenerator {
@@ -21,17 +23,32 @@ public class TerrainGenerator {
 
     private static void generateTerrain(Chunk chunk) {
         // generate blocks
-        byte[][][] blocks = new byte[Chunk.SIZE][Chunk.SIZE][Chunk.SIZE];
+        byte[] blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
 
+        var heightMap = new float[Chunk.SIZE][Chunk.SIZE];
         for (int x = 0; x < Chunk.SIZE; x++)
-        for (int y = 0; y < Chunk.SIZE; y++)
-        for (int z = 0; z < Chunk.SIZE; z++)
-        {
-            blocks[x][y][z] = Block.AIR.getID();
+        for (int z = 0; z < Chunk.SIZE; z++) {
+            heightMap[x][z] = 1000 * (int) Math.sin(x + z);
         }
 
-        blocks[5][5][5] = Block.STONE.getID();
-        blocks[5][6][5] = Block.STONE.getID();
+        for (int chunkX = 0; chunkX < Chunk.SIZE; chunkX++)
+        for (int chunkY = 0; chunkY < Chunk.SIZE; chunkY++)
+        for (int chunkZ = 0; chunkZ < Chunk.SIZE; chunkZ++)
+        {
+            var index = Chunk.toIndex(chunkX, chunkY, chunkZ);
+            var worldPos = Chunk.blockPosToWorldPos(new Vector3i(chunkX, chunkY, chunkZ), chunk);
+
+
+            var block = Block.AIR.getID();
+            if (worldPos.y <= heightMap[chunkX][chunkZ]) {
+                block = Block.STONE.getID();
+            }
+
+            blocks[index] = block;
+        }
+
+        blocks[0] = Block.STONE.getID();
+        blocks[1] = Block.STONE.getID();
 
         chunk.setBlocks(blocks);
     }

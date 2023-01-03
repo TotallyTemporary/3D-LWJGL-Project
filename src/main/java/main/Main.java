@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         var displaySettings = new Display.DisplaySettings(
                 "A display",   // title
                 800, 600,    // resolution
@@ -50,6 +50,7 @@ public class Main {
         ));
 
         var renderer = new Renderer();
+        Thread.sleep(5000);
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             // update
             Timer.tick();

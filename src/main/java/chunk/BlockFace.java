@@ -1,15 +1,6 @@
 package chunk;
 
 public abstract class BlockFace {
-    public enum Direction {
-        UP, LEFT, FRONT, BACK, RIGHT, DOWN;
-
-        private static final Direction[] vals = Direction.values();
-        public Direction opposite() {
-            return vals[5-this.ordinal()];
-        }
-    }
-
     protected int blockID;
     protected Direction direction;
 

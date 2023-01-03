@@ -18,57 +18,56 @@ public class ChunkLoader {
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
 
         int updatedCount = 0;
-        for (int x = playerChunkPos.x - LOAD_RADIUS; x < playerChunkPos.x + LOAD_RADIUS +1; x++)
-        for (int y = playerChunkPos.y - LOAD_RADIUS; y < playerChunkPos.y + LOAD_RADIUS +1; y++)
-        for (int z = playerChunkPos.z - LOAD_RADIUS; z < playerChunkPos.z + LOAD_RADIUS +1; z++)
+        // start from the inside and loop outside
+        for (int radius = 0; radius < LOAD_RADIUS; radius++)
+        for (int x = playerChunkPos.x - radius; x < playerChunkPos.x + radius +1; x++)
+        for (int y = playerChunkPos.y - radius; y < playerChunkPos.y + radius +1; y++)
+        for (int z = playerChunkPos.z - radius; z < playerChunkPos.z + radius +1; z++)
         {
-            var pos = new Vector3i(x, y, z);
-            var chunk = chunks.get(pos);
-            if (chunk == null) {
-                chunk = new Chunk(pos);
-                chunks.put(pos, chunk);
-            }
-
-            switch (chunk.getStatus()) {
-                case NONE           -> {
-                    TerrainGenerator.addChunk(chunk);
-                    updatedCount++;
-                }
-                case WAIT_NEIGHBORS -> {
-                    if (canGenerateModel(pos)) {
-                        TerrainModelGenerator.addChunk(chunk);
-                        updatedCount++;
-                    }
-                }
-                case PREPARED -> {
-                    TerrainModelLoader.addChunk(chunk);
-                    updatedCount++;
-                }
+            if (doUpdateChunk(x, y, z)) {
+                updatedCount++;
             }
         }
 
         return updatedCount;
     }
 
-    private static boolean canGenerateModel(Vector3i pos) {
-        for (var neighborPos : neighbors(pos)) {
-            var neighbor = chunks.get(neighborPos);
+    private static boolean doUpdateChunk(int x, int y, int z) {
+        var pos = new Vector3i(x, y, z);
+        var chunk = chunks.get(pos);
+        if (chunk == null) {
+            chunk = new Chunk(pos);
+            chunks.put(pos, chunk);
+        }
+
+        switch (chunk.getStatus()) {
+            case NONE           -> {
+                TerrainGenerator.addChunk(chunk);
+                return true;
+            }
+            case WAIT_NEIGHBORS -> {
+                if (canGenerateModel(chunk)) {
+                    TerrainModelGenerator.addChunk(chunk);
+                    return true;
+                }
+            }
+            case PREPARED -> {
+                TerrainModelLoader.addChunk(chunk);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean canGenerateModel(Chunk chunk) {
+        for (int dir = 0; dir < 6; dir++) {
+            var neighbor = chunk.getNeighbor(dir);
             if (neighbor == null || neighbor.getStatus().urgency < Chunk.Status.WAIT_NEIGHBORS.urgency) {
                 return false;
             }
         }
         return true;
-    }
-
-    private static Vector3i[] neighbors(Vector3i pos) {
-        return new Vector3i[]{
-            new Vector3i(pos.x+1, pos.y, pos.z),
-            new Vector3i(pos.x-1, pos.y, pos.z),
-            new Vector3i(pos.x, pos.y+1, pos.z),
-            new Vector3i(pos.x, pos.y-1, pos.z),
-            new Vector3i(pos.x, pos.y, pos.z+1),
-            new Vector3i(pos.x, pos.y, pos.z-1)
-        };
     }
 
     public static byte getBlockAt(Vector3f pos) {
@@ -88,4 +87,11 @@ public class ChunkLoader {
         return getBlockAt(new Vector3f(x, y, z));
     }
 
+    public static Chunk getChunkAt(Vector3i pos) {
+        return chunks.get(pos);
+    }
+
+    public static Chunk getChunkAt(Vector3f pos) {
+        return getChunkAt(Chunk.worldPosToChunkPos(pos));
+    }
 }
