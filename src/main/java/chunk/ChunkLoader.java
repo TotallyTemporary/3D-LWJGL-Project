@@ -31,11 +31,6 @@ public class ChunkLoader {
         return updatedCount;
     }
 
-    public static void stopUpdate() {
-        TerrainGenerator.removeChunks();
-        TerrainModelGenerator.removeChunks();
-    }
-
     private static boolean doUpdateChunk(int x, int y, int z) {
         var pos = new Vector3i(x, y, z);
         var chunk = chunks.get(pos);

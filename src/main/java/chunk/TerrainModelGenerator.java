@@ -2,14 +2,10 @@ package chunk;
 
 import entity.EntityManager;
 import org.boon.collections.FloatList;
-import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import java.lang.reflect.Field;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class TerrainModelGenerator {
@@ -17,7 +13,6 @@ public class TerrainModelGenerator {
     public record Tuple<X, Y>(X x, Y y) {}
 
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
-    private static final ConcurrentLinkedQueue<Tuple<Chunk, ChunkModelDataComponent>> doneQueue = new ConcurrentLinkedQueue<>();
 
     private static final ThreadLocal<FloatList> verticesBufferLocal = ThreadLocal.withInitial(() -> new FloatList());
     private static final ThreadLocal<FloatList> textureCoordsBufferLocal = ThreadLocal.withInitial(() -> new FloatList());
@@ -26,17 +21,9 @@ public class TerrainModelGenerator {
     public static void addChunk(Chunk chunk) {
         executor.submit(() -> {
             var comp = generateModelData(chunk);
-            doneQueue.add(new Tuple<>(chunk, comp));
+            EntityManager.addComponent(chunk, comp);
+            chunk.setStatus(Chunk.Status.PREPARED);
         });
-    }
-
-    // call this to remove processed chunks (EntityManager can only be used on the main thread)
-    public static void removeChunks() {
-        Tuple<Chunk, ChunkModelDataComponent> entry;
-        while ((entry = doneQueue.poll()) != null) {
-            EntityManager.addComponent(entry.x, entry.y);
-            entry.x.setStatus(Chunk.Status.PREPARED);
-        }
     }
 
     private static ChunkModelDataComponent generateModelData(Chunk chunk) {

@@ -76,7 +76,6 @@ public class Main {
             EntityManager.stop();
 
             TerrainModelLoader.loadChunks(shader, blocksTexture);
-            ChunkLoader.stopUpdate();
             // end update
 
             // render

@@ -8,20 +8,12 @@ import java.util.concurrent.*;
 public class TerrainGenerator {
 
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
-    private static final ConcurrentLinkedQueue<Chunk> doneChunks = new ConcurrentLinkedQueue<>();
 
     public static void addChunk(Chunk chunk) {
         executor.submit(() -> {
             generateTerrain(chunk);
-            doneChunks.add(chunk);
-        });
-    }
-
-    public static void removeChunks() {
-        Chunk chunk;
-        while ((chunk = doneChunks.poll()) != null) {
             chunk.setStatus(Chunk.Status.WAIT_NEIGHBORS);
-        }
+        });
     }
 
     private static void generateTerrain(Chunk chunk) {
