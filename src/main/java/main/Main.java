@@ -86,6 +86,9 @@ public class Main {
             GLFW.glfwSwapBuffers(display.getWindow());
             GLFW.glfwPollEvents();
         }
+        TerrainGenerator.stop();
+        TerrainModelGenerator.stop();
+
         Model.destroy();
         blocksTexture.destroy();
         shader.destroy();

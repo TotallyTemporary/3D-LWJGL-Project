@@ -16,6 +16,10 @@ public class TerrainGenerator {
         });
     }
 
+    public static void stop() {
+        executor.shutdownNow();
+    }
+
     private static void generateTerrain(Chunk chunk) {
         // generate blocks
         byte[] blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];

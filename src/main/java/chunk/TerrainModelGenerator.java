@@ -10,8 +10,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class TerrainModelGenerator {
 
-    public record Tuple<X, Y>(X x, Y y) {}
-
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
     private static final ThreadLocal<FloatList> verticesBufferLocal = ThreadLocal.withInitial(() -> new FloatList());
@@ -24,6 +22,10 @@ public class TerrainModelGenerator {
             EntityManager.addComponent(chunk, comp);
             chunk.setStatus(Chunk.Status.PREPARED);
         });
+    }
+
+    public static void stop() {
+        executor.shutdownNow();
     }
 
     private static ChunkModelDataComponent generateModelData(Chunk chunk) {
