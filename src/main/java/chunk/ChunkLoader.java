@@ -42,10 +42,15 @@ public class ChunkLoader {
         switch (chunk.getStatus()) {
             case NONE           -> {
                 chunk.setStatus(Chunk.Status.TERRAIN_GENERATING);
-                TerrainGenerator.addChunk(chunk);
+                TerrainGenerator.generateHeightmap(chunk);
                 return true;
             }
             case WAIT_NEIGHBORS -> {
+                chunk.setStatus(Chunk.Status.STRUCTURE_GENERATING);
+                TerrainGenerator.generateStructures(chunk);
+                return true;
+            }
+            case LOADED -> {
                 if (canGenerateModel(chunk)) {
                     chunk.setStatus(Chunk.Status.MESH_GENERATING);
                     TerrainModelGenerator.addChunk(chunk);

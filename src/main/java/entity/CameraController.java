@@ -8,7 +8,7 @@ import org.lwjgl.glfw.GLFW;
 public class CameraController extends Component {
 
     private static final float SPEED = 0.1f;
-    private static final float ROT_SPEED = 0.3f;
+    private static final float ROT_SPEED = 0.005f;
 
     @Override public void start() {}
     @Override public void stop() {}

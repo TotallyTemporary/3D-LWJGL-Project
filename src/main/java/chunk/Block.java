@@ -10,6 +10,21 @@ public enum Block {
     GRASS  (2, makeFaces(DefaultBlockFace.class, new int[] { 0, 3, 3, 3, 3, 2 })),
     STONE  (3, makeFaces(DefaultBlockFace.class, new int[] { 1, 1, 1, 1, 1, 1 })),
     DIRT   (4, makeFaces(DefaultBlockFace.class, new int[] { 2, 2, 2, 2, 2, 2 })),
+    OAK_PLANK(5, makeFaces(DefaultBlockFace.class, new int[] { 4, 4, 4, 4, 4, 4 })),
+    // 6 stone bricks?
+    // 7 chiselled chosen bricks?
+    BRICKS(8, makeFaces(DefaultBlockFace.class, new int[] { 7, 7, 7, 7, 7, 7 })),
+    // 9 some weird skull thing?
+    // 10 leaves or smth?
+    // 11 another weird skull thing
+    COBWEB(12, makeFaces(DefaultBlockFace.class, new int[] { 11, 11, 11, 11, 11, 11 })), // TODO replace with another model
+    ROSE(13, makeFaces(DefaultBlockFace.class, new int[] { 12, 12, 12, 12, 12, 12 })),
+    DANDELION(14, makeFaces(DefaultBlockFace.class, new int[] { 13, 13, 13, 13, 13, 13 })),
+    // 15 air?
+    OAK_SAPLING(16, makeFaces(DefaultBlockFace.class, new int[] { 15, 15, 15, 15, 15, 15 })),
+
+    OAK_LOG(20, makeFaces(DefaultBlockFace.class, new int[] { 21, 20, 20, 20, 20, 21 })),
+    OAK_LEAVES(53, makeFaces(DefaultBlockFace.class, new int[] { 53, 53, 53, 53, 53, 53})),
 
     BEDROCK(19, makeFaces(DefaultBlockFace.class, new int[] { 19, 19, 19, 19, 19, 19 }));
 

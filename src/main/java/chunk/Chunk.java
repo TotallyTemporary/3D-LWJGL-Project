@@ -61,13 +61,16 @@ public class Chunk extends Entity {
     }
 
     public enum Status {
-        NONE(0),                  // this chunk does not exist.
-        TERRAIN_GENERATING(1),    // generating blocks
-        WAIT_NEIGHBORS(2),        // wait for neighbors to generate their terrain
-        MESH_GENERATING(3),       // generating vertices and other model data
-        PREPARED(4),              // vertices done
-        MESH_LOADING(5),          // queued to load into a model in memory
-        FINAL(6);                 // chunk can be rendered.
+        NONE(0),
+        TERRAIN_GENERATING(1),    // generating simple blocks
+        WAIT_NEIGHBORS(2),
+        STRUCTURE_GENERATING(3),  // generating structures (needs neighbors for bleed-over)
+        LOADED(4),
+
+        MESH_GENERATING(5),       // make the vertices and texture coords for the chunk
+        PREPARED(6),
+        MESH_LOADING(7),          // load those vertices into opengl (main thread)
+        FINAL(8);                 // chunk can be rendered
 
         public int urgency;
         private Status(int urgency) { this.urgency = urgency; }

@@ -2,17 +2,23 @@ package chunk;
 
 import org.joml.Vector3i;
 
-import java.util.*;
 import java.util.concurrent.*;
 
 public class TerrainGenerator {
 
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
-    public static void addChunk(Chunk chunk) {
+    public static void generateHeightmap(Chunk chunk) {
         executor.submit(() -> {
-            generateTerrain(chunk);
+            generateFirstpass(chunk);
             chunk.setStatus(Chunk.Status.WAIT_NEIGHBORS);
+        });
+    }
+
+    public static void generateStructures(Chunk chunk) {
+        executor.submit(() -> {
+            generateSecondpass(chunk);
+            chunk.setStatus(Chunk.Status.LOADED);
         });
     }
 
@@ -20,7 +26,11 @@ public class TerrainGenerator {
         executor.shutdownNow();
     }
 
-    private static void generateTerrain(Chunk chunk) {
+    private static void generateSecondpass(Chunk chunk) {
+
+    }
+
+    private static void generateFirstpass(Chunk chunk) {
         // generate blocks
         byte[] blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
         boolean isAllAir = true;
