@@ -16,21 +16,21 @@ import java.util.List;
  */
 public class Model {
     // some static stuff to prevent memory leaks
-    private static ArrayList<Integer> vaos = new ArrayList<>();
-    private static ArrayList<Integer> vbos = new ArrayList<>();
+    private static ArrayList<Integer> allVAOs = new ArrayList<>();
+    private static ArrayList<Integer> allVBOs = new ArrayList<>();
 
-    public static void destroy() {
-        for (var vao : vaos) {
+    public static void destroyAll() {
+        for (var vao : allVAOs) {
             GL30.glDeleteVertexArrays(vao);
         }
 
-        for (var vbo : vbos) {
+        for (var vbo : allVBOs) {
             GL30.glDeleteBuffers(vbo);
         }
     }
 
     private int vao;
-    private int numberOfVBOs = 0;
+    private ArrayList<Integer> vbos = new ArrayList<>();
     private int vertexCount = -1;
     private boolean hasIndexBuffer = false;
 
@@ -53,10 +53,12 @@ public class Model {
     }
 
     public Model addPosition3D(float[] positions) {
-        int attribNum = numberOfVBOs++;
-
+        int attribNum = vbos.size();
         int vbo = makeVBO();
         var buf = toFloatBuffer(positions);
+        /*if (this.vao == -1) {
+            System.out.println("FUCK");
+        }*/
         GL30.glBufferData(GL30.GL_ARRAY_BUFFER, buf, GL30.GL_STATIC_DRAW);
 
         // size=dimension, stride = bytes between vertices
@@ -73,7 +75,7 @@ public class Model {
     }
 
     public Model addTextureCoords3D(float[] textureCoords) {
-        int attribNum = numberOfVBOs++;
+        int attribNum = vbos.size();
         int vbo = makeVBO();
         var buf = toFloatBuffer(textureCoords);
         GL30.glBufferData(GL30.GL_ARRAY_BUFFER, buf, GL30.GL_STATIC_DRAW);
@@ -84,7 +86,7 @@ public class Model {
     }
 
     public Model addTextureCoords2D(float[] textureCoords) {
-        int attribNum = numberOfVBOs++;
+        int attribNum = vbos.size();
         int vbo = makeVBO();
         var buf = toFloatBuffer(textureCoords);
         GL30.glBufferData(GL30.GL_ARRAY_BUFFER, buf, GL30.GL_STATIC_DRAW);
@@ -94,6 +96,7 @@ public class Model {
         return this;
     }
 
+    /* TODO can re-add when figured out how to unload this without taking an attribute slot
     // this is a bit of a specialized method.
     // ebo doesn't get unbinded at the end, and it doesn't need an attribute slot.
     public Model addIndices(int[] indices) {
@@ -107,11 +110,13 @@ public class Model {
         this.hasIndexBuffer = true;
         return this;
     }
+     */
 
     private int makeVBO() {
         int vbo = GL30.glGenBuffers();
         GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, vbo);
-
+        allVBOs.add(vbo);
+        vbos.add(vbo);
         return vbo;
     }
 
@@ -138,12 +143,24 @@ public class Model {
         return this;
     }
 
+    public void destroy() {
+        for (var vbo : this.vbos) {
+            allVBOs.remove((Integer) vbo);
+            GL30.glDeleteBuffers(vbo);
+        }
+        this.vbos.clear();
+
+        allVAOs.remove((Integer) this.vao);
+        GL30.glDeleteVertexArrays(vao);
+        this.vao = -1;
+    }
+
     public int getVAO() {
         return vao;
     }
 
     public int getNumberOfVBOs() {
-        return numberOfVBOs;
+        return vbos.size();
     }
 
     public int getVertexCount() {

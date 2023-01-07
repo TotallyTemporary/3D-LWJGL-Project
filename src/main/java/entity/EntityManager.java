@@ -55,11 +55,10 @@ public class EntityManager {
     }
 
     /** Attempts to remove a component from an entity. NOTE: Do not call from entity update. */
-    public static synchronized boolean removeComponent(Entity entity, Component component) {
-        var clazz = component.getClass();
+    public static synchronized <T extends Component> T removeComponent(Entity entity, Class<T> clazz) {
         var classMap = map.get(clazz);
-        if (classMap == null) return false;
-        return classMap.remove(entity, component);
+        if (classMap == null) return null;
+        return (T) classMap.remove(entity);
     }
 
     /** Attemps to remove all components associated with an entity. NOTE: Do not call from entity update. */
