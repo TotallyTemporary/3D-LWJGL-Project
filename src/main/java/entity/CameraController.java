@@ -7,8 +7,9 @@ import org.lwjgl.glfw.GLFW;
 
 public class CameraController extends Component {
 
-    private static final float SPEED = 0.1f;
-    private static final float ROT_SPEED = 0.005f;
+    private static final float SPEED = 0.01f;
+    private static final float SPRINT_MULTIPLIER = 10f;
+    private static final float ROT_SPEED = 0.001f;
 
     @Override public void start() {}
     @Override public void stop() {}
@@ -18,14 +19,18 @@ public class CameraController extends Component {
         var move = SPEED * Timer.getFrametimeMillis();
         var rot = ROT_SPEED * Timer.getFrametimeMillis();
 
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL)) {
+            move *= SPRINT_MULTIPLIER;
+        }
+
         Vector3f deltaPos = new Vector3f(0, 0, 0);
         Vector3f deltaRot = new Vector3f(0, 0, 0);
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_W)) deltaPos.z -= move;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_S)) deltaPos.z += move;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_A)) deltaPos.x -= move;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_D)) deltaPos.x += move;
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_SPACE))      deltaPos.y += move;
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) deltaPos.y -= move;
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_SPACE))        deltaPos.y += move;
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT))   deltaPos.y -= move;
 
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT))  deltaRot.y -= rot;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_RIGHT)) deltaRot.y += rot;

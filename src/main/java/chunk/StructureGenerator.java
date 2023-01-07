@@ -59,6 +59,8 @@ public class StructureGenerator {
                     {
                         chunk.setBlockSafe(x+dx, y+dy+4, z+dz, Block.OAK_LEAVES.getID());
                     }
+                } else if (random.nextFloat() < 0.05f) {
+                    chunk.setBlockSafe(x, y+1, z, Block.DANDELION.getID());
                 }
             }
         }

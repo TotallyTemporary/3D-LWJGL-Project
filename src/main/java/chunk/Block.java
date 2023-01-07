@@ -5,28 +5,47 @@ import java.lang.reflect.InvocationTargetException;
 public enum Block {
     // UP, LEFT, FRONT, BACK, RIGHT, DOWN;
 
-    INVALID(0, new BlockFace[]{ null, null, null, null, null, null }),
-    AIR    (1, new BlockFace[]{ null, null, null, null, null, null }),
-    GRASS  (2, makeFaces(DefaultBlockFace.class, new int[] { 0, 3, 3, 3, 3, 2 })),
-    STONE  (3, makeFaces(DefaultBlockFace.class, new int[] { 1, 1, 1, 1, 1, 1 })),
-    DIRT   (4, makeFaces(DefaultBlockFace.class, new int[] { 2, 2, 2, 2, 2, 2 })),
-    OAK_PLANK(5, makeFaces(DefaultBlockFace.class, new int[] { 4, 4, 4, 4, 4, 4 })),
-    // 6 stone bricks?
-    // 7 chiselled chosen bricks?
-    BRICKS(8, makeFaces(DefaultBlockFace.class, new int[] { 7, 7, 7, 7, 7, 7 })),
-    // 9 some weird skull thing?
-    // 10 leaves or smth?
-    // 11 another weird skull thing
-    COBWEB(12, makeFaces(DefaultBlockFace.class, new int[] { 11, 11, 11, 11, 11, 11 })), // TODO replace with another model
-    ROSE(13, makeFaces(DefaultBlockFace.class, new int[] { 12, 12, 12, 12, 12, 12 })),
-    DANDELION(14, makeFaces(DefaultBlockFace.class, new int[] { 13, 13, 13, 13, 13, 13 })),
-    // 15 air?
-    OAK_SAPLING(16, makeFaces(DefaultBlockFace.class, new int[] { 15, 15, 15, 15, 15, 15 })),
+    INVALID  (0, new BlockFace[]{ null, null, null, null, null, null }),
+    AIR      (1, new BlockFace[]{ null, null, null, null, null, null }),
+    GRASS    (2, makeFaces(DefaultBlockFace.class, new int[] { 0, 3, 3, 3, 3, 2 })),
+    STONE    (3, cubeFaces(1)),
+    DIRT     (4, cubeFaces(2)),
+    OAK_PLANK(5, cubeFaces(4)),
+    STONE_SLABS           (6, cubeFaces(5)),
+    CHISELLED_STONE_BRICKS(7, cubeFaces(6)),
+    BRICKS   (8, cubeFaces(7)),
+    TNT      (9, makeFaces(DefaultBlockFace.class, new int[] { 10, 9, 9, 9, 9, 11 })),
+    // COBWEB   (11, cubeFaces(11)), // TODO replace with another model
+    // ROSE     (12, cubeFaces(12)),
+    DANDELION(13, decorFaces(13)),
+    // OAK_SAPLING(15, cubeFaces(15)),
 
-    OAK_LOG(20, makeFaces(DefaultBlockFace.class, new int[] { 21, 20, 20, 20, 20, 21 })),
-    OAK_LEAVES(53, makeFaces(DefaultBlockFace.class, new int[] { 53, 53, 53, 53, 53, 53})),
+    COBBLESTONE(16, cubeFaces(16)),
+    BEDROCK    (17, cubeFaces(17)),
+    SAND       (18, cubeFaces(18)),
+    GRAVEL     (19, cubeFaces(19)),
+    OAK_LOG    (20, makeFaces(DefaultBlockFace.class, new int[] { 21, 20, 20, 20, 20, 21 })),
+    IRON_BLOCK (21, cubeFaces(21)),
+    GOLD_BLOCK (22, cubeFaces(22)),
 
-    BEDROCK(19, makeFaces(DefaultBlockFace.class, new int[] { 19, 19, 19, 19, 19, 19 }));
+    GOLD_ORE  (32, cubeFaces(32)),
+    IRON_ORE  (33, cubeFaces(33)),
+    COAL_ORE  (34, cubeFaces(34)),
+    BOOKSHELF (35, cubeFaces(35)),
+    MOSSY_COBBLESTONE(36, cubeFaces(36)),
+    OBSIDIAN  (37, cubeFaces(37)),
+
+    SPONGE      (48, cubeFaces(48)),
+    GLASS       (49, cubeFaces(49)),
+    DIAMOND_ORE (50, cubeFaces(50)),
+    REDSTONE_ORE(51, cubeFaces(51)),
+    // OAK_LEAVES_HQ(52, cubeFaces(52)), // texture pack png didn't have alpha anyway.
+    OAK_LEAVES(53, cubeFaces(53)),
+    STONE_BRICKS (54, cubeFaces(54));
+
+
+
+
 
     static {
         // for some reason calculating this in the constructor makes the enum null.
@@ -71,6 +90,14 @@ public enum Block {
 
     public static Block getBlock(byte id) {
         return vals[id];
+    }
+
+    private static BlockFace[] cubeFaces(int indices) {
+        return makeFaces(DefaultBlockFace.class, new int[] { indices, indices, indices, indices, indices, indices });
+    }
+
+    private static BlockFace[] decorFaces(int indices) {
+        return makeFaces(DecorBlockFace.class, new int[] { indices, indices, indices, indices, indices, indices });
     }
 
     /* replaces list of

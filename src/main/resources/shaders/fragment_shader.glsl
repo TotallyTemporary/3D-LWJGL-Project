@@ -7,5 +7,9 @@ uniform sampler2DArray arrayTexture;
 
 void main()
 {
-    FragColor = texture(arrayTexture, vec3(pass_textureCoords.xy, pass_textureIndex));
+    vec4 tex = texture(arrayTexture, vec3(pass_textureCoords.xy, pass_textureIndex));
+    if (tex.a < 0.5f) {
+      discard;
+    }
+    FragColor = tex;
 }
