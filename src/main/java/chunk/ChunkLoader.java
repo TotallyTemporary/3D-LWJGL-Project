@@ -82,7 +82,6 @@ public class ChunkLoader {
         var chunkRemainderPos = Chunk.worldPosToBlockPos(pos);
 
         var chunk = chunks.get(chunkPos);
-        if (chunk == null) return Block.INVALID.getID();
         return chunk.getBlock(chunkRemainderPos);
     }
 

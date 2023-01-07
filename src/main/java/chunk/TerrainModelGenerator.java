@@ -4,13 +4,12 @@ import entity.EntityManager;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import org.joml.Vector3i;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class TerrainModelGenerator {
 
-    private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+    private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
 
     private static final ThreadLocal<FloatArrayList> verticesBufferLocal = ThreadLocal.withInitial(FloatArrayList::new);
     private static final ThreadLocal<FloatArrayList> textureCoordsBufferLocal = ThreadLocal.withInitial(FloatArrayList::new);
@@ -58,8 +57,8 @@ public class TerrainModelGenerator {
         }
 
         return new ChunkModelDataComponent(
-            verticesBuffer.toArray(new float[verticesBuffer.size()]),
-            textureCoordsBuffer.toArray(new float[textureCoordsBuffer.size()])
+            verticesBuffer.toArray(new float[0]),
+            textureCoordsBuffer.toArray(new float[0])
         );
     }
 

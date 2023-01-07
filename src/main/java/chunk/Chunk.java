@@ -119,7 +119,6 @@ public class Chunk extends Entity {
 
     public byte getBlock(int x, int y, int z) {
         if (isAllAir) return Block.AIR.getID();
-        if (!isInsideChunk(x, y, z)) return Block.INVALID.getID();
         else return blocks[toIndex(x, y, z)];
     }
 

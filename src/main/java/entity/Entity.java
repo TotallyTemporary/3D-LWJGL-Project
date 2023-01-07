@@ -1,5 +1,6 @@
 package entity;
 
+import java.util.Random;
 import java.util.UUID;
 
 /** An entity is something that can have components attached to it.
@@ -9,8 +10,10 @@ import java.util.UUID;
 public class Entity {
     private UUID uuid;
 
+    static Random r = new Random();
+    static { r.setSeed(System.nanoTime()); }
     public Entity() {
-        this.uuid = UUID.randomUUID();
+        this.uuid = new UUID(r.nextLong(), r.nextLong());
     }
 
     public Entity(UUID uuid) {
