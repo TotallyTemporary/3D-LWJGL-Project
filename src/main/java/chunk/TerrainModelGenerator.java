@@ -1,7 +1,7 @@
 package chunk;
 
 import entity.EntityManager;
-import org.boon.collections.FloatList;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import org.joml.Vector3i;
 
 import java.lang.reflect.Field;
@@ -12,8 +12,8 @@ public class TerrainModelGenerator {
 
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
-    private static final ThreadLocal<FloatList> verticesBufferLocal = ThreadLocal.withInitial(() -> new FloatList());
-    private static final ThreadLocal<FloatList> textureCoordsBufferLocal = ThreadLocal.withInitial(() -> new FloatList());
+    private static final ThreadLocal<FloatArrayList> verticesBufferLocal = ThreadLocal.withInitial(FloatArrayList::new);
+    private static final ThreadLocal<FloatArrayList> textureCoordsBufferLocal = ThreadLocal.withInitial(FloatArrayList::new);
 
     // adds a chunk to the queue
     public static void addChunk(Chunk chunk) {
@@ -32,8 +32,8 @@ public class TerrainModelGenerator {
         var verticesBuffer = verticesBufferLocal.get();
         var textureCoordsBuffer = textureCoordsBufferLocal.get();
 
-        resetFloatList(verticesBuffer);
-        resetFloatList(textureCoordsBuffer);
+        verticesBuffer.clear();
+        textureCoordsBuffer.clear();
 
         for (int x = 0; x < Chunk.SIZE; x++)
         for (int y = 0; y < Chunk.SIZE; y++)
@@ -51,14 +51,15 @@ public class TerrainModelGenerator {
                     transformedVertices[3*i+1] = (vertices[3*i+1] + y);
                     transformedVertices[3*i+2] = (vertices[3*i+2] + z);
                 }
-                verticesBuffer.addArray(transformedVertices);
-                textureCoordsBuffer.addArray(face.getTextureCoords());
+
+                verticesBuffer.addAll(FloatArrayList.wrap(transformedVertices));
+                textureCoordsBuffer.addAll(FloatArrayList.wrap(face.getTextureCoords()));
             }
         }
 
         return new ChunkModelDataComponent(
-            verticesBuffer.toValueArray(),
-            textureCoordsBuffer.toValueArray()
+            verticesBuffer.toArray(new float[verticesBuffer.size()]),
+            textureCoordsBuffer.toArray(new float[textureCoordsBuffer.size()])
         );
     }
 
@@ -76,22 +77,6 @@ public class TerrainModelGenerator {
         return true;
     }
 
-    static Field end;
-    static {
-        try {
-            end = FloatList.class.getDeclaredField("end");
-            end.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    private static void resetFloatList(FloatList lst) {
-        try {
-            end.setInt(lst, 0);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
     /* maybe use this if toValueArray is slow? visualvm shows it as slow, intellij doesn't.
     private static float[] getValues(FloatList lst) throws NoSuchFieldException, IllegalAccessException {
         int end = lst.size();
