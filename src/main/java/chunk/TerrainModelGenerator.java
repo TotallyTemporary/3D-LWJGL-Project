@@ -39,7 +39,7 @@ public class TerrainModelGenerator {
         for (int y = 0; y < Chunk.SIZE; y++)
         for (int z = 0; z < Chunk.SIZE; z++) {
             var block = Block.getBlock(chunk.getBlock(x, y, z));
-            for (int index = 0; index < 6; index++) {
+            for (int index = 0; index < CardinalDirection.COUNT; index++) {
                 var face = block.getFace(index);
                 if (face == null) continue;
                 if (!isFaceVisible(chunk, index, x, y, z)) continue;
@@ -63,35 +63,18 @@ public class TerrainModelGenerator {
     }
 
     private static boolean isFaceVisible(Chunk chunk, int faceIndex, int x, int y, int z) {
-        var obscuringBlock = Block.getBlock(switch (faceIndex) {
-            case Direction.UP    -> getBlockSafe(chunk, new Vector3i(x, y+1, z));
-            case Direction.DOWN  -> getBlockSafe(chunk, new Vector3i(x, y-1, z));
-            case Direction.LEFT  -> getBlockSafe(chunk, new Vector3i(x-1, y, z));
-            case Direction.RIGHT -> getBlockSafe(chunk, new Vector3i(x+1, y, z));
-            case Direction.FRONT -> getBlockSafe(chunk, new Vector3i(x, y, z-1));
-            case Direction.BACK  -> getBlockSafe(chunk, new Vector3i(x, y, z+1));
-            default -> throw new IllegalStateException("Unexpected value: " + faceIndex);
-        });
+        var obsBlockPos = new Vector3i(x, y, z).add(CardinalDirection.offsets[faceIndex]);
+        var obscuringBlock = Block.getBlock(chunk.getBlockSafe(obsBlockPos));
 
         if (!obscuringBlock.getHasTransparentFace()) return false;
 
-        var oppositeFace = obscuringBlock.getFace(Direction.opposite(faceIndex));
+        var oppositeFace = obscuringBlock.getFace(CardinalDirection.opposite(faceIndex));
         if (oppositeFace == null || oppositeFace.isTransparent()) {
             return true;
         }
 
         return true;
     }
-
-    private static byte getBlockSafe(Chunk chunk, Vector3i pos) {
-        var block = chunk.getBlock(pos);
-        if (block == Block.INVALID.getID()) {
-            var worldPos = Chunk.blockPosToWorldPos(pos, chunk);
-            block = ChunkLoader.getBlockAt(worldPos);
-        }
-        return block;
-    }
-
 
     private static void resetFloatList(FloatList lst) {
         try {

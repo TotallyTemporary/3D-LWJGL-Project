@@ -8,26 +8,15 @@ public class TerrainGenerator {
 
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
-    public static void generateHeightmap(Chunk chunk) {
+    public static void addChunks(Chunk chunk) {
         executor.submit(() -> {
             generateFirstpass(chunk);
             chunk.setStatus(Chunk.Status.WAIT_NEIGHBORS);
         });
     }
 
-    public static void generateStructures(Chunk chunk) {
-        executor.submit(() -> {
-            generateSecondpass(chunk);
-            chunk.setStatus(Chunk.Status.LOADED);
-        });
-    }
-
     public static void stop() {
         executor.shutdownNow();
-    }
-
-    private static void generateSecondpass(Chunk chunk) {
-
     }
 
     private static void generateFirstpass(Chunk chunk) {

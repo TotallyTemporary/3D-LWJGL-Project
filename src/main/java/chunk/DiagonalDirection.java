@@ -1,0 +1,51 @@
+package chunk;
+
+import org.joml.Vector3i;
+
+public class DiagonalDirection {
+
+    public static int COUNT = 26;
+
+    public static Vector3i[] offsets = {
+           new Vector3i(-1, -1, -1),
+           new Vector3i(-1, -1,  0),
+           new Vector3i(-1, -1,  1),
+           new Vector3i(-1,  0, -1),
+           new Vector3i(-1,  0,  0),
+           new Vector3i(-1,  0,  1),
+           new Vector3i(-1,  1, -1),
+           new Vector3i(-1,  1,  0),
+           new Vector3i(-1,  1,  1),
+           new Vector3i( 0, -1, -1),
+           new Vector3i( 0, -1,  0),
+           new Vector3i( 0, -1,  1),
+           new Vector3i( 0,  0, -1),
+
+           new Vector3i( 0,  0,  1),
+           new Vector3i( 0,  1, -1),
+           new Vector3i( 0,  1,  0),
+           new Vector3i( 0,  1,  1),
+           new Vector3i( 1, -1, -1),
+           new Vector3i( 1, -1,  0),
+           new Vector3i( 1, -1,  1),
+           new Vector3i( 1,  0, -1),
+           new Vector3i( 1,  0,  0),
+           new Vector3i( 1,  0,  1),
+           new Vector3i( 1,  1, -1),
+           new Vector3i( 1,  1,  0),
+           new Vector3i( 1,  1,  1),
+    };
+
+    public static int indexOf(Vector3i vec) {
+        int count = 0;
+        for (var offset : offsets) {
+            if (vec.equals(offset)) return count;
+            count++;
+        }
+        return -1;
+    }
+
+    public static int opposite(int dir) {
+        return 25-dir;
+    }
+}

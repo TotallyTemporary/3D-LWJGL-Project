@@ -4,8 +4,6 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ChunkLoader {
 
@@ -42,16 +40,19 @@ public class ChunkLoader {
         switch (chunk.getStatus()) {
             case NONE           -> {
                 chunk.setStatus(Chunk.Status.TERRAIN_GENERATING);
-                TerrainGenerator.generateHeightmap(chunk);
+                TerrainGenerator.addChunks(chunk);
                 return true;
             }
             case WAIT_NEIGHBORS -> {
-                chunk.setStatus(Chunk.Status.STRUCTURE_GENERATING);
-                TerrainGenerator.generateStructures(chunk);
-                return true;
+                if (neighborsUrgencyAtLeast(chunk, Chunk.Status.WAIT_NEIGHBORS.urgency)) {
+                    chunk.setStatus(Chunk.Status.STRUCTURE_GENERATING);
+                    // TerrainGenerator.generateStructures(chunk);
+                    chunk.setStatus(Chunk.Status.LOADED);
+                    return true;
+                }
             }
             case LOADED -> {
-                if (canGenerateModel(chunk)) {
+                if (neighborsUrgencyAtLeast(chunk, Chunk.Status.LOADED.urgency)) {
                     chunk.setStatus(Chunk.Status.MESH_GENERATING);
                     TerrainModelGenerator.addChunk(chunk);
                     return true;
@@ -67,10 +68,10 @@ public class ChunkLoader {
         return false;
     }
 
-    private static boolean canGenerateModel(Chunk chunk) {
-        for (int dir = 0; dir < 6; dir++) {
+    private static boolean neighborsUrgencyAtLeast(Chunk chunk, int urgency) {
+        for (int dir = 0; dir < DiagonalDirection.COUNT; dir++) {
             var neighbor = chunk.getNeighbor(dir);
-            if (neighbor == null || neighbor.getStatus().urgency < Chunk.Status.WAIT_NEIGHBORS.urgency) {
+            if (neighbor == null || neighbor.getStatus().urgency < urgency) {
                 return false;
             }
         }

@@ -122,12 +122,12 @@ public class DefaultBlockFace extends BlockFace {
 
     public float[] getVertices() {
         return switch (this.direction) {
-            case Direction.UP    -> TOP_VERTS;
-            case Direction.DOWN  -> BOTTOM_VERTS;
-            case Direction.LEFT  -> LEFT_VERTS;
-            case Direction.RIGHT -> RIGHT_VERTS;
-            case Direction.FRONT -> FRONT_VERTS;
-            case Direction.BACK  -> BACK_VERTS;
+            case CardinalDirection.UP    -> TOP_VERTS;
+            case CardinalDirection.DOWN  -> BOTTOM_VERTS;
+            case CardinalDirection.LEFT  -> LEFT_VERTS;
+            case CardinalDirection.RIGHT -> RIGHT_VERTS;
+            case CardinalDirection.FRONT -> FRONT_VERTS;
+            case CardinalDirection.BACK  -> BACK_VERTS;
             default -> throw new IllegalStateException("Unexpected value: " + this.direction);
         };
 
@@ -135,12 +135,12 @@ public class DefaultBlockFace extends BlockFace {
 
     public float[] getTextureCoords() {
         return addBlockIndex(switch (this.direction) {
-            case Direction.UP    -> TOP_TEX;
-            case Direction.DOWN  -> BOTTOM_TEX;
-            case Direction.LEFT  -> LEFT_TEX;
-            case Direction.RIGHT -> RIGHT_TEX;
-            case Direction.FRONT -> FRONT_TEX;
-            case Direction.BACK  -> BACK_TEX;
+            case CardinalDirection.UP    -> TOP_TEX;
+            case CardinalDirection.DOWN  -> BOTTOM_TEX;
+            case CardinalDirection.LEFT  -> LEFT_TEX;
+            case CardinalDirection.RIGHT -> RIGHT_TEX;
+            case CardinalDirection.FRONT -> FRONT_TEX;
+            case CardinalDirection.BACK  -> BACK_TEX;
             default -> throw new IllegalStateException("Unexpected value: " + this.direction);
         });
     }

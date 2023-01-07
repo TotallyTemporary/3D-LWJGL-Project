@@ -8,7 +8,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class Chunk extends Entity {
 
@@ -24,11 +23,27 @@ public class Chunk extends Entity {
         );
     }
 
+    public static Vector3i worldPosToChunkPos(Vector3i pos) {
+        return new Vector3i(
+                pos.x >> SIZE_BITS,
+                pos.y >> SIZE_BITS,
+                pos.z >> SIZE_BITS
+        );
+    }
+
     public static Vector3i worldPosToBlockPos(Vector3f pos) {
         return new Vector3i(
             (int) pos.x & (SIZE-1),
             (int) pos.y & (SIZE-1),
             (int) pos.z & (SIZE-1)
+        );
+    }
+
+    public static Vector3i worldPosToBlockPos(Vector3i pos) {
+        return new Vector3i(
+                pos.x & (SIZE-1),
+                pos.y & (SIZE-1),
+                pos.z & (SIZE-1)
         );
     }
 
@@ -38,18 +53,6 @@ public class Chunk extends Entity {
             pos.y + chunk.getChunkPos().y * SIZE,
             pos.z + chunk.getChunkPos().z * SIZE
         );
-    }
-
-    // UP, LEFT, FRONT, BACK, RIGHT, DOWN;
-    public static Vector3i[] neighbors(Vector3i pos) {
-        return new Vector3i[]{
-            new Vector3i(pos.x, pos.y+1, pos.z),
-            new Vector3i(pos.x-1, pos.y, pos.z),
-            new Vector3i(pos.x, pos.y, pos.z-1),
-            new Vector3i(pos.x, pos.y, pos.z+1),
-            new Vector3i(pos.x+1, pos.y, pos.z),
-            new Vector3i(pos.x, pos.y-1, pos.z),
-        };
     }
 
     public static int toIndex(int x, int y, int z) {
@@ -82,7 +85,7 @@ public class Chunk extends Entity {
     private Status status;
     private boolean isAllAir; // if a chunk is all air, we don't store blocks.
     private byte[] blocks;
-    private List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(6, null));
+    private List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(DiagonalDirection.COUNT, null));
 
     public Chunk(Vector3i chunkPos) {
         super();
@@ -91,11 +94,12 @@ public class Chunk extends Entity {
 
         // get all surrounding neighbors, add them as neighbor and add us as their neighbor.
         var index = 0;
-        for (var neighborPos : neighbors(chunkPos)) {
+        for (var offset : DiagonalDirection.offsets) {
+            var neighborPos = offset.add(chunkPos, new Vector3i());
             var neighbor = ChunkLoader.getChunkAt(neighborPos);
             if (neighbor != null) {
                 setNeighbor(neighbor, index);
-                neighbor.setNeighbor(this, Direction.opposite(index));
+                neighbor.setNeighbor(this, DiagonalDirection.opposite(index));
             }
             index++;
         }
@@ -121,6 +125,24 @@ public class Chunk extends Entity {
 
     public byte getBlock(Vector3i pos) {
         return getBlock(pos.x, pos.y, pos.z);
+    }
+
+    public byte getBlockSafe(int x, int y, int z) {
+        var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
+        var chunkPos = Chunk.worldPosToChunkPos(worldPos);
+
+        if (chunkPos.equals(this.chunkPos)) {
+            return this.getBlock(x, y, z);
+        }
+
+        int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkPos));
+        return neighbors.get(
+            dirIndex
+        ).get().getBlock(Chunk.worldPosToBlockPos(worldPos));
+    }
+
+    public byte getBlockSafe(Vector3i pos) {
+        return getBlockSafe(pos.x, pos.y, pos.z);
     }
 
     public void setBlocks(byte[] blocks) {

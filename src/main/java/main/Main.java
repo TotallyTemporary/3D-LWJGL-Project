@@ -87,6 +87,7 @@ public class Main {
             GLFW.glfwPollEvents();
         }
         TerrainGenerator.stop();
+        StructureGenerator.stop();
         TerrainModelGenerator.stop();
 
         Model.destroy();
