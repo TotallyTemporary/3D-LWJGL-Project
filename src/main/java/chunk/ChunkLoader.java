@@ -46,8 +46,7 @@ public class ChunkLoader {
             case WAIT_NEIGHBORS -> {
                 if (neighborsUrgencyAtLeast(chunk, Chunk.Status.WAIT_NEIGHBORS.urgency)) {
                     chunk.setStatus(Chunk.Status.STRUCTURE_GENERATING);
-                    // TerrainGenerator.generateStructures(chunk);
-                    chunk.setStatus(Chunk.Status.LOADED);
+                    StructureGenerator.addChunk(chunk);
                     return true;
                 }
             }

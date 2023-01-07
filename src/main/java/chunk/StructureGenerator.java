@@ -1,5 +1,6 @@
 package chunk;
 
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -22,6 +23,7 @@ public class StructureGenerator {
     public static void stop() {
         running = false;
         try {
+            thread.interrupt();
             thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -39,7 +41,27 @@ public class StructureGenerator {
     }
 
     private static void loadChunk(Chunk chunk) {
+        var random = new Random();
 
+        for (int x = 0; x < Chunk.SIZE; x++)
+        for (int y = 0; y < Chunk.SIZE; y++)
+        for (int z = 0; z < Chunk.SIZE; z++)
+        {
+            if (chunk.getBlock(x, y, z) == Block.GRASS.getID()) {
+                if (random.nextFloat() < 0.01f) {
+                    chunk.setBlockSafe(x, y+1, z, Block.OAK_LOG.getID());
+                    chunk.setBlockSafe(x, y+2, z, Block.OAK_LOG.getID());
+                    chunk.setBlockSafe(x, y+3, z, Block.OAK_LOG.getID());
+
+                    for (int dx = -1; dx <= 1; dx++)
+                    for (int dy = -1; dy <= 1; dy++)
+                    for (int dz = -1; dz <= 1; dz++)
+                    {
+                        chunk.setBlockSafe(x+dx, y+dy+4, z+dz, Block.OAK_LEAVES.getID());
+                    }
+                }
+            }
+        }
     }
 
 }

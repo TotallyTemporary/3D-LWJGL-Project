@@ -76,12 +76,19 @@ public class TerrainModelGenerator {
         return true;
     }
 
+    static Field end;
+    static {
+        try {
+            end = FloatList.class.getDeclaredField("end");
+            end.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
     private static void resetFloatList(FloatList lst) {
         try {
-            Field end = lst.getClass().getDeclaredField("end");
-            end.setAccessible(true);
             end.setInt(lst, 0);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
     }

@@ -145,6 +145,38 @@ public class Chunk extends Entity {
         return getBlockSafe(pos.x, pos.y, pos.z);
     }
 
+    public void setBlockSafe(Vector3i pos, byte block) {
+        setBlockSafe(pos.x, pos.y, pos.z, block);
+    }
+
+    public void setBlockSafe(int x, int y, int z, byte block) {
+        if (this.isAllAir) {
+            this.blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
+            this.isAllAir = false;
+        }
+
+        var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
+        var chunkPos = Chunk.worldPosToChunkPos(worldPos);
+
+        if (chunkPos.equals(this.chunkPos)) {
+            this.setBlock(x, y, z, block);
+            return;
+        }
+
+        int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkPos));
+        var neighbor = neighbors.get(dirIndex).get();
+        var blockPos = Chunk.worldPosToBlockPos(worldPos);
+        neighbor.setBlockSafe(blockPos, block);
+    }
+
+    public void setBlock(Vector3i pos, byte block) {
+        setBlock(pos.x, pos.y, pos.z, block);
+    }
+
+    public void setBlock(int x, int y, int z, byte block) {
+        this.blocks[Chunk.toIndex(x, y, z)] = block;
+    }
+
     public void setBlocks(byte[] blocks) {
         this.blocks = blocks;
     }
