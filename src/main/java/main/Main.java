@@ -14,14 +14,14 @@ import shader.Shader;
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
-        // Configuration.DEBUG_STACK.set(true);
-        // Configuration.DEBUG.set(true);
+        Configuration.DEBUG_STACK.set(true);
+        Configuration.DEBUG.set(true);
 
         var displaySettings = new Display.DisplaySettings(
                 "A display",   // title
-                800, 600,    // resolution
-                -1,          // monitor? (-1 gets primary)
-                false,       // vsync
+                1280, 720,     // resolution
+                -1,            // monitor? (-1 gets primary)
+                false,         // vsync
                 Display.DisplayMode.WINDOWED
         );
         var display = new Display(displaySettings);
@@ -48,7 +48,7 @@ public class Main {
                 1000f
         );
         EntityManager.addComponent(camera, new TransformationComponent(
-                new Vector3f(0, 70f, 0),
+                new Vector3f(1000f, 70f, 1000f),
                 new Vector3f(0, 0, 0),
                 1f
         ));
@@ -72,10 +72,10 @@ public class Main {
                 ChunkLoader.startUpdate(transform.getPosition());
             }
 
+            TerrainModelLoader.loadChunks(shader, blocksTexture); // has to be called before transformation components are updated
             EntityManager.start();
             EntityManager.stop();
 
-            TerrainModelLoader.loadChunks(shader, blocksTexture);
             // end update
 
             // render

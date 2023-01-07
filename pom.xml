@@ -66,6 +66,12 @@
         </dependency>
 
         <dependency>
+            <groupId>de.articdive</groupId>
+            <artifactId>jnoise-pipeline</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl</artifactId>
         </dependency>

@@ -1,10 +1,17 @@
 package chunk;
 
+import de.articdive.jnoise.generators.noisegen.opensimplex.FastSimplexNoiseGenerator;
+import de.articdive.jnoise.pipeline.JNoise;
 import org.joml.Vector3i;
 
 import java.util.concurrent.*;
 
 public class TerrainGenerator {
+
+    private static final int WORLD_SEED = 1235;
+    private static final float SCALE = 0.01f;
+    private static final float AMPLITUDE = 35f;
+    private static final float MIN_HEIGHT = 10f;
 
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
@@ -25,13 +32,19 @@ public class TerrainGenerator {
         boolean isAllAir = true;
 
         // calc heightmap
-        float[][] heightMap = new float[Chunk.SIZE][Chunk.SIZE];
+        int[][] heightMap = new int[Chunk.SIZE][Chunk.SIZE];
+        var heightMapRandom = getNoiseGenerator();
+
         for (int chunkX = 0; chunkX < Chunk.SIZE; chunkX++)
         for (int chunkZ = 0; chunkZ < Chunk.SIZE; chunkZ++)
         {
             var worldPos = Chunk.blockPosToWorldPos(new Vector3i(chunkX, 0, chunkZ), chunk);
-            heightMap[chunkX][chunkZ] = 70 + (int) (10 * Math.sin((worldPos.x + worldPos.z)/100d));
+            heightMap[chunkX][chunkZ] = (int) (MIN_HEIGHT + AMPLITUDE *
+                            (1 + heightMapRandom.evaluateNoise(worldPos.x * SCALE, worldPos.z * SCALE)) / 2f);
+            // System.out.println(heightMap[chunkX][chunkZ]);
+            // heightMap[chunkX][chunkZ] = 10;
         }
+
 
 
         for (int chunkX = 0; chunkX < Chunk.SIZE; chunkX++)
@@ -60,5 +73,10 @@ public class TerrainGenerator {
         }
         if (isAllAir) chunk.isAllAir();
         else chunk.setBlocks(blocks);
+    }
+
+    private static synchronized FastSimplexNoiseGenerator getNoiseGenerator() {
+        return FastSimplexNoiseGenerator.newBuilder()
+                .setSeed(WORLD_SEED).build();
     }
 }

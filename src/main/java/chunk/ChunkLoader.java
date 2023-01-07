@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 public class ChunkLoader {
 
-    private static final int LOAD_RADIUS = 8;
+    private static final int LOAD_RADIUS = 6 +2;
     private static HashMap<Vector3i, Chunk> chunks = new HashMap<>();
 
     public static int startUpdate(Vector3f playerPos) {
