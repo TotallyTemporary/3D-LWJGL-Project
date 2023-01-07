@@ -15,10 +15,10 @@ public enum Block {
     CHISELLED_STONE_BRICKS(7, cubeFaces(6)),
     BRICKS   (8, cubeFaces(7)),
     TNT      (9, makeFaces(DefaultBlockFace.class, new int[] { 10, 9, 9, 9, 9, 11 })),
-    // COBWEB   (11, cubeFaces(11)), // TODO replace with another model
-    // ROSE     (12, cubeFaces(12)),
-    DANDELION(13, decorFaces(13)),
-    // OAK_SAPLING(15, cubeFaces(15)),
+    COBWEB     (11, decorFaces(11)),
+    ROSE       (12, decorFaces(12)),
+    DANDELION  (13, decorFaces(13)),
+    OAK_SAPLING(15, decorFaces(15)),
 
     COBBLESTONE(16, cubeFaces(16)),
     BEDROCK    (17, cubeFaces(17)),
