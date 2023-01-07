@@ -13,7 +13,7 @@ import shader.Shader;
 
 public class Main {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         Configuration.DEBUG_STACK.set(true);
         Configuration.DEBUG.set(true);
 
@@ -48,7 +48,7 @@ public class Main {
                 1000f
         );
         EntityManager.addComponent(camera, new TransformationComponent(
-                new Vector3f(1000f, 70f, 1000f),
+                new Vector3f(1000f, 70f, 10000f),
                 new Vector3f(0, 0, 0),
                 1f
         ));
@@ -90,7 +90,7 @@ public class Main {
         StructureGenerator.stop();
         TerrainModelGenerator.stop();
 
-        Model.destroy();
+        Model.destroyAll();
         blocksTexture.destroy();
         shader.destroy();
 

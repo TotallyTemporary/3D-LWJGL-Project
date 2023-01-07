@@ -1,9 +1,13 @@
 package chunk;
 
+import entity.EntityManager;
+import entity.ModelComponent;
+import entity.TransformationComponent;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class ChunkLoader {
 
@@ -12,6 +16,7 @@ public class ChunkLoader {
 
     public static int startUpdate(Vector3f playerPos) {
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
+        chunks.values().forEach(chunk -> chunk.updated = false);
 
         // update chunks
         int updatedCount = 0;
@@ -26,6 +31,15 @@ public class ChunkLoader {
             }
         }
 
+        // unload chunks
+        var it = chunks.values().iterator();
+        while (it.hasNext()) {
+            var chunk = it.next();
+            if (!chunk.updated) {
+                unloadChunk(chunk, it);
+            }
+        }
+
         return updatedCount;
     }
 
@@ -36,6 +50,8 @@ public class ChunkLoader {
             chunk = new Chunk(pos);
             chunks.put(pos, chunk);
         }
+
+        chunk.updated = true;
 
         switch (chunk.getStatus()) {
             case NONE           -> {
@@ -75,6 +91,38 @@ public class ChunkLoader {
             }
         }
         return true;
+    }
+
+    private static boolean hasAllUnloadedNeighbors(Chunk chunk) {
+        for (int dir = 0; dir < DiagonalDirection.COUNT; dir++) {
+            var neighbor = chunk.getNeighbor(dir);
+            if (neighbor != null && neighbor.getStatus() != Chunk.Status.NONE) return false;
+        }
+        return true;
+    }
+
+    private static void unloadChunk(Chunk chunk, Iterator<Chunk> it) {
+        switch (chunk.getStatus()) {
+            case NONE -> {
+                if (hasAllUnloadedNeighbors(chunk)) {
+                    it.remove();
+                }
+            }
+
+            case WAIT_NEIGHBORS, LOADED -> chunk.setStatus(Chunk.Status.NONE);
+            case PREPARED -> {
+                EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
+                chunk.setStatus(Chunk.Status.NONE);
+            }
+            case FINAL -> {
+                var comp = EntityManager.removeComponent(chunk, ModelComponent.class);
+                if (comp != null) {
+                    comp.getModel().destroy();
+                }
+                EntityManager.removeComponent(chunk, TransformationComponent.class);
+                chunk.setStatus(Chunk.Status.NONE);
+            }
+        }
     }
 
     public static byte getBlockAt(Vector3f pos) {

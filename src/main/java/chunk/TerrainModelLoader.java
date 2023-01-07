@@ -28,7 +28,7 @@ public class TerrainModelLoader {
         int count = 0;
         while ((chunk = modelLoadQueue.poll()) != null) {
             var chunkModelData = EntityManager.getComponent(chunk, ChunkModelDataComponent.class);
-            EntityManager.removeComponent(chunk, chunkModelData);
+            EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
 
             if (chunkModelData.positions.length != 0) {
                 var pos = chunk.getChunkPos();
