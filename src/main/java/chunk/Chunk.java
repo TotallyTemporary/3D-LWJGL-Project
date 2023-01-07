@@ -127,12 +127,12 @@ public class Chunk extends Entity {
     }
 
     public byte getBlockSafe(int x, int y, int z) {
-        var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
-        var chunkPos = Chunk.worldPosToChunkPos(worldPos);
-
-        if (chunkPos.equals(this.chunkPos)) {
+        if (isInsideChunk(x, y, z)) {
             return this.getBlock(x, y, z);
         }
+
+        var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
+        var chunkPos = Chunk.worldPosToChunkPos(worldPos);
 
         int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkPos));
         return neighbors.get(
