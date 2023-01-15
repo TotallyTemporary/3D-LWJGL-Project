@@ -1,6 +1,7 @@
 package chunk;
 
 import entity.Entity;
+import org.joml.RoundingMode;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -16,27 +17,19 @@ public class Chunk extends Entity {
     public final static int SIZE = 1 << SIZE_BITS;
 
     public static Vector3i worldPosToChunkPos(Vector3f pos) {
-        return new Vector3i(
-            (int) pos.x >> SIZE_BITS,
-            (int) pos.y >> SIZE_BITS,
-            (int) pos.z >> SIZE_BITS
-        );
+        return worldPosToChunkPos(new Vector3i(pos, RoundingMode.FLOOR));
     }
 
     public static Vector3i worldPosToChunkPos(Vector3i pos) {
         return new Vector3i(
-                pos.x >> SIZE_BITS,
-                pos.y >> SIZE_BITS,
-                pos.z >> SIZE_BITS
+            pos.x >> SIZE_BITS,
+            pos.y >> SIZE_BITS,
+            pos.z >> SIZE_BITS
         );
     }
 
     public static Vector3i worldPosToBlockPos(Vector3f pos) {
-        return new Vector3i(
-            (int) pos.x & (SIZE-1),
-            (int) pos.y & (SIZE-1),
-            (int) pos.z & (SIZE-1)
-        );
+        return worldPosToBlockPos(new Vector3i(pos, RoundingMode.FLOOR));
     }
 
     public static Vector3i worldPosToBlockPos(Vector3i pos) {
@@ -151,11 +144,6 @@ public class Chunk extends Entity {
     }
 
     public void setBlockSafe(int x, int y, int z, byte block) {
-        if (this.isAllAir) {
-            this.blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
-            this.isAllAir = false;
-        }
-
         var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
         var chunkPos = Chunk.worldPosToChunkPos(worldPos);
 

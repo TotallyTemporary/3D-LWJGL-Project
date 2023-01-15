@@ -71,14 +71,16 @@ public class PlayerController extends Component {
 
         // this calculates how quickly our X pos or Z pos reaches the next block edge (whole number)
         // since deltaPos is guaranteed to be less than 1 block's length, this is a good estimate.
+
+        // frac(x) = ceil(x) - x
         float timeX;
-        if (deltaPos.x > 0) timeX = (1 - (pos.x + WIDTH/2f)%1) / deltaPos.x;
-        else                timeX = (    (pos.x - WIDTH/2f)%1) / deltaPos.x;
+        if (deltaPos.x > 0) timeX = (    frac(pos.x + WIDTH/2f)) / deltaPos.x;
+        else                timeX = (1 - frac(pos.x - WIDTH/2f)) / deltaPos.x;
         if (Float.isNaN(timeX)) timeX = Float.POSITIVE_INFINITY;
 
         float timeZ;
-        if (deltaPos.z > 0) timeZ = (1 - (pos.z + DEPTH/2f)%1) / deltaPos.z;
-        else                timeZ = (    (pos.z - DEPTH/2f)%1) / deltaPos.z;
+        if (deltaPos.z > 0) timeZ = (    frac(pos.z + DEPTH/2f)) / deltaPos.z;
+        else                timeZ = (1 - frac(pos.z - DEPTH/2f)) / deltaPos.z;
         if (Float.isNaN(timeZ)) timeZ = Float.POSITIVE_INFINITY;
 
         // if x reaches block edge first, resolve x first.
@@ -99,8 +101,7 @@ public class PlayerController extends Component {
         // get the 4 points at the corners of our bounding box, DOWN.
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x, pos.y+deltaPos.y, pos.z), CardinalDirection.DOWN)) {
             if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
-                // float % 1 is fractional part. you can see how (1 - point.y%1) is the distance from point to the next whole number above it.
-                var delta = 1 - point.y % 1 + SMALL_OFFSET;
+                var delta = frac(point.y) + SMALL_OFFSET;
 
                 // we get the max of these deltas, since if 3 of our corners have no obstruction but 1 does, we obey the 1 that does.
                 if (delta > max) max = delta;
@@ -108,7 +109,7 @@ public class PlayerController extends Component {
         }
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x, pos.y+deltaPos.y, pos.z), CardinalDirection.UP)) {
             if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
-                var delta = -(point.y % 1) - SMALL_OFFSET;
+                var delta = frac(point.y) - 1 - SMALL_OFFSET;
                 if (delta < min) min = delta;
             }
         }
@@ -116,11 +117,17 @@ public class PlayerController extends Component {
         // if both max and min are nonzero, we're being squeezed in some way. there's no logic to deal with it now, so the physics may explode.
         pos.y += (deltaPos.y + max + min);
 
+        // hit ground
         if (max != 0) {
             velocity.y = 0;
             canJump = true;
         } else {
             canJump = false;
+        }
+
+        // hit ceiling
+        if (min != 0) {
+            velocity.y = 0;
         }
     }
 
@@ -130,14 +137,14 @@ public class PlayerController extends Component {
         var min = 0f;
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x+deltaPos.x, pos.y, pos.z), CardinalDirection.LEFT)) {
             if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
-                var delta = 1 - point.x % 1 + SMALL_OFFSET;
+                var delta = frac(point.x) + SMALL_OFFSET;
                 if (delta > max)
                     max = delta;
             }
         }
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x+deltaPos.x, pos.y, pos.z), CardinalDirection.RIGHT)) {
             if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
-                var delta = -(point.x % 1) - SMALL_OFFSET;
+                var delta = frac(point.x) - 1 - SMALL_OFFSET;
                 if (delta < min) min = delta;
             }
         }
@@ -151,13 +158,13 @@ public class PlayerController extends Component {
         var min = 0f;
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x, pos.y, pos.z+deltaPos.z), CardinalDirection.FRONT)) {
             if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
-                var delta = 1 - point.z % 1 + SMALL_OFFSET;
+                var delta = frac(point.z) + SMALL_OFFSET;
                 if (delta > max) max = delta;
             }
         }
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x, pos.y, pos.z+deltaPos.z), CardinalDirection.BACK)) {
             if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
-                var delta = -(point.z % 1) - SMALL_OFFSET;
+                var delta = frac(point.z) - 1 - SMALL_OFFSET;
                 if (delta < min) min = delta;
             }
         }
@@ -178,7 +185,6 @@ public class PlayerController extends Component {
         // update position
         float front = 0;
         float left  = 0;
-        float up = 0;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_W)) front += 1;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_S)) front -= 1;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_A)) left  += 1;
@@ -246,5 +252,9 @@ public class PlayerController extends Component {
 
             default -> null;
         };
+    }
+
+    private float frac (float f) {
+        return (float) (Math.ceil(f) - f);
     }
 }

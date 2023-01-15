@@ -49,13 +49,14 @@ public class Main {
                 1000f
         );
         EntityManager.addComponent(camera, new TransformationComponent(
-                new Vector3f(1000f, 70f, 10000f),
+                new Vector3f(10f, 70f, 10f),
                 new Vector3f(0, 0, 0),
                 1f
         ));
         EntityManager.addComponent(camera, new PlayerController());
 
         var renderer = new Renderer();
+
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_K)) {
                 GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
