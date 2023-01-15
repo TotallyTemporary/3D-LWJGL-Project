@@ -7,7 +7,6 @@ import entity.Component;
 import entity.Entity;
 import entity.EntityManager;
 import entity.TransformationComponent;
-import main.Keyboard;
 import main.Timer;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -21,8 +20,11 @@ public class PlayerController extends Component {
         EYE_LEVEL = 1.5f;
 
     public static final float
-        MOVE_SPEED = 5f, // blocks/second
-        JUMP_SPEED = 8f, // blocks/second
+        //MOVE_SPEED = 5f, // blocks/second
+        //JUMP_SPEED = 8f, // blocks/second
+        MOVE_SPEED = 200f,
+        JUMP_SPEED = 50f,
+        SENSITIVITY = 1/500f, // radians per pixel
         GRAVITY = -25f;  // blocks/second^2
 
     public static final float
@@ -175,12 +177,11 @@ public class PlayerController extends Component {
     // returns position change, also updates rotation directly to the component.
     private Vector3f getInput(TransformationComponent transform) {
         // update rotation
-        float ROT_SPEED = 2f * Timer.getFrametimeSeconds();
         var rot = transform.getRotation();
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT))  rot.y += ROT_SPEED;
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_RIGHT)) rot.y -= ROT_SPEED;
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_UP))    rot.x += ROT_SPEED;
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_DOWN))  rot.x -= ROT_SPEED;
+
+        var rotDelta = Mouse.getCursorDelta();
+        rot.x -= rotDelta.y * SENSITIVITY;
+        rot.y -= rotDelta.x * SENSITIVITY;
 
         // update position
         float front = 0;

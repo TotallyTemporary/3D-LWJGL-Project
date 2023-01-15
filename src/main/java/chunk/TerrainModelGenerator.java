@@ -41,7 +41,7 @@ public class TerrainModelGenerator {
             for (int index = 0; index < CardinalDirection.COUNT; index++) {
                 var face = block.getFace(index);
                 if (face == null) continue;
-                if (!isFaceVisible(chunk, index, x, y, z)) continue;
+                if (!face.isTransparent() && !isFaceVisible(chunk, index, x, y, z)) continue;
 
                 float[] vertices = face.getVertices();
                 float[] transformedVertices = new float[vertices.length];

@@ -1,4 +1,4 @@
-package main;
+package player;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;

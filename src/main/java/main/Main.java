@@ -8,6 +8,8 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.Configuration;
+import player.Keyboard;
+import player.Mouse;
 import player.PlayerController;
 import render.*;
 import shader.Shader;
@@ -28,6 +30,7 @@ public class Main {
         var display = new Display(displaySettings);
         GLFWErrorCallback.createPrint(System.err).set();
         Keyboard.init(display.getWindow());
+        Mouse.init(display.getWindow());
         GL30.glClearColor(0.2f, 0.3f, 0.4f, 0f);
 
         var shader = new Shader(
