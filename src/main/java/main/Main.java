@@ -70,7 +70,7 @@ public class Main {
             Timer.tick();
             {
                 var transform = EntityManager.getComponent(camera, TransformationComponent.class);
-                ChunkLoader.startUpdate(transform.getPosition());
+                ChunkLoader.update(transform.getPosition());
             }
 
             TerrainModelLoader.loadChunks(shader, blocksTexture); // has to be called before transformation components are updated

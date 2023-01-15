@@ -41,8 +41,6 @@ public class TerrainGenerator {
             var worldPos = Chunk.blockPosToWorldPos(new Vector3i(chunkX, 0, chunkZ), chunk);
             heightMap[chunkX][chunkZ] = (int) (MIN_HEIGHT + AMPLITUDE *
                             (1 + heightMapRandom.evaluateNoise(worldPos.x * SCALE, worldPos.z * SCALE)) / 2f);
-            // System.out.println(heightMap[chunkX][chunkZ]);
-            // heightMap[chunkX][chunkZ] = 10;
         }
 
 

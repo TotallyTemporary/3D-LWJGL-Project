@@ -75,16 +75,4 @@ public class TerrainModelGenerator {
 
         return true;
     }
-
-    /* maybe use this if toValueArray is slow? visualvm shows it as slow, intellij doesn't.
-    private static float[] getValues(FloatList lst) throws NoSuchFieldException, IllegalAccessException {
-        int end = lst.size();
-        Field values = lst.getClass().getDeclaredField("values");
-        values.setAccessible(true);
-        float[] arr = (float[]) values.get(lst);
-        float[] newArr = new float[lst.size()];
-        System.arraycopy(arr, 0, newArr, 0, lst.size());
-        return newArr;
-    }
-     */
 }

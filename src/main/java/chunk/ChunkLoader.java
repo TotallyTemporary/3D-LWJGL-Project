@@ -14,7 +14,7 @@ public class ChunkLoader {
     private static final int LOAD_RADIUS = 6 +2;
     private static HashMap<Vector3i, Chunk> chunks = new HashMap<>();
 
-    public static int startUpdate(Vector3f playerPos) {
+    public static int update(Vector3f playerPos) {
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
         chunks.values().forEach(chunk -> chunk.updated = false);
 

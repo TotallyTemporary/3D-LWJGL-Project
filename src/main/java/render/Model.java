@@ -56,9 +56,6 @@ public class Model {
         int attribNum = vbos.size();
         int vbo = makeVBO();
         var buf = toFloatBuffer(positions);
-        /*if (this.vao == -1) {
-            System.out.println("FUCK");
-        }*/
         GL30.glBufferData(GL30.GL_ARRAY_BUFFER, buf, GL30.GL_STATIC_DRAW);
 
         // size=dimension, stride = bytes between vertices

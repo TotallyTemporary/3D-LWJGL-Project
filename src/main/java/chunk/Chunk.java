@@ -160,12 +160,19 @@ public class Chunk extends Entity {
         var chunkPos = Chunk.worldPosToChunkPos(worldPos);
 
         if (chunkPos.equals(this.chunkPos)) {
+            if (this.isAllAir) {
+                this.blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
+                this.isAllAir = false;
+            }
+
             this.setBlock(x, y, z, block);
             return;
         }
 
+        // get neighbor at chunkPos
         int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkPos));
         var neighbor = neighbors.get(dirIndex).get();
+
         var blockPos = Chunk.worldPosToBlockPos(worldPos);
         neighbor.setBlockSafe(blockPos, block);
     }

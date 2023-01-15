@@ -4,12 +4,7 @@ import entity.Entity;
 import entity.EntityManager;
 import entity.ModelComponent;
 import entity.TransformationComponent;
-import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
-import shader.Shader;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 public class Renderer {
@@ -37,6 +32,7 @@ public class Renderer {
         var shaderMap = modelMap.keySet().stream()
                 .collect(Collectors.groupingBy(model -> model.getShader()));
 
+
         // render
         for (var shaderEntry : shaderMap.entrySet()) {
             var shader = shaderEntry.getKey();
@@ -47,9 +43,8 @@ public class Renderer {
             shader.setMatrix4f("projectionMatrix", projectionMatrix);
             shader.setMatrix4f("viewMatrix", viewMatrix);
 
-            for (var modelEntry : modelMap.entrySet()) {
-                var model = modelEntry.getKey();
-                var entities = modelEntry.getValue();
+            for (var model : models) {
+                var entities = modelMap.get(model);
 
                 // bind textures
                 int unit = 0;

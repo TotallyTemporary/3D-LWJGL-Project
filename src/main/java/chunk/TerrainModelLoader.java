@@ -24,11 +24,10 @@ public class TerrainModelLoader {
     }
 
     public static void loadChunks(Shader shader, Texture terrainTexture) {
-        Chunk chunk;
         int count = 0;
-        while ((chunk = modelLoadQueue.poll()) != null) {
-            var chunkModelData = EntityManager.getComponent(chunk, ChunkModelDataComponent.class);
-            EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
+        for (Chunk chunk : modelLoadQueue) {
+            if (!EntityManager.hasComponent(chunk, ChunkModelDataComponent.class)) continue;
+            var chunkModelData = EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
 
             if (chunkModelData.positions.length != 0) {
                 var pos = chunk.getChunkPos();
