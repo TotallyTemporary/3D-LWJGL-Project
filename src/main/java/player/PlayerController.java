@@ -21,12 +21,18 @@ public class PlayerController extends Component {
         EYE_LEVEL = 1.5f;
 
     public static final float
-        MOVE_SPEED = 25f,
-        GRAVITY = -9.81f;
+        MOVE_SPEED = 5f, // blocks/second
+        JUMP_SPEED = 8f, // blocks/second
+        GRAVITY = -25f;  // blocks/second^2
 
     public static final float
         SMALL_OFFSET = 0.001f, // so we're never really on the bounds of a block
-        MAX_MOVE_DISTANCE = new Vector3f(0.5f, 0.5f, 0.5f).length();
+        MAX_MOVE_DISTANCE = 0.5f;
+
+    private boolean canJump = false;
+    private Vector3f
+            acceleration = new Vector3f(),
+            velocity     = new Vector3f();
 
     @Override public void start() {}
 
@@ -37,10 +43,19 @@ public class PlayerController extends Component {
         var transComp = EntityManager.getComponent(entity, TransformationComponent.class);
         Vector3f pos = transComp.getPosition();
 
+        // update player velocity from acceleration
+        {
+            acceleration = new Vector3f(0, GRAVITY, 0);
+            velocity.add(
+                    acceleration.mul(Timer.getFrametimeSeconds(), new Vector3f())
+            );
+        }
+
         // get player input (desired change in position)
-        Vector3f deltaPos = getInput(transComp);
-        deltaPos.y += GRAVITY;
-        deltaPos.mul(Timer.getFrametimeSeconds());
+        Vector3f deltaPos = getInput(transComp)
+                .add(
+                        velocity.mul(Timer.getFrametimeSeconds(), new Vector3f())
+                );
 
         // if deltaPos is too big, we might need to calculate our movement multiple times in this for loop.
         int steps = (int) (deltaPos.length() / MAX_MOVE_DISTANCE + 1);
@@ -100,8 +115,16 @@ public class PlayerController extends Component {
 
         // if both max and min are nonzero, we're being squeezed in some way. there's no logic to deal with it now, so the physics may explode.
         pos.y += (deltaPos.y + max + min);
+
+        if (max != 0) {
+            velocity.y = 0;
+            canJump = true;
+        } else {
+            canJump = false;
+        }
     }
 
+    // see resolveY for comments
     private void resolveX(Vector3f pos, Vector3f deltaPos) {
         var max = 0f;
         var min = 0f;
@@ -122,6 +145,7 @@ public class PlayerController extends Component {
         pos.x += (deltaPos.x + max + min);
     }
 
+    // see resolveY for comments
     private void resolveZ(Vector3f pos, Vector3f deltaPos) {
         var max = 0f;
         var min = 0f;
@@ -159,17 +183,19 @@ public class PlayerController extends Component {
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_S)) front -= 1;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_A)) left  += 1;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_D)) left  -= 1;
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_SPACE))      up += 1;
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) up -= 1;
 
+        if (canJump && Keyboard.isKeyDown(GLFW.GLFW_KEY_SPACE)) {
+            canJump = false;
+            velocity.y = JUMP_SPEED;
+        }
 
         float angle = transform.getRotation().y;
 
         var forwardVector = new Vector3f(0, 0, -front).rotateY(angle);
         var sidewayVector = new Vector3f(-left,  0, 0).rotateY((float) (angle + 2*Math.PI));
-        var comb = forwardVector.add(sidewayVector).add(0, up, 0);
+        var comb = forwardVector.add(sidewayVector);
         if (comb.equals(0, 0, 0)) return comb;
-        return comb.normalize().mul(MOVE_SPEED);
+        return comb.normalize().mul(MOVE_SPEED * Timer.getFrametimeSeconds());
     }
 
     // basically returns the corners of our player's bounding box in a certain direction,
