@@ -35,12 +35,11 @@ public class StructureGenerator {
             try {
                 var chunk = loadQueue.take();
                 loadChunk(chunk);
-                chunk.setStatus(Chunk.Status.LOADED);
             } catch (InterruptedException e) {}
         }
     }
 
-    private static void loadChunk(Chunk chunk) {
+    public static void loadChunk(Chunk chunk) {
         var random = new Random();
 
         for (int x = 0; x < Chunk.SIZE; x++)
@@ -64,6 +63,8 @@ public class StructureGenerator {
                 }
             }
         }
+
+        chunk.setStatus(Chunk.Status.LOADED);
     }
 
 }

@@ -6,6 +6,14 @@ public class DiagonalDirection {
 
     public static int COUNT = 26;
 
+    public static final int
+        UP    = 15,
+        DOWN  = 10,
+        RIGHT = 21,
+        LEFT  = 4,
+        FRONT = 12,
+        BACK  = 13;
+
     public static Vector3i[] offsets = {
            new Vector3i(-1, -1, -1),
            new Vector3i(-1, -1,  0),
@@ -20,7 +28,6 @@ public class DiagonalDirection {
            new Vector3i( 0, -1,  0),
            new Vector3i( 0, -1,  1),
            new Vector3i( 0,  0, -1),
-
            new Vector3i( 0,  0,  1),
            new Vector3i( 0,  1, -1),
            new Vector3i( 0,  1,  0),

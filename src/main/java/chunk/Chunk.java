@@ -80,7 +80,9 @@ public class Chunk extends Entity {
     private byte[] blocks;
     private List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(DiagonalDirection.COUNT, null));
 
+
     public boolean updated = false; // sorta temporary flag. used by chunkloader.
+    public boolean spoiled = false;
 
     public Chunk(Vector3i chunkPos) {
         super();

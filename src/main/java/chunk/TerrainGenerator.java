@@ -16,10 +16,12 @@ public class TerrainGenerator {
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
     public static void addChunks(Chunk chunk) {
-        executor.submit(() -> {
-            generateFirstpass(chunk);
-            chunk.setStatus(Chunk.Status.WAIT_NEIGHBORS);
-        });
+        executor.submit(() -> loadChunk(chunk));
+    }
+
+    public static void loadChunk(Chunk chunk) {
+        generateFirstpass(chunk);
+        chunk.setStatus(Chunk.Status.WAIT_NEIGHBORS);
     }
 
     public static void stop() {

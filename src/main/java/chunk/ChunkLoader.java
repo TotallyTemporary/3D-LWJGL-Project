@@ -43,6 +43,77 @@ public class ChunkLoader {
         return updatedCount;
     }
 
+    public static void updateSpoiled() {
+        var it = chunks.values().iterator();
+        while (it.hasNext()) {
+            var chunk = it.next();
+            if (chunk.spoiled) {
+                chunk.spoiled = false;
+                updateNow(chunk);
+            }
+        }
+    }
+
+    // assume this will only ever be called on chunks that are loaded or higher.
+    public static void updateNow(Chunk chunk) {
+        // generate mesh
+        chunk.setStatus(Chunk.Status.MESH_GENERATING);
+        EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
+        TerrainModelGenerator.loadChunk(chunk);
+
+        chunk.setStatus(Chunk.Status.MESH_LOADING);
+        var oldModel = EntityManager.removeComponent(chunk, ModelComponent.class);
+        EntityManager.removeComponent(chunk, TransformationComponent.class);
+        TerrainModelLoader.loadChunk(chunk);
+
+        if (oldModel != null) {
+            oldModel.getModel().destroy();
+        }
+
+        assert chunk.getStatus() == Chunk.Status.FINAL;
+    }
+
+    public static void setBlockAt(Vector3i pos, byte block) {
+        var chunkPos = Chunk.worldPosToChunkPos(pos);
+        var blockPos = Chunk.worldPosToBlockPos(pos);
+        var chunk = chunks.get(chunkPos);
+        if (chunk == null || chunk.getStatus().urgency < Chunk.Status.LOADED.urgency) return;
+        chunk.setBlockSafe(blockPos, block);
+        chunk.spoiled = true;
+
+        if (blockPos.x == 0)            chunk.getNeighbor(DiagonalDirection.LEFT).spoiled = true;
+        if (blockPos.x == Chunk.SIZE-1) chunk.getNeighbor(DiagonalDirection.RIGHT).spoiled = true;
+        if (blockPos.y == 0)            chunk.getNeighbor(DiagonalDirection.DOWN).spoiled = true;
+        if (blockPos.y == Chunk.SIZE-1) chunk.getNeighbor(DiagonalDirection.UP).spoiled = true;
+        if (blockPos.z == 0)            chunk.getNeighbor(DiagonalDirection.FRONT).spoiled = true;
+        if (blockPos.z == Chunk.SIZE-1) chunk.getNeighbor(DiagonalDirection.BACK).spoiled = true;
+    }
+
+    public static byte getBlockAt(Vector3f pos) {
+        var chunkPos = Chunk.worldPosToChunkPos(pos);
+        var chunkRemainderPos = Chunk.worldPosToBlockPos(pos);
+
+        var chunk = chunks.get(chunkPos);
+        if (chunk == null || chunk.getStatus().urgency < Chunk.Status.LOADED.urgency) return Block.INVALID.getID();
+        return chunk.getBlock(chunkRemainderPos);
+    }
+
+    public static byte getBlockAt(Vector3i pos) {
+        return getBlockAt(new Vector3f(pos.x, pos.y, pos.z));
+    }
+
+    public static byte getBlockAt(int x, int y, int z) {
+        return getBlockAt(new Vector3f(x, y, z));
+    }
+
+    public static Chunk getChunkAt(Vector3i pos) {
+        return chunks.get(pos);
+    }
+
+    public static Chunk getChunkAt(Vector3f pos) {
+        return getChunkAt(Chunk.worldPosToChunkPos(pos));
+    }
+
     private static boolean doUpdateChunk(int x, int y, int z) {
         var pos = new Vector3i(x, y, z);
         var chunk = chunks.get(pos);
@@ -102,51 +173,18 @@ public class ChunkLoader {
     }
 
     private static void unloadChunk(Chunk chunk, Iterator<Chunk> it) {
-        switch (chunk.getStatus()) {
-            case NONE -> {
-                if (hasAllUnloadedNeighbors(chunk)) {
-                    it.remove();
-                }
-            }
+        var modelComp = EntityManager.removeComponent(chunk, ModelComponent.class);
+        EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
+        EntityManager.removeComponent(chunk, TransformationComponent.class);
 
-            case WAIT_NEIGHBORS, LOADED -> chunk.setStatus(Chunk.Status.NONE);
-            case PREPARED -> {
-                EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
-                chunk.setStatus(Chunk.Status.NONE);
-            }
-            case FINAL -> {
-                var comp = EntityManager.removeComponent(chunk, ModelComponent.class);
-                if (comp != null) {
-                    comp.getModel().destroy();
-                }
-                EntityManager.removeComponent(chunk, TransformationComponent.class);
-                chunk.setStatus(Chunk.Status.NONE);
-            }
+        if (modelComp != null) {
+            modelComp.getModel().destroy();
         }
-    }
 
-    public static byte getBlockAt(Vector3f pos) {
-        var chunkPos = Chunk.worldPosToChunkPos(pos);
-        var chunkRemainderPos = Chunk.worldPosToBlockPos(pos);
+        chunk.setStatus(Chunk.Status.NONE);
 
-        var chunk = chunks.get(chunkPos);
-        if (chunk == null || chunk.getStatus().urgency < Chunk.Status.LOADED.urgency) return Block.INVALID.getID();
-        return chunk.getBlock(chunkRemainderPos);
-    }
-
-    public static byte getBlockAt(Vector3i pos) {
-        return getBlockAt(new Vector3f(pos.x, pos.y, pos.z));
-    }
-
-    public static byte getBlockAt(int x, int y, int z) {
-        return getBlockAt(new Vector3f(x, y, z));
-    }
-
-    public static Chunk getChunkAt(Vector3i pos) {
-        return chunks.get(pos);
-    }
-
-    public static Chunk getChunkAt(Vector3f pos) {
-        return getChunkAt(Chunk.worldPosToChunkPos(pos));
+        if (hasAllUnloadedNeighbors(chunk)) {
+            it.remove();
+        }
     }
 }

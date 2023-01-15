@@ -27,10 +27,12 @@ public class Main {
                 false,         // vsync
                 Display.DisplayMode.WINDOWED
         );
+
         var display = new Display(displaySettings);
         GLFWErrorCallback.createPrint(System.err).set();
         Keyboard.init(display.getWindow());
         Mouse.init(display.getWindow());
+
         GL30.glClearColor(0.2f, 0.3f, 0.4f, 0f);
 
         var shader = new Shader(
@@ -45,6 +47,9 @@ public class Main {
                             "src/main/resources/blocks_array.png",
                             "arrayTexture", 16, 16);
 
+        TerrainModelLoader.setChunkTexture(blocksTexture);
+        TerrainModelLoader.setShader(shader);
+
         var camera = new Camera(
                 (float) Math.toRadians(60f),
                 (float) display.getWidth() / display.getHeight(),
@@ -52,7 +57,7 @@ public class Main {
                 1000f
         );
         EntityManager.addComponent(camera, new TransformationComponent(
-                new Vector3f(10f, 70f, 10f),
+                new Vector3f(0f, 70f, 0f),
                 new Vector3f(0, 0, 0),
                 1f
         ));
@@ -77,7 +82,7 @@ public class Main {
                 ChunkLoader.update(transform.getPosition());
             }
 
-            TerrainModelLoader.loadChunks(shader, blocksTexture); // has to be called before transformation components are updated
+            TerrainModelLoader.loadChunks(); // has to be called before transformation components are updated
             EntityManager.start();
             EntityManager.stop();
 

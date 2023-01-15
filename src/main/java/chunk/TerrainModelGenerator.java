@@ -16,11 +16,13 @@ public class TerrainModelGenerator {
 
     // adds a chunk to the queue
     public static void addChunk(Chunk chunk) {
-        executor.submit(() -> {
-            var comp = generateModelData(chunk);
-            EntityManager.addComponent(chunk, comp);
-            chunk.setStatus(Chunk.Status.PREPARED);
-        });
+        executor.submit(() -> loadChunk(chunk));
+    }
+
+    public static void loadChunk(Chunk chunk) {
+        var comp = generateModelData(chunk);
+        EntityManager.addComponent(chunk, comp);
+        chunk.setStatus(Chunk.Status.PREPARED);
     }
 
     public static void stop() {

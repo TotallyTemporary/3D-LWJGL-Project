@@ -8,7 +8,9 @@ import entity.Entity;
 import entity.EntityManager;
 import entity.TransformationComponent;
 import main.Timer;
+import org.joml.RoundingMode;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 
 public class PlayerController extends Component {
@@ -20,10 +22,8 @@ public class PlayerController extends Component {
         EYE_LEVEL = 1.5f;
 
     public static final float
-        //MOVE_SPEED = 5f, // blocks/second
-        //JUMP_SPEED = 8f, // blocks/second
-        MOVE_SPEED = 200f,
-        JUMP_SPEED = 50f,
+        MOVE_SPEED = 5f, // blocks/second
+        JUMP_SPEED = 8f, // blocks/second
         SENSITIVITY = 1/500f, // radians per pixel
         GRAVITY = -25f;  // blocks/second^2
 
@@ -64,6 +64,15 @@ public class PlayerController extends Component {
         var deltaPosStepped = deltaPos.div(steps);
         for (int i = 0; i < steps; i++) {
             resolve(pos, deltaPosStepped);
+        }
+
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_P)) {
+            for (int dx = -1; dx <= 1; dx++)
+            for (int dy = -1; dy <= 1; dy++)
+            for (int dz = -1; dz <= 1; dz++) {
+                ChunkLoader.setBlockAt(new Vector3i(pos, RoundingMode.FLOOR).add(dx, dy, dz), Block.AIR.getID());
+            }
+            ChunkLoader.updateSpoiled();
         }
     }
 
