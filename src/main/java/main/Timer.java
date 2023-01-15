@@ -15,4 +15,8 @@ public class Timer {
         return delta / 1_000_000f;
     }
 
+    public static float getFrametimeSeconds() {
+        return getFrametimeMillis() / 1000f;
+    }
+
 }

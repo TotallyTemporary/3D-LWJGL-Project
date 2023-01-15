@@ -5,6 +5,7 @@ import entity.EntityManager;
 import entity.TransformationComponent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import player.PlayerController;
 
 public class Camera extends Entity {
 
@@ -31,11 +32,14 @@ public class Camera extends Entity {
     private void calcViewMatrix() {
         var transform = EntityManager.getComponent(this, TransformationComponent.class);
         assert transform != null;
-        var pos = transform.getPosition();
+        var playerOrigin = transform.getPosition();
+        var pos = new Vector3f(playerOrigin.x,
+                               playerOrigin.y + PlayerController.EYE_LEVEL,
+                               playerOrigin.z);
         // view matrix basically does the inverse of a transformation matrix.
         viewMatrix.identity()
-                .rotate(transform.getRotation().x, new Vector3f(1, 0, 0))
-                .rotate(transform.getRotation().y, new Vector3f(0, 1, 0))
+                .rotate(-transform.getRotation().x, new Vector3f(1, 0, 0))
+                .rotate(-transform.getRotation().y, new Vector3f(0, 1, 0))
                 .translate(-pos.x, -pos.y, -pos.z);
     }
 

@@ -8,6 +8,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.Configuration;
+import player.PlayerController;
 import render.*;
 import shader.Shader;
 
@@ -44,7 +45,7 @@ public class Main {
         var camera = new Camera(
                 (float) Math.toRadians(60f),
                 (float) display.getWidth() / display.getHeight(),
-                0.5f,
+                0.1f,
                 1000f
         );
         EntityManager.addComponent(camera, new TransformationComponent(
@@ -52,7 +53,7 @@ public class Main {
                 new Vector3f(0, 0, 0),
                 1f
         ));
-        EntityManager.addComponent(camera, new CameraController());
+        EntityManager.addComponent(camera, new PlayerController());
 
         var renderer = new Renderer();
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
