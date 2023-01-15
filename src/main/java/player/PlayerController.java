@@ -21,15 +21,19 @@ public class PlayerController extends Component {
         EYE_LEVEL = 1.5f;
 
     public static final float
-        MOVE_SPEED = 7f,
-        GRAVITY = -9.81f,
-        SMALL_OFFSET = 0.001f; // so we're never really on the bounds of a block
+        MOVE_SPEED = 25f,
+        GRAVITY = -9.81f;
+
+    public static final float
+        SMALL_OFFSET = 0.001f, // so we're never really on the bounds of a block
+        MAX_MOVE_DISTANCE = new Vector3f(0.5f, 0.5f, 0.5f).length();
 
     @Override public void start() {}
 
     @Override public void stop() {}
 
     @Override public void apply(Entity entity) {
+        // get player position
         var transComp = EntityManager.getComponent(entity, TransformationComponent.class);
         Vector3f pos = transComp.getPosition();
 
@@ -38,13 +42,20 @@ public class PlayerController extends Component {
         deltaPos.y += GRAVITY;
         deltaPos.mul(Timer.getFrametimeSeconds());
 
-        if (deltaPos.length() >= new Vector3f(1, 1, 1).length()) {
-            deltaPos.normalize();
-            System.out.println("emergency normalize");
+        // if deltaPos is too big, we might need to calculate our movement multiple times in this for loop.
+        int steps = (int) (deltaPos.length() / MAX_MOVE_DISTANCE + 1);
+        var deltaPosStepped = deltaPos.div(steps);
+        for (int i = 0; i < steps; i++) {
+            resolve(pos, deltaPosStepped);
         }
+    }
 
+    private void resolve(Vector3f pos, Vector3f deltaPos) {
+        // we always resolve Y first, then we see if we should resolve X or Z next.
         resolveY(pos, deltaPos);
 
+        // this calculates how quickly our X pos or Z pos reaches the next block edge (whole number)
+        // since deltaPos is guaranteed to be less than 1 block's length, this is a good estimate.
         float timeX;
         if (deltaPos.x > 0) timeX = (1 - (pos.x + WIDTH/2f)%1) / deltaPos.x;
         else                timeX = (    (pos.x - WIDTH/2f)%1) / deltaPos.x;
@@ -55,6 +66,7 @@ public class PlayerController extends Component {
         else                timeZ = (    (pos.z - DEPTH/2f)%1) / deltaPos.z;
         if (Float.isNaN(timeZ)) timeZ = Float.POSITIVE_INFINITY;
 
+        // if x reaches block edge first, resolve x first.
         if (timeX < timeZ) {
             resolveX(pos, deltaPos);
             resolveZ(pos, deltaPos);
@@ -64,12 +76,18 @@ public class PlayerController extends Component {
         }
     }
 
+    // this logic is basically duplicated for X and Z, so it will only be commented here.
     private void resolveY(Vector3f pos, Vector3f deltaPos) {
         var max = 0f; // how much should we move up (testing down dir)
         var min = 0f; // how much should we move down (testing up dir)
+
+        // get the 4 points at the corners of our bounding box, DOWN.
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x, pos.y+deltaPos.y, pos.z), CardinalDirection.DOWN)) {
             if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
+                // float % 1 is fractional part. you can see how (1 - point.y%1) is the distance from point to the next whole number above it.
                 var delta = 1 - point.y % 1 + SMALL_OFFSET;
+
+                // we get the max of these deltas, since if 3 of our corners have no obstruction but 1 does, we obey the 1 that does.
                 if (delta > max) max = delta;
             }
         }
@@ -80,6 +98,7 @@ public class PlayerController extends Component {
             }
         }
 
+        // if both max and min are nonzero, we're being squeezed in some way. there's no logic to deal with it now, so the physics may explode.
         pos.y += (deltaPos.y + max + min);
     }
 
