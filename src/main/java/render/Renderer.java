@@ -1,9 +1,6 @@
 package render;
 
-import entity.Entity;
-import entity.EntityManager;
-import entity.ModelComponent;
-import entity.TransformationComponent;
+import entity.*;
 import org.lwjgl.opengl.GL30;
 import java.util.stream.Collectors;
 
@@ -11,21 +8,32 @@ public class Renderer {
 
     public Renderer() {}
 
-    private void prepare() {
+    public void render(Camera camera) {
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
+        GL30.glCullFace(GL30.GL_BACK);
+        GL30.glEnable(GL30.GL_CULL_FACE);
+
+        // first render terrain
         GL30.glEnable(GL30.GL_DEPTH_TEST);
+        render(camera, ChunkModelComponent.class);
+
+        // then render ui on top of everything
+        GL30.glEnable(GL30.GL_BLEND);
+        GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        GL30.glDisable(GL30.GL_DEPTH_TEST);
+        render(camera, UIModelComponent.class);
+        GL30.glDisable(GL30.GL_BLEND);
     }
 
-    public void render(Camera camera) {
-        prepare();
+    public <T extends ModelComponent> void render(Camera camera, Class<T> modelClass) {
         var viewMatrix = camera.getViewMatrix();
         var projectionMatrix = camera.getProjectionMatrix();
 
         // 1 model for multiple entities
-        var modelMap = EntityManager.getComponents(ModelComponent.class)
+        var modelMap = EntityManager.getComponents(modelClass)
                 .keySet().stream()
                 .collect(Collectors.groupingBy(
-                        entity -> EntityManager.getComponent(entity, ModelComponent.class).getModel()
+                        entity -> EntityManager.getComponent(entity, modelClass).getModel()
                 ));
 
         // 1 shader for multiple models
@@ -40,8 +48,8 @@ public class Renderer {
 
             // start shader, load matrices
             GL30.glUseProgram(shader.getProgram());
-            shader.setMatrix4f("projectionMatrix", projectionMatrix);
-            shader.setMatrix4f("viewMatrix", viewMatrix);
+            if (shader.hasUniform("projectionMatrix")) shader.setMatrix4f("projectionMatrix", projectionMatrix);
+            if (shader.hasUniform("viewMatrix")) shader.setMatrix4f("viewMatrix", viewMatrix);
 
             for (var model : models) {
                 var entities = modelMap.get(model);
@@ -77,10 +85,11 @@ public class Renderer {
     }
 
     private void render(Entity entity, Model model) {
-        var transformationMatrix = EntityManager
-                .getComponent(entity, TransformationComponent.class)
-                .getTransformationMatrix();
-        model.getShader().setMatrix4f("transformationMatrix", transformationMatrix);
+        var transformComponent = EntityManager
+                .getComponent(entity, TransformationComponent.class);
+        if (transformComponent != null) {
+            model.getShader().setMatrix4f("transformationMatrix", transformComponent.getTransformationMatrix());
+        }
         if (model.hasIndexBuffer()) {
             GL30.glDrawElements(GL30.GL_TRIANGLES, model.getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
         } else {

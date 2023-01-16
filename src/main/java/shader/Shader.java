@@ -42,6 +42,10 @@ public class Shader {
         return this;
     }
 
+    public boolean hasUniform(String name) {
+        return uniforms.containsKey(name);
+    }
+
     public Shader(String vertexShaderPath, String fragmentShaderPath) {
         // compile shaders
         int vertexShader = -1, fragmentShader = -1;

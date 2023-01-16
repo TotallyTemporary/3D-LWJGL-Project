@@ -1,7 +1,7 @@
 package chunk;
 
+import entity.ChunkModelComponent;
 import entity.EntityManager;
-import entity.ModelComponent;
 import entity.TransformationComponent;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -76,7 +76,7 @@ public class ChunkLoader {
         TerrainModelGenerator.loadChunk(chunk);
 
         chunk.setStatus(Chunk.Status.MESH_LOADING);
-        var oldModel = EntityManager.removeComponent(chunk, ModelComponent.class);
+        var oldModel = EntityManager.removeComponent(chunk, ChunkModelComponent.class);
         EntityManager.removeComponent(chunk, TransformationComponent.class);
         TerrainModelLoader.loadChunk(chunk);
 
@@ -189,7 +189,7 @@ public class ChunkLoader {
     private static void unloadChunk(Chunk chunk, Iterator<Chunk> it) {
         if (chunk.getStatus().working) return; // don't want to unload a chunk that is queued somewhere.
 
-        var modelComp = EntityManager.removeComponent(chunk, ModelComponent.class);
+        var modelComp = EntityManager.removeComponent(chunk, ChunkModelComponent.class);
         EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
         EntityManager.removeComponent(chunk, TransformationComponent.class);
 

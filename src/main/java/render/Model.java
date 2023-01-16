@@ -71,6 +71,20 @@ public class Model {
         return this;
     }
 
+    public Model addPosition2D(float[] positions) {
+        int attribNum = vbos.size();
+        int vbo = makeVBO();
+        var buf = toFloatBuffer(positions);
+        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, buf, GL30.GL_STATIC_DRAW);
+
+        GL30.glVertexAttribPointer(attribNum, 2, GL30.GL_FLOAT, false, 2 * Float.BYTES, 0);
+        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
+        if (this.vertexCount == -1) {
+            this.vertexCount = positions.length/2;
+        }
+        return this;
+    }
+
     public Model addTextureCoords3D(float[] textureCoords) {
         int attribNum = vbos.size();
         int vbo = makeVBO();

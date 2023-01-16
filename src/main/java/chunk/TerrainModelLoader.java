@@ -1,7 +1,7 @@
 package chunk;
 
+import entity.ChunkModelComponent;
 import entity.EntityManager;
-import entity.ModelComponent;
 import entity.TransformationComponent;
 import org.joml.Vector3f;
 import render.Model;
@@ -65,7 +65,7 @@ public class TerrainModelLoader {
                 .setTexture(chunkTexture)
                 .setShader(chunkShader)
                 .end();
-            EntityManager.addComponent(chunk, new ModelComponent(model));
+            EntityManager.addComponent(chunk, new ChunkModelComponent(model));
         }
 
         chunk.setStatus(Chunk.Status.FINAL);
