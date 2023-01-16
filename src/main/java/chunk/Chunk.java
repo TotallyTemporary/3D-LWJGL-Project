@@ -13,7 +13,7 @@ import java.util.List;
 public class Chunk extends Entity {
 
     // static stuff at the top here
-    public final static int SIZE_BITS = 6;
+    public final static int SIZE_BITS = 5;
     public final static int SIZE = 1 << SIZE_BITS;
 
     public static Vector3i worldPosToChunkPos(Vector3f pos) {
@@ -57,19 +57,20 @@ public class Chunk extends Entity {
     }
 
     public enum Status {
-        NONE(0),
-        TERRAIN_GENERATING(1),    // generating simple blocks
-        WAIT_NEIGHBORS(2),
-        STRUCTURE_GENERATING(3),  // generating structures (needs neighbors for bleed-over)
-        LOADED(4),
+        NONE(0, false),
+        TERRAIN_GENERATING(1, true),    // generating simple blocks
+        WAIT_NEIGHBORS(2, false),
+        STRUCTURE_GENERATING(3, true),  // generating structures (needs neighbors for bleed-over)
+        LOADED(4, false),
 
-        MESH_GENERATING(5),       // make the vertices and texture coords for the chunk
-        PREPARED(6),
-        MESH_LOADING(7),          // load those vertices into opengl (main thread)
-        FINAL(8);                 // chunk can be rendered
+        MESH_GENERATING(5, true),       // make the vertices and texture coords for the chunk
+        PREPARED(6, false),
+        MESH_LOADING(7, true),          // load those vertices into opengl (main thread)
+        FINAL(8, false);                 // chunk can be rendered
 
         public int urgency;
-        private Status(int urgency) { this.urgency = urgency; }
+        public boolean working;
+        private Status(int urgency, boolean working) { this.urgency = urgency; this.working = working; }
     }
 
     // chunk instance stuff below

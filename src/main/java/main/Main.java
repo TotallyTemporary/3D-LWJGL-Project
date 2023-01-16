@@ -50,6 +50,8 @@ public class Main {
         TerrainModelLoader.setChunkTexture(blocksTexture);
         TerrainModelLoader.setShader(shader);
 
+        var playerStartPosition = new Vector3f(10_000f, 70, 10_000f);
+
         var camera = new Camera(
                 (float) Math.toRadians(60f),
                 (float) display.getWidth() / display.getHeight(),
@@ -57,13 +59,17 @@ public class Main {
                 1000f
         );
         EntityManager.addComponent(camera, new TransformationComponent(
-                new Vector3f(0f, 70f, 0f),
+                playerStartPosition,
                 new Vector3f(0, 0, 0),
                 1f
         ));
         EntityManager.addComponent(camera, new PlayerController());
 
         var renderer = new Renderer();
+
+        while (ChunkLoader.update(playerStartPosition) > 0 || ChunkLoader.getQueueSize() > 0) {
+            TerrainModelLoader.loadChunks(999);
+        }
 
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_K)) {

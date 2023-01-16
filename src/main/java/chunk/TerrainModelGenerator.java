@@ -25,6 +25,10 @@ public class TerrainModelGenerator {
         chunk.setStatus(Chunk.Status.PREPARED);
     }
 
+    public static int getQueueSize() {
+        return executor.getQueue().size();
+    }
+
     public static void stop() {
         executor.shutdownNow();
     }
@@ -71,9 +75,7 @@ public class TerrainModelGenerator {
         if (!obscuringBlock.getHasTransparentFace()) return false;
 
         var oppositeFace = obscuringBlock.getFace(CardinalDirection.opposite(faceIndex));
-        if (oppositeFace == null || oppositeFace.isTransparent()) {
-            return true;
-        }
+        if (oppositeFace != null && !oppositeFace.isTransparent()) return false;
 
         return true;
     }

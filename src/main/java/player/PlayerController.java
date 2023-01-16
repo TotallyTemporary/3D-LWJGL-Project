@@ -111,7 +111,7 @@ public class PlayerController extends Component {
 
         // get the 4 points at the corners of our bounding box, DOWN.
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x, pos.y+deltaPos.y, pos.z), CardinalDirection.DOWN)) {
-            if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
+            if (Block.getBlock(ChunkLoader.getBlockAt(point)).isSolid()) {
                 var delta = frac(point.y) + SMALL_OFFSET;
 
                 // we get the max of these deltas, since if 3 of our corners have no obstruction but 1 does, we obey the 1 that does.
@@ -119,7 +119,7 @@ public class PlayerController extends Component {
             }
         }
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x, pos.y+deltaPos.y, pos.z), CardinalDirection.UP)) {
-            if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
+            if (Block.getBlock(ChunkLoader.getBlockAt(point)).isSolid()) {
                 var delta = frac(point.y) - 1 - SMALL_OFFSET;
                 if (delta < min) min = delta;
             }
@@ -147,14 +147,13 @@ public class PlayerController extends Component {
         var max = 0f;
         var min = 0f;
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x+deltaPos.x, pos.y, pos.z), CardinalDirection.LEFT)) {
-            if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
+            if (Block.getBlock(ChunkLoader.getBlockAt(point)).isSolid()) {
                 var delta = frac(point.x) + SMALL_OFFSET;
-                if (delta > max)
-                    max = delta;
+                if (delta > max) max = delta;
             }
         }
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x+deltaPos.x, pos.y, pos.z), CardinalDirection.RIGHT)) {
-            if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
+            if (Block.getBlock(ChunkLoader.getBlockAt(point)).isSolid()) {
                 var delta = frac(point.x) - 1 - SMALL_OFFSET;
                 if (delta < min) min = delta;
             }
@@ -168,13 +167,13 @@ public class PlayerController extends Component {
         var max = 0f;
         var min = 0f;
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x, pos.y, pos.z+deltaPos.z), CardinalDirection.FRONT)) {
-            if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
+            if (Block.getBlock(ChunkLoader.getBlockAt(point)).isSolid()) {
                 var delta = frac(point.z) + SMALL_OFFSET;
                 if (delta > max) max = delta;
             }
         }
         for (var point : getTestablePointsInDirection(new Vector3f(pos.x, pos.y, pos.z+deltaPos.z), CardinalDirection.BACK)) {
-            if (ChunkLoader.getBlockAt(point) != Block.AIR.getID()) {
+            if (Block.getBlock(ChunkLoader.getBlockAt(point)).isSolid()) {
                 var delta = frac(point.z) - 1 - SMALL_OFFSET;
                 if (delta < min) min = delta;
             }

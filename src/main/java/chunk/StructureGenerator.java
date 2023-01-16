@@ -20,6 +20,10 @@ public class StructureGenerator {
         loadQueue.add(chunk);
     }
 
+    public static int getQueueSize() {
+        return loadQueue.size();
+    }
+
     public static void stop() {
         running = false;
         try {

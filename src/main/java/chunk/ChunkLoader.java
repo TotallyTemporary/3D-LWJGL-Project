@@ -11,32 +11,46 @@ import java.util.Iterator;
 
 public class ChunkLoader {
 
-    private static final int LOAD_RADIUS = 6 +2;
+    private static final int LOAD_RADIUS = 16;
     private static HashMap<Vector3i, Chunk> chunks = new HashMap<>();
 
     public static int update(Vector3f playerPos) {
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
-        chunks.values().forEach(chunk -> chunk.updated = false);
-
-        // update chunks
         int updatedCount = 0;
-        // start from the inside and loop outside
-        for (int radius = 0; radius < LOAD_RADIUS; radius++)
-        for (int x = playerChunkPos.x - radius; x < playerChunkPos.x + radius +1; x++)
-        for (int y = playerChunkPos.y - radius; y < playerChunkPos.y + radius +1; y++)
-        for (int z = playerChunkPos.z - radius; z < playerChunkPos.z + radius +1; z++)
-        {
-            if (doUpdateChunk(x, y, z)) {
+
+        var minX = playerChunkPos.x - LOAD_RADIUS;
+        var maxX = playerChunkPos.x + LOAD_RADIUS;
+        var minY = playerChunkPos.y - LOAD_RADIUS;
+        var maxY = playerChunkPos.y + LOAD_RADIUS;
+        var minZ = playerChunkPos.z - LOAD_RADIUS;
+        var maxZ = playerChunkPos.z + LOAD_RADIUS;
+
+        // load new chunks
+        for (int x = minX; x <= maxX; x++)
+        for (int y = minY; y <= maxY; y++)
+        for (int z = minZ; z <= maxZ; z++) {
+            var pos = new Vector3i(x, y, z);
+            if (!chunks.containsKey(pos)) {
+                var chunk = new Chunk(pos);
+                chunks.put(pos, chunk);
                 updatedCount++;
             }
         }
 
-        // unload chunks
+        // update existing chunks
         var it = chunks.values().iterator();
         while (it.hasNext()) {
             var chunk = it.next();
-            if (!chunk.updated) {
+            var pos = chunk.getChunkPos();
+
+            if (pos.x < minX || pos.x > maxX ||
+                pos.y < minY || pos.y > maxY ||
+                pos.z < minZ || pos.z > maxZ) {
                 unloadChunk(chunk, it);
+            } else {
+                if (doUpdateChunk(chunk, pos)) {
+                    updatedCount++;
+                }
             }
         }
 
@@ -73,6 +87,13 @@ public class ChunkLoader {
         assert chunk.getStatus() == Chunk.Status.FINAL;
     }
 
+    public static int getQueueSize() {
+        return TerrainGenerator.getQueueSize()
+                + StructureGenerator.getQueueSize()
+                + TerrainModelGenerator.getQueueSize()
+                + TerrainModelLoader.getQueueSize();
+    }
+
     public static void setBlockAt(Vector3i pos, byte block) {
         var chunkPos = Chunk.worldPosToChunkPos(pos);
         var blockPos = Chunk.worldPosToBlockPos(pos);
@@ -94,7 +115,9 @@ public class ChunkLoader {
         var chunkRemainderPos = Chunk.worldPosToBlockPos(pos);
 
         var chunk = chunks.get(chunkPos);
-        if (chunk == null || chunk.getStatus().urgency < Chunk.Status.LOADED.urgency) return Block.INVALID.getID();
+        if (chunk == null || chunk.getStatus().urgency < Chunk.Status.LOADED.urgency) {
+            return Block.INVALID.getID();
+        }
         return chunk.getBlock(chunkRemainderPos);
     }
 
@@ -114,16 +137,7 @@ public class ChunkLoader {
         return getChunkAt(Chunk.worldPosToChunkPos(pos));
     }
 
-    private static boolean doUpdateChunk(int x, int y, int z) {
-        var pos = new Vector3i(x, y, z);
-        var chunk = chunks.get(pos);
-        if (chunk == null) {
-            chunk = new Chunk(pos);
-            chunks.put(pos, chunk);
-        }
-
-        chunk.updated = true;
-
+    private static boolean doUpdateChunk(Chunk chunk, Vector3i pos) {
         switch (chunk.getStatus()) {
             case NONE           -> {
                 chunk.setStatus(Chunk.Status.TERRAIN_GENERATING);
@@ -173,6 +187,8 @@ public class ChunkLoader {
     }
 
     private static void unloadChunk(Chunk chunk, Iterator<Chunk> it) {
+        if (chunk.getStatus().working) return; // don't want to unload a chunk that is queued somewhere.
+
         var modelComp = EntityManager.removeComponent(chunk, ModelComponent.class);
         EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
         EntityManager.removeComponent(chunk, TransformationComponent.class);
@@ -181,7 +197,9 @@ public class ChunkLoader {
             modelComp.getModel().destroy();
         }
 
-        chunk.setStatus(Chunk.Status.NONE);
+        // this just prevents log spam
+        if (chunk.getStatus() != Chunk.Status.NONE)
+            chunk.setStatus(Chunk.Status.NONE);
 
         if (hasAllUnloadedNeighbors(chunk)) {
             it.remove();

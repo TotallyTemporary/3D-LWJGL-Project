@@ -24,6 +24,10 @@ public class TerrainGenerator {
         chunk.setStatus(Chunk.Status.WAIT_NEIGHBORS);
     }
 
+    public static int getQueueSize() {
+        return executor.getQueue().size();
+    }
+
     public static void stop() {
         executor.shutdownNow();
     }

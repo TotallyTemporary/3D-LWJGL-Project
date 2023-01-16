@@ -5,47 +5,43 @@ import java.lang.reflect.InvocationTargetException;
 public enum Block {
     // UP, LEFT, FRONT, BACK, RIGHT, DOWN;
 
-    INVALID  (0, new BlockFace[]{ null, null, null, null, null, null }),
-    AIR      (1, new BlockFace[]{ null, null, null, null, null, null }),
-    GRASS    (2, makeFaces(DefaultBlockFace.class, new int[] { 0, 3, 3, 3, 3, 2 })),
-    STONE    (3, cubeFaces(1)),
-    DIRT     (4, cubeFaces(2)),
-    OAK_PLANK(5, cubeFaces(4)),
-    STONE_SLABS           (6, cubeFaces(5)),
-    CHISELLED_STONE_BRICKS(7, cubeFaces(6)),
-    BRICKS   (8, cubeFaces(7)),
-    TNT      (9, makeFaces(DefaultBlockFace.class, new int[] { 10, 9, 9, 9, 9, 11 })),
-    COBWEB     (11, decorFaces(11)),
-    ROSE       (12, decorFaces(12)),
-    DANDELION  (13, decorFaces(13)),
-    OAK_SAPLING(15, decorFaces(15)),
+    INVALID  (1, true, new BlockFace[]{ null, null, null, null, null, null }),
+    AIR      (0, false, new BlockFace[]{ null, null, null, null, null, null }),
+    GRASS    (2, true, makeFaces(DefaultBlockFace.class, new int[] { 0, 3, 3, 3, 3, 2 })),
+    STONE    (3, true, cubeFaces(1)),
+    DIRT     (4, true, cubeFaces(2)),
+    OAK_PLANK(5, true, cubeFaces(4)),
+    STONE_SLABS           (6, true, cubeFaces(5)),
+    CHISELLED_STONE_BRICKS(7, true, cubeFaces(6)),
+    BRICKS     (8, true, cubeFaces(7)),
+    TNT        (9, true, makeFaces(DefaultBlockFace.class, new int[] { 10, 9, 9, 9, 9, 11 })),
+    COBWEB     (11, false, decorFaces(11)),
+    ROSE       (12, false, decorFaces(12)),
+    DANDELION  (13, false, decorFaces(13)),
+    OAK_SAPLING(15, false, decorFaces(15)),
 
-    COBBLESTONE(16, cubeFaces(16)),
-    BEDROCK    (17, cubeFaces(17)),
-    SAND       (18, cubeFaces(18)),
-    GRAVEL     (19, cubeFaces(19)),
-    OAK_LOG    (20, makeFaces(DefaultBlockFace.class, new int[] { 21, 20, 20, 20, 20, 21 })),
-    IRON_BLOCK (21, cubeFaces(21)),
-    GOLD_BLOCK (22, cubeFaces(22)),
+    COBBLESTONE(16, true, cubeFaces(16)),
+    BEDROCK    (17, true, cubeFaces(17)),
+    SAND       (18, true, cubeFaces(18)),
+    GRAVEL     (19, true, cubeFaces(19)),
+    OAK_LOG    (20, true, makeFaces(DefaultBlockFace.class, new int[] { 21, 20, 20, 20, 20, 21 })),
+    IRON_BLOCK (21, true, cubeFaces(21)),
+    GOLD_BLOCK (22, true, cubeFaces(22)),
 
-    GOLD_ORE  (32, cubeFaces(32)),
-    IRON_ORE  (33, cubeFaces(33)),
-    COAL_ORE  (34, cubeFaces(34)),
-    BOOKSHELF (35, cubeFaces(35)),
-    MOSSY_COBBLESTONE(36, cubeFaces(36)),
-    OBSIDIAN  (37, cubeFaces(37)),
+    GOLD_ORE  (32, true, cubeFaces(32)),
+    IRON_ORE  (33, true, cubeFaces(33)),
+    COAL_ORE  (34, true, cubeFaces(34)),
+    BOOKSHELF (35, true, cubeFaces(35)),
+    MOSSY_COBBLESTONE(36, true, cubeFaces(36)),
+    OBSIDIAN  (37, true, cubeFaces(37)),
 
-    SPONGE      (48, cubeFaces(48)),
-    GLASS       (49, cubeFaces(49)),
-    DIAMOND_ORE (50, cubeFaces(50)),
-    REDSTONE_ORE(51, cubeFaces(51)),
+    SPONGE      (48, true, cubeFaces(48)),
+    GLASS       (49, true, cubeFaces(49)),
+    DIAMOND_ORE (50, true, cubeFaces(50)),
+    REDSTONE_ORE(51, true, cubeFaces(51)),
     // OAK_LEAVES_HQ(52, cubeFaces(52)), // texture pack png didn't have alpha anyway.
-    OAK_LEAVES(53, cubeFaces(53)),
-    STONE_BRICKS (54, cubeFaces(54));
-
-
-
-
+    OAK_LEAVES(53, true, cubeFaces(53)),
+    STONE_BRICKS (54, true, cubeFaces(54));
 
     static {
         // for some reason calculating this in the constructor makes the enum null.
@@ -57,14 +53,16 @@ public enum Block {
         }
     }
 
-    private byte id;
-    private BlockFace[] faces;
+    private final byte id;
+    private final BlockFace[] faces;
+    private final boolean isSolid;
 
     private boolean hasTransparentFace;
 
-    Block(int id, BlockFace[] faces) {
+    Block(int id, boolean isSolid, BlockFace[] faces) {
         this.id = (byte) id;
         this.faces = faces;
+        this.isSolid = isSolid;
 
         this.hasTransparentFace = true;
     }
@@ -79,6 +77,10 @@ public enum Block {
 
     public byte getID() {
         return id;
+    }
+
+    public boolean isSolid() {
+        return isSolid;
     }
 
     private static final Block[] vals = new Block[Byte.MAX_VALUE];
