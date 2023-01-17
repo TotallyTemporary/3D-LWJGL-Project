@@ -88,7 +88,7 @@ public class Main {
         ));
         EntityManager.addComponent(crosshair, new TransformationComponent(new Vector3f(), new Vector3f(), 0.05f));
 
-        var playerStartPosition = new Vector3f(1000f, 40, 1000f);
+        var playerStartPosition = new Vector3f(1000f, 120f, 1000f);
 
         var camera = new Camera(
                 (float) Math.toRadians(60f),
@@ -125,9 +125,9 @@ public class Main {
 
         var renderer = new Renderer();
 
-        while (ChunkLoader.update(playerStartPosition) > 0 || ChunkLoader.getQueueSize() > 0) {
+        /*while (ChunkLoader.update(playerStartPosition) > 0 || ChunkLoader.getQueueSize() > 0) {
             TerrainModelLoader.loadChunks(999);
-        }
+        }*/
 
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_K)) {

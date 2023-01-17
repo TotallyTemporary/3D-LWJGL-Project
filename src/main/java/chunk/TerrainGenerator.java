@@ -1,7 +1,6 @@
 package chunk;
 
 import de.articdive.jnoise.generators.noisegen.opensimplex.FastSimplexNoiseGenerator;
-import de.articdive.jnoise.pipeline.JNoise;
 import org.joml.Vector3i;
 
 import java.util.concurrent.*;
@@ -10,8 +9,11 @@ public class TerrainGenerator {
 
     private static final int WORLD_SEED = 1235;
     private static final float SCALE = 0.01f;
-    private static final float AMPLITUDE = 35f;
-    private static final float MIN_HEIGHT = 10f;
+    private static final float AMPLITUDE = 40f;
+    private static final float MIN_HEIGHT = 70f;
+
+    private static final float CAVE_SCALE = 0.03f,
+                               CAVE_CUTOFF = 0.2f;
 
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
@@ -32,11 +34,7 @@ public class TerrainGenerator {
         executor.shutdownNow();
     }
 
-    private static void generateFirstpass(Chunk chunk) {
-        // generate blocks
-        byte[] blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
-        boolean isAllAir = true;
-
+    private static int[][] generateHeightmap(Chunk chunk) {
         // calc heightmap
         int[][] heightMap = new int[Chunk.SIZE][Chunk.SIZE];
         var heightMapRandom = getNoiseGenerator();
@@ -49,8 +47,40 @@ public class TerrainGenerator {
                             (1 + heightMapRandom.evaluateNoise(worldPos.x * SCALE, worldPos.z * SCALE)) / 2f);
         }
 
+        return heightMap;
+    }
 
+    private static boolean isCave(Vector3i pos, FastSimplexNoiseGenerator generator) {
+        float noise = (1 + (float) generator.evaluateNoise(
+                                    pos.x * CAVE_SCALE,
+                                    pos.y * CAVE_SCALE,
+                                    pos.z * CAVE_SCALE)) / 2f;
 
+        if (noise < CAVE_CUTOFF) {
+            return true;
+        }
+        return false;
+    }
+
+    private static byte getOre(Vector3i pos, FastSimplexNoiseGenerator generator) {
+        float noise = (float) (1f + generator.evaluateNoise(pos.x, pos.y, pos.z)) / 2f;
+
+        if (noise < 0.01f) return Block.DIAMOND_ORE.getID();
+        else if (noise < 0.05f) return Block.GOLD_ORE.getID();
+        else if (noise < 0.1f) return Block.IRON_ORE.getID();
+        else if (noise < 0.2f) return Block.COAL_ORE.getID();
+        else return Block.STONE.getID();
+    }
+
+    private static void generateFirstpass(Chunk chunk) {
+        // generate blocks
+        byte[] blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
+        boolean isAllAir = true;
+
+        int[][] heightMap = generateHeightmap(chunk);
+
+        var caveGenerator = getNoiseGenerator();
+        var oreGenerator = getNoiseGenerator();
         for (int chunkX = 0; chunkX < Chunk.SIZE; chunkX++)
         for (int chunkY = 0; chunkY < Chunk.SIZE; chunkY++)
         for (int chunkZ = 0; chunkZ < Chunk.SIZE; chunkZ++)
@@ -64,10 +94,9 @@ public class TerrainGenerator {
                 block = Block.GRASS.getID();
             } else if (terrainLevel-3 < worldPos.y && worldPos.y < terrainLevel) {
                 block = Block.DIRT.getID();
-            } else if (0 < worldPos.y && worldPos.y <= terrainLevel-3){
-                block = Block.STONE.getID();
-            } else if (worldPos.y == 0) {
-                block = Block.BEDROCK.getID();
+            } else if (worldPos.y <= terrainLevel-3){
+                if (isCave(worldPos, caveGenerator)) block = Block.AIR.getID();
+                else                                 block = getOre(worldPos, oreGenerator);
             } else {
                 block = Block.AIR.getID();
             }

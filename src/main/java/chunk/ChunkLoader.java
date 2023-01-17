@@ -11,19 +11,21 @@ import java.util.Iterator;
 
 public class ChunkLoader {
 
-    private static final int LOAD_RADIUS = 16;
+    private static final int HORIZONTAL_LOAD_RADIUS = 12;
+    private static final int VERTICAL_LOAD_RADIUS = 6;
+
     private static HashMap<Vector3i, Chunk> chunks = new HashMap<>();
 
     public static int update(Vector3f playerPos) {
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
         int updatedCount = 0;
 
-        var minX = playerChunkPos.x - LOAD_RADIUS;
-        var maxX = playerChunkPos.x + LOAD_RADIUS;
-        var minY = playerChunkPos.y - LOAD_RADIUS;
-        var maxY = playerChunkPos.y + LOAD_RADIUS;
-        var minZ = playerChunkPos.z - LOAD_RADIUS;
-        var maxZ = playerChunkPos.z + LOAD_RADIUS;
+        var minX = playerChunkPos.x - HORIZONTAL_LOAD_RADIUS;
+        var maxX = playerChunkPos.x + HORIZONTAL_LOAD_RADIUS;
+        var minY = playerChunkPos.y - VERTICAL_LOAD_RADIUS;
+        var maxY = playerChunkPos.y + VERTICAL_LOAD_RADIUS;
+        var minZ = playerChunkPos.z - HORIZONTAL_LOAD_RADIUS;
+        var maxZ = playerChunkPos.z + HORIZONTAL_LOAD_RADIUS;
 
         // load new chunks
         for (int x = minX; x <= maxX; x++)
