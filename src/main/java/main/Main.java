@@ -2,7 +2,9 @@ package main;
 
 import chunk.*;
 import entity.*;
+import org.joml.RoundingMode;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -10,7 +12,8 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.Configuration;
 import player.Keyboard;
 import player.Mouse;
-import player.PlayerController;
+import player.PlayerBlockController;
+import player.PlayerMovementController;
 import render.*;
 import shader.Shader;
 
@@ -30,8 +33,6 @@ public class Main {
 
         var display = new Display(displaySettings);
         GLFWErrorCallback.createPrint(System.err).set();
-        Keyboard.init(display.getWindow());
-        Mouse.init(display.getWindow());
 
         GL30.glClearColor(0.2f, 0.3f, 0.4f, 0f);
 
@@ -100,7 +101,20 @@ public class Main {
                 new Vector3f(0, 0, 0),
                 1f
         ));
-        EntityManager.addComponent(camera, new PlayerController());
+        EntityManager.addComponent(camera, new PlayerMovementController());
+        EntityManager.addComponent(camera, new PlayerBlockController());
+
+        Keyboard.init(display.getWindow());
+        Mouse.init(display.getWindow(),
+                () -> {
+                    var blockController = EntityManager.getComponent(camera, PlayerBlockController.class);
+                    Vector3f pos;
+                    if ((pos = blockController.getCurrentBlock()) != null) {
+                        ChunkLoader.setBlockAt(new Vector3i(pos, RoundingMode.FLOOR), Block.AIR.getID());
+                        ChunkLoader.updateSpoiled();
+                    }
+                },
+                () -> {});
 
         var renderer = new Renderer();
 
@@ -122,8 +136,13 @@ public class Main {
                 ChunkLoader.update(transform.getPosition());
             }
 
-            TerrainModelLoader.loadChunks(); // has to be called before transformation components are updated
             EntityManager.start();
+
+            // these control chunks so call them before transformation components are updated to prevent flicker.
+            TerrainModelLoader.loadChunks();
+            EntityManager.updateComponents(PlayerMovementController.class);
+            EntityManager.updateComponents(PlayerBlockController.class);
+
             EntityManager.stop();
 
             // end update

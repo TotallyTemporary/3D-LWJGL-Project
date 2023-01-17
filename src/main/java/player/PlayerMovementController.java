@@ -13,7 +13,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 
-public class PlayerController extends Component {
+public class PlayerMovementController extends Component {
     // player bounds
     public static final float
         WIDTH  = 0.75f,
@@ -64,15 +64,6 @@ public class PlayerController extends Component {
         var deltaPosStepped = deltaPos.div(steps);
         for (int i = 0; i < steps; i++) {
             resolve(pos, deltaPosStepped);
-        }
-
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_P)) {
-            for (int dx = -1; dx <= 1; dx++)
-            for (int dy = -1; dy <= 1; dy++)
-            for (int dz = -1; dz <= 1; dz++) {
-                ChunkLoader.setBlockAt(new Vector3i(pos, RoundingMode.FLOOR).add(dx, dy, dz), Block.AIR.getID());
-            }
-            ChunkLoader.updateSpoiled();
         }
     }
 
