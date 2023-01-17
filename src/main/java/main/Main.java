@@ -52,8 +52,8 @@ public class Main {
         TerrainModelLoader.setShader(terrainShader);
 
         var uiTexture = new ArrayTexture(
-                "src/main/resources/cat_array.png",
-                "arrayTexture", 64, 64);
+                "src/main/resources/ui_array.png",
+                "arrayTexture", 16, 16);
 
         var uiShader = new Shader(
                 "src/main/resources/shaders/ui_vertex.glsl",
@@ -88,7 +88,7 @@ public class Main {
         ));
         EntityManager.addComponent(crosshair, new TransformationComponent(new Vector3f(), new Vector3f(), 0.05f));
 
-        var playerStartPosition = new Vector3f(10f, 40, 10f);
+        var playerStartPosition = new Vector3f(1000f, 40, 1000f);
 
         var camera = new Camera(
                 (float) Math.toRadians(60f),
@@ -108,13 +108,20 @@ public class Main {
         Mouse.init(display.getWindow(),
                 () -> {
                     var blockController = EntityManager.getComponent(camera, PlayerBlockController.class);
-                    Vector3f pos;
-                    if ((pos = blockController.getCurrentBlock()) != null) {
-                        ChunkLoader.setBlockAt(new Vector3i(pos, RoundingMode.FLOOR), Block.AIR.getID());
+                    Vector3i pos;
+                    if ((pos = blockController.getHitBlock()) != null) {
+                        ChunkLoader.setBlockAt(pos, Block.AIR.getID());
                         ChunkLoader.updateSpoiled();
                     }
                 },
-                () -> {});
+                () -> {
+                    var blockController = EntityManager.getComponent(camera, PlayerBlockController.class);
+                    Vector3i pos;
+                    if ((pos = blockController.getBeforeHitBlock()) != null) {
+                        ChunkLoader.setBlockAt(pos, Block.COBBLESTONE.getID());
+                        ChunkLoader.updateSpoiled();
+                    }
+                });
 
         var renderer = new Renderer();
 
