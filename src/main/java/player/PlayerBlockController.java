@@ -15,7 +15,6 @@ import render.Camera;
 public class PlayerBlockController extends Component {
 
     private static final int MAX_DISTANCE = 50;
-    private static final float SMALL_OFFSET = 0.0001f;
 
     private static Vector3i beforeHitLocation = null;
     private static Vector3i hitLocation = null;
@@ -53,7 +52,9 @@ public class PlayerBlockController extends Component {
 
     // http://www.cse.yorku.ca/~amana/research/grid.pdf
     private void getBlockIntersect(Vector3f pos, Vector3f t) {
-        pos.add(SMALL_OFFSET, SMALL_OFFSET, SMALL_OFFSET); // TODO: Somehow fix raycasting mucking up when pos is integer value.
+        if (Math.floor(pos.x) - pos.x == 0) pos.x += 1f/10_000;
+        if (Math.floor(pos.y) - pos.y == 0) pos.y += 1f/10_000;
+        if (Math.floor(pos.z) - pos.z == 0) pos.z += 1f/10_000;
 
         Vector3i ipos = new Vector3i(pos, RoundingMode.FLOOR);
 
@@ -61,15 +62,9 @@ public class PlayerBlockController extends Component {
         float stepY = Math.signum(t.y);
         float stepZ = Math.signum(t.z);
 
-        float tMaxX, tMaxY, tMaxZ; // TODO separate into method
-        if (t.x > 0) tMaxX = ((float) Math.ceil(pos.x) - pos.x) / Math.abs(t.x);
-        else         tMaxX = (pos.x - (float) Math.floor(pos.x)) / Math.abs(t.x);
-
-        if (t.y > 0) tMaxY = ((float) Math.ceil(pos.y) - pos.y) / Math.abs(t.y);
-        else         tMaxY = (pos.y - (float) Math.floor(pos.y)) / Math.abs(t.y);
-
-        if (t.z > 0) tMaxZ = ((float) Math.ceil(pos.z) - pos.z) / Math.abs(t.z);
-        else         tMaxZ = (pos.z - (float) Math.floor(pos.z)) / Math.abs(t.z);
+        float tMaxX = calcMaxT(pos.x, t.x);
+        float tMaxY = calcMaxT(pos.y, t.y);
+        float tMaxZ = calcMaxT(pos.z, t.z);
 
         float tDeltaX = stepX/t.x;
         float tDeltaY = stepY/t.y;
@@ -105,5 +100,10 @@ public class PlayerBlockController extends Component {
                 }
             }
         }
+    }
+
+    private float calcMaxT(float pos, float vec) {
+        if (vec > 0) return ((float) Math.ceil(pos) - pos) / Math.abs(vec);
+        return -((float) Math.floor(pos) - pos) / Math.abs(vec);
     }
 }
