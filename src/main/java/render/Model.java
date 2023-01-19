@@ -29,7 +29,7 @@ public class Model {
         }
     }
 
-    private final int vao;
+    private int vao;
     private final ArrayList<Integer> vbos = new ArrayList<>();
     private int vertexCount = -1;
     private boolean hasIndexBuffer = false;
