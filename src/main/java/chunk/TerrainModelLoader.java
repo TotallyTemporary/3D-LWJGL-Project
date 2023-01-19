@@ -16,7 +16,7 @@ public class TerrainModelLoader {
     // opengl models can only be loaded on the main thread, so no multithreading here.
     // if you want to be fancy, you could stream the data in though...
 
-    private static final int DEFAULT_LOAD_LIMIT = 50;
+    private static final int DEFAULT_LOAD_LIMIT = 3;
     private static final Queue<Chunk> modelLoadQueue = new ArrayDeque<>();
 
     private static Shader chunkShader = null;
@@ -50,6 +50,7 @@ public class TerrainModelLoader {
         assert EntityManager.hasComponent(chunk, ChunkModelDataComponent.class);
 
         var chunkModelData = EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
+        assert chunkModelData != null;
 
         if (chunkModelData.positions.length != 0) {
             var pos = chunk.getChunkPos();

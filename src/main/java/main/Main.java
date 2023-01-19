@@ -2,7 +2,6 @@ package main;
 
 import chunk.*;
 import entity.*;
-import org.joml.RoundingMode;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
@@ -125,9 +124,13 @@ public class Main {
 
         var renderer = new Renderer();
 
-        /*while (ChunkLoader.update(playerStartPosition) > 0 || ChunkLoader.getQueueSize() > 0) {
+        // render 1 frame before beginning load, later swap this for loading text
+        renderer.render(camera);
+        GLFW.glfwSwapBuffers(display.getWindow());
+
+        while (ChunkLoader.update(playerStartPosition) > 0 || ChunkLoader.getQueueSize() > 0) {
             TerrainModelLoader.loadChunks(999);
-        }*/
+        }
 
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_K)) {
