@@ -66,7 +66,7 @@ public class TerrainModelLoader {
                 .setTexture(chunkTexture)
                 .setShader(chunkShader)
                 .end();
-            EntityManager.addComponent(chunk, new ChunkModelComponent(model));
+            EntityManager.addComponent(chunk, new ChunkModelComponent(model, chunkModelData.positionsIndices));
         }
 
         chunk.setStatus(Chunk.Status.FINAL);

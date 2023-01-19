@@ -25,6 +25,14 @@ public class Camera extends Entity {
         return projectionMatrix;
     }
 
+    public Vector3f getEyePosition() {
+        var transform = EntityManager.getComponent(this, TransformationComponent.class);
+        assert transform != null;
+        return new Vector3f(transform.getPosition().x,
+                            transform.getPosition().y + PlayerMovementController.EYE_LEVEL,
+                            transform.getPosition().z);
+    }
+
     private void calcProjectionMatrix(float fov, float aspect, float near, float far) {
         projectionMatrix.setPerspective(fov, aspect, near, far);
     }

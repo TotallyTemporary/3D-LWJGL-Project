@@ -1,5 +1,6 @@
 package render;
 
+import chunk.ChunkRenderer;
 import entity.*;
 import org.lwjgl.opengl.GL30;
 import java.util.stream.Collectors;
@@ -15,7 +16,7 @@ public class Renderer {
 
         // first render terrain
         GL30.glEnable(GL30.GL_DEPTH_TEST);
-        render(camera, ChunkModelComponent.class);
+        renderChunks(camera);
 
         // then render ui on top of everything
         GL30.glEnable(GL30.GL_BLEND);
@@ -23,6 +24,14 @@ public class Renderer {
         GL30.glDisable(GL30.GL_DEPTH_TEST);
         render(camera, UIModelComponent.class);
         GL30.glDisable(GL30.GL_BLEND);
+    }
+
+    public void renderChunks(Camera camera) {
+        var viewMatrix = camera.getViewMatrix();
+        var projectionMatrix = camera.getProjectionMatrix();
+
+        var chunks = EntityManager.getComponents(ChunkModelComponent.class);
+        ChunkRenderer.render(chunks, viewMatrix, projectionMatrix, camera.getEyePosition());
     }
 
     public <T extends ModelComponent> void render(Camera camera, Class<T> modelClass) {
