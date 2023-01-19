@@ -7,7 +7,7 @@ import render.Model;
  * */
 public class ModelComponent extends Component {
 
-    protected Model model;
+    protected final Model model;
 
     public ModelComponent(Model model) {
         this.model = model;

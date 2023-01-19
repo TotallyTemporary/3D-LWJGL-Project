@@ -9,8 +9,8 @@ import player.PlayerMovementController;
 
 public class Camera extends Entity {
 
-    private Matrix4f projectionMatrix = new Matrix4f();
-    private Matrix4f viewMatrix       = new Matrix4f();
+    private final Matrix4f projectionMatrix = new Matrix4f();
+    private final Matrix4f viewMatrix       = new Matrix4f();
 
     public Camera(float FOV, float aspect, float near, float far) {
         calcProjectionMatrix(FOV, aspect, near, far);

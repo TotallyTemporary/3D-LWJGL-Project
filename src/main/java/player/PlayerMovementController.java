@@ -8,9 +8,7 @@ import entity.Entity;
 import entity.EntityManager;
 import entity.TransformationComponent;
 import main.Timer;
-import org.joml.RoundingMode;
 import org.joml.Vector3f;
-import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 
 public class PlayerMovementController extends Component {

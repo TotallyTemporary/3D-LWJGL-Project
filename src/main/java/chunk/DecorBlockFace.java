@@ -8,7 +8,7 @@ public class DecorBlockFace extends BlockFace {
 
     // left/right form one cross (no backface culling)
 
-    private static float[] LEFT_VERTS = {
+    private static final float[] LEFT_VERTS = {
         1f, 1f, 1f,
         0f, 1f, 0f,
         0f, 0f, 0f,
@@ -17,7 +17,7 @@ public class DecorBlockFace extends BlockFace {
         1f, 1f, 1f
     };
 
-    private static float[] LEFT_TEX = {
+    private static final float[] LEFT_TEX = {
         0f, 0f,
         1f, 0f,
         1f, 1f,
@@ -26,7 +26,7 @@ public class DecorBlockFace extends BlockFace {
         0f, 0f
     };
 
-    private static float[] RIGHT_VERTS = {
+    private static final float[] RIGHT_VERTS = {
         0f, 0f, 0f,
         0f, 1f, 0f,
         1f, 1f, 1f,
@@ -35,7 +35,7 @@ public class DecorBlockFace extends BlockFace {
         0f, 0f, 0f
     };
 
-    private static float[] RIGHT_TEX = {
+    private static final float[] RIGHT_TEX = {
         0f, 1f,
         0f, 0f,
         1f, 0f,
@@ -44,7 +44,7 @@ public class DecorBlockFace extends BlockFace {
         0f, 1f
     };
 
-    private static float[] FRONT_VERTS = {
+    private static final float[] FRONT_VERTS = {
         0f, 1f, 1f,
         1f, 1f, 0f,
         1f, 0f, 0f,
@@ -53,7 +53,7 @@ public class DecorBlockFace extends BlockFace {
         0f, 1f, 1f
     };
 
-    private static float[] FRONT_TEX = {
+    private static final float[] FRONT_TEX = {
         0f, 0f,
         1f, 0f,
         1f, 1f,
@@ -62,7 +62,7 @@ public class DecorBlockFace extends BlockFace {
         0f, 0f
     };
 
-    private static float[] BACK_VERTS = {
+    private static final float[] BACK_VERTS = {
         1f, 0f, 0f,
         1f, 1f, 0f,
         0f, 1f, 1f,
@@ -71,7 +71,7 @@ public class DecorBlockFace extends BlockFace {
         1f, 0f, 0f
     };
 
-    private static float[] BACK_TEX = {
+    private static final float[] BACK_TEX = {
         0f, 1f,
         0f, 0f,
         1f, 0f,

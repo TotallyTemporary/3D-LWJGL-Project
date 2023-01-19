@@ -46,7 +46,7 @@ public class TerrainModelLoader {
         return modelLoadQueue.size();
     }
 
-    public static boolean loadChunk(Chunk chunk) {
+    public static void loadChunk(Chunk chunk) {
         assert EntityManager.hasComponent(chunk, ChunkModelDataComponent.class);
 
         var chunkModelData = EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
@@ -70,7 +70,6 @@ public class TerrainModelLoader {
         }
 
         chunk.setStatus(Chunk.Status.FINAL);
-        return true;
     }
 
     public static void setShader(Shader shader) {

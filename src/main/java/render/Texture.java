@@ -14,8 +14,8 @@ public abstract class Texture {
     protected int id;
     protected int type;
 
-    protected String path;
-    protected String name;
+    protected final String path;
+    protected final String name;
     protected int width, height;
     protected ByteBuffer imageData;
     public Texture(String path, String name) {

@@ -14,7 +14,7 @@ public class ChunkLoader {
     private static final int HORIZONTAL_LOAD_RADIUS = 14;
     private static final int VERTICAL_LOAD_RADIUS = 7;
 
-    private static HashMap<Vector3i, Chunk> chunks = new HashMap<>();
+    private static final HashMap<Vector3i, Chunk> chunks = new HashMap<>();
 
     public static int update(Vector3f playerPos) {
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
@@ -50,7 +50,7 @@ public class ChunkLoader {
                 pos.z < minZ || pos.z > maxZ) {
                 unloadChunk(chunk, it);
             } else {
-                if (doUpdateChunk(chunk, pos)) {
+                if (doUpdateChunk(chunk)) {
                     updatedCount++;
                 }
             }
@@ -60,9 +60,7 @@ public class ChunkLoader {
     }
 
     public static void updateSpoiled() {
-        var it = chunks.values().iterator();
-        while (it.hasNext()) {
-            var chunk = it.next();
+        for (Chunk chunk : chunks.values()) {
             if (chunk.spoiled) {
                 chunk.spoiled = false;
                 updateNow(chunk);
@@ -139,7 +137,7 @@ public class ChunkLoader {
         return getChunkAt(Chunk.worldPosToChunkPos(pos));
     }
 
-    private static boolean doUpdateChunk(Chunk chunk, Vector3i pos) {
+    private static boolean doUpdateChunk(Chunk chunk) {
         switch (chunk.getStatus()) {
             case NONE           -> {
                 chunk.setStatus(Chunk.Status.TERRAIN_GENERATING);

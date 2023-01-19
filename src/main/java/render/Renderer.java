@@ -53,7 +53,7 @@ public class Renderer {
 
         // 1 shader for multiple models
         var shaderMap = modelMap.keySet().stream()
-                .collect(Collectors.groupingBy(model -> model.getShader()));
+                .collect(Collectors.groupingBy(Model::getShader));
 
 
         // render

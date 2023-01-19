@@ -56,10 +56,7 @@ public class TerrainGenerator {
                                     pos.y * CAVE_SCALE,
                                     pos.z * CAVE_SCALE)) / 2f;
 
-        if (noise < CAVE_CUTOFF) {
-            return true;
-        }
-        return false;
+        return noise < CAVE_CUTOFF;
     }
 
     private static byte getOre(Vector3i pos, FastSimplexNoiseGenerator generator) {

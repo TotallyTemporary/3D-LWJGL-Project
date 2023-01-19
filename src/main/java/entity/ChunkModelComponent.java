@@ -5,7 +5,7 @@ import render.Model;
 
 public class ChunkModelComponent extends ModelComponent {
 
-    private int[] positionsIndices;
+    private final int[] positionsIndices;
 
     public ChunkModelComponent(Model model, int[] positionsIndices) {
         super(model);

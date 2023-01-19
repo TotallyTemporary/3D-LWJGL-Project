@@ -1,8 +1,8 @@
 package chunk;
 
 public abstract class BlockFace {
-    protected int blockID;
-    protected int direction;
+    protected final int blockID;
+    protected final int direction;
 
     public BlockFace(Integer blockID, Integer direction) {
         this.blockID = blockID;

@@ -29,8 +29,8 @@ public class Model {
         }
     }
 
-    private int vao;
-    private ArrayList<Integer> vbos = new ArrayList<>();
+    private final int vao;
+    private final ArrayList<Integer> vbos = new ArrayList<>();
     private int vertexCount = -1;
     private boolean hasIndexBuffer = false;
 
@@ -156,7 +156,7 @@ public class Model {
 
     public void destroy() {
         for (var vbo : this.vbos) {
-            allVBOs.remove((Integer) vbo);
+            allVBOs.remove(vbo);
             GL30.glDeleteBuffers(vbo);
         }
         this.vbos.clear();

@@ -63,7 +63,7 @@ public class EntityManager {
 
     /** Attemps to remove all components associated with an entity. NOTE: Do not call from entity update. */
     public static synchronized void removeEntity(Entity entity) {
-        map.entrySet().forEach(entry -> entry.getValue().remove(entity));
+        map.forEach((key, value) -> value.remove(entity));
     }
 
     public static synchronized boolean hasComponent(Entity entity, Class<? extends Component> clazz) {
@@ -81,7 +81,7 @@ public class EntityManager {
     public static synchronized <T extends Component> HashMap<Entity, T> getComponents(Class<T> clazz) {
         var classMap = (HashMap<Entity, T>) map.get(clazz);
         if (classMap == null) {
-            classMap = new HashMap<Entity, T>();
+            classMap = new HashMap<>();
             map.put(clazz, (HashMap<Entity, Component>) classMap);
         }
         return classMap;

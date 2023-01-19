@@ -4,7 +4,7 @@ import org.joml.Vector3i;
 
 public class DiagonalDirection {
 
-    public static int COUNT = 26;
+    public static final int COUNT = 26;
 
     public static final int
         UP    = 15,
@@ -14,7 +14,7 @@ public class DiagonalDirection {
         FRONT = 12,
         BACK  = 13;
 
-    public static Vector3i[] offsets = {
+    public static final Vector3i[] offsets = {
            new Vector3i(-1, -1, -1),
            new Vector3i(-1, -1,  0),
            new Vector3i(-1, -1,  1),

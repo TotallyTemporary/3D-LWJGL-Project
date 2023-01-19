@@ -68,22 +68,20 @@ public class Chunk extends Entity {
         MESH_LOADING(7, true),          // load those vertices into opengl (main thread)
         FINAL(8, false);                 // chunk can be rendered
 
-        public int urgency;
-        public boolean working;
-        private Status(int urgency, boolean working) { this.urgency = urgency; this.working = working; }
+        public final int urgency;
+        public final boolean working;
+        Status(int urgency, boolean working) { this.urgency = urgency; this.working = working; }
     }
 
     // chunk instance stuff below
 
-    private Vector3i chunkPos;
+    private final Vector3i chunkPos;
     private Status status;
     private boolean isAllAir; // if a chunk is all air, we don't store blocks.
     private byte[] blocks;
-    private List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(DiagonalDirection.COUNT, null));
+    private final List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(DiagonalDirection.COUNT, null));
 
-
-    public boolean updated = false; // sorta temporary flag. used by chunkloader.
-    public boolean spoiled = false;
+    public boolean spoiled = false; // temp flag used by chunkloader
 
     public Chunk(Vector3i chunkPos) {
         super();
