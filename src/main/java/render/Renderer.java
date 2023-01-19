@@ -9,32 +9,38 @@ public class Renderer {
 
     public Renderer() {}
 
-    public void render(Camera camera) {
+    public int render(Camera camera) {
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
         GL30.glCullFace(GL30.GL_BACK);
         GL30.glEnable(GL30.GL_CULL_FACE);
 
+        int vertexTally = 0; // count number of vertices rendered
+
         // first render terrain
         GL30.glEnable(GL30.GL_DEPTH_TEST);
-        renderChunks(camera);
+        vertexTally += renderChunks(camera);
 
         // then render ui on top of everything
         GL30.glEnable(GL30.GL_BLEND);
         GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
         GL30.glDisable(GL30.GL_DEPTH_TEST);
-        render(camera, UIModelComponent.class);
+        vertexTally += render(camera, UIModelComponent.class);
         GL30.glDisable(GL30.GL_BLEND);
+
+        return vertexTally;
     }
 
-    public void renderChunks(Camera camera) {
+    public int renderChunks(Camera camera) {
         var viewMatrix = camera.getViewMatrix();
         var projectionMatrix = camera.getProjectionMatrix();
 
         var chunks = EntityManager.getComponents(ChunkModelComponent.class);
-        ChunkRenderer.render(chunks, viewMatrix, projectionMatrix, camera.getEyePosition());
+        return ChunkRenderer.render(chunks, viewMatrix, projectionMatrix, camera.getEyePosition());
     }
 
-    public <T extends ModelComponent> void render(Camera camera, Class<T> modelClass) {
+    public <T extends ModelComponent> int render(Camera camera, Class<T> modelClass) {
+        int vertexTally = 0;
+
         var viewMatrix = camera.getViewMatrix();
         var projectionMatrix = camera.getProjectionMatrix();
 
@@ -79,7 +85,7 @@ public class Renderer {
 
 
                 for (var entity : entities) {
-                    render(entity, model);
+                    vertexTally += render(entity, model);
                 }
 
 
@@ -91,9 +97,10 @@ public class Renderer {
             // disable shader
             GL30.glUseProgram(0);
         }
+        return vertexTally;
     }
 
-    private void render(Entity entity, Model model) {
+    private int render(Entity entity, Model model) {
         var transformComponent = EntityManager
                 .getComponent(entity, TransformationComponent.class);
         if (transformComponent != null) {
@@ -104,6 +111,7 @@ public class Renderer {
         } else {
             GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, model.getVertexCount());
         }
+        return model.getVertexCount();
     }
 
 }

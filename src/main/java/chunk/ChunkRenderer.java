@@ -15,11 +15,13 @@ public class ChunkRenderer {
 
     /* Chunks have some special optimizations done, so they require their own render functions. */
 
-    public static void render(HashMap<Entity, ChunkModelComponent> chunks, Matrix4f viewMatrix, Matrix4f projectionMatrix, Vector3f cameraPos) {
+    public static int render(HashMap<Entity, ChunkModelComponent> chunks, Matrix4f viewMatrix, Matrix4f projectionMatrix, Vector3f cameraPos) {
+        int vertexTally = 0; // return number of vertices rendered (for cool statistical purposes)
+
         // assumptions:
         // all chunks have the same shader,
         // all chunks have the same textures
-        if (chunks.size() == 0) return;
+        if (chunks.size() == 0) return 0;
         var firstChunk = chunks.values().iterator().next();
         var shader = firstChunk.getModel().getShader();
         var textures = firstChunk.getModel().getTextures();
@@ -55,12 +57,12 @@ public class ChunkRenderer {
             // the model data is partitioned to different direction faces, so we can selectively render.
             // Example: if player is clearly above a chunk, we don't need to render the BOTTOM faces.
             var chunkPos = transform.getPosition();
-            if (cameraPos.y >= chunkPos.y)               renderFace(modelComp, CardinalDirection.UP);
-            if (cameraPos.y <  chunkPos.y + Chunk.SIZE)  renderFace(modelComp, CardinalDirection.DOWN);
-            if (cameraPos.x >= chunkPos.x)               renderFace(modelComp, CardinalDirection.RIGHT);
-            if (cameraPos.x <  chunkPos.x + Chunk.SIZE)  renderFace(modelComp, CardinalDirection.LEFT);
-            if (cameraPos.z >= chunkPos.z)               renderFace(modelComp, CardinalDirection.BACK);
-            if (cameraPos.z <  chunkPos.z + Chunk.SIZE)  renderFace(modelComp, CardinalDirection.FRONT);
+            if (cameraPos.y >= chunkPos.y)               vertexTally += renderFace(modelComp, CardinalDirection.UP);
+            if (cameraPos.y <  chunkPos.y + Chunk.SIZE)  vertexTally += renderFace(modelComp, CardinalDirection.DOWN);
+            if (cameraPos.x >= chunkPos.x)               vertexTally += renderFace(modelComp, CardinalDirection.RIGHT);
+            if (cameraPos.x <  chunkPos.x + Chunk.SIZE)  vertexTally += renderFace(modelComp, CardinalDirection.LEFT);
+            if (cameraPos.z >= chunkPos.z)               vertexTally += renderFace(modelComp, CardinalDirection.BACK);
+            if (cameraPos.z <  chunkPos.z + Chunk.SIZE)  vertexTally += renderFace(modelComp, CardinalDirection.FRONT);
 
             // disable everything
             for (int i = 0; i < modelComp.getModel().getNumberOfVBOs(); i++)
@@ -69,11 +71,13 @@ public class ChunkRenderer {
         }
 
         GL30.glUseProgram(0);
+        return vertexTally;
     }
 
-    private static void renderFace(ChunkModelComponent modelComp, int face) {
+    private static int renderFace(ChunkModelComponent modelComp, int face) {
         int start = modelComp.getPositionIndex(face);
         int end = modelComp.getPositionIndex(face+1);
         GL30.glDrawArrays(GL30.GL_TRIANGLES, start, end-start);
+        return end-start;
     }
 }

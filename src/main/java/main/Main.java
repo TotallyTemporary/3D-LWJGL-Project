@@ -158,8 +158,8 @@ public class Main {
             // end update
 
             // render
-            renderer.render(camera);
-            GLFW.glfwSetWindowTitle(display.getWindow(), (int) Timer.getFrametimeMillis() + " ms");
+            int verticesRendered = renderer.render(camera);
+            GLFW.glfwSetWindowTitle(display.getWindow(), verticesRendered/3 + " triangles @" + (int) Timer.getFrametimeMillis() + " ms");
 
             // glfw stuff
             GLFW.glfwSwapBuffers(display.getWindow());
