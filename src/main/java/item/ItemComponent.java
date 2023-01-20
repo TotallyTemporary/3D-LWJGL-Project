@@ -25,9 +25,8 @@ public class ItemComponent extends Component {
         this.actualRotation = actualRotation;
     }
 
-    @Override public void start() {}
-
-    @Override public void stop() {}
+    @Override public void start(Entity entity) {}
+    @Override public void stop(Entity entity) {}
 
     @Override
     public void apply(Entity entity) {

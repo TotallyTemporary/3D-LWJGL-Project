@@ -15,9 +15,8 @@ public class PlayerMiscController extends Component {
                                ITEM_ATTRACT_RANGE = 3.0f,
                                ATTRACT_SPEED      = 0.5f;
 
-    @Override public void start() {}
-
-    @Override public void stop() {}
+    @Override public void start(Entity entity) {}
+    @Override public void stop(Entity entity) {}
 
     @Override
     public void apply(Entity entity) {

@@ -37,8 +37,8 @@ public class EntityManager {
         }
         // start all comps
         for (var hashMap : map.values()) {
-            for (var comp : hashMap.values()) {
-                comp.start();
+            for (var entry : hashMap.entrySet()) {
+                entry.getValue().start(entry.getKey());
             }
         }
     }
@@ -54,8 +54,8 @@ public class EntityManager {
         }
         // stop all comps
         for (var hashMap : map.values()) {
-            for (var comp : hashMap.values()) {
-                comp.stop();
+            for (var entry : hashMap.entrySet()) {
+                entry.getValue().stop(entry.getKey());
             }
         }
     }

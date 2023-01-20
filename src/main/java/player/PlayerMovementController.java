@@ -35,9 +35,8 @@ public class PlayerMovementController extends Component {
             acceleration = new Vector3f(),
             velocity     = new Vector3f();
 
-    @Override public void start() {}
-
-    @Override public void stop() {}
+    @Override public void start(Entity entity) {}
+    @Override public void stop(Entity entity) {}
 
     @Override public void apply(Entity entity) {
         // get player position

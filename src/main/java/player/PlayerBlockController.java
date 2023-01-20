@@ -18,11 +18,8 @@ public class PlayerBlockController extends Component {
     private static Vector3i beforeHitLocation = null;
     private static Vector3i hitLocation = null;
 
-    @Override
-    public void start() {}
-
-    @Override
-    public void stop() {}
+    @Override public void start(Entity entity) {}
+    @Override public void stop(Entity entity) {}
 
     @Override
     public void apply(Entity entity) {

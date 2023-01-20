@@ -20,7 +20,7 @@ public class ChunkModelDataComponent extends Component {
         this.positionsIndices = positionsIndices;
     }
 
-    @Override public void start() {}
-    @Override public void stop() {}
+    @Override public void start(Entity entity) {}
+    @Override public void stop(Entity entity) {}
     @Override public void apply(Entity entity) {}
 }
