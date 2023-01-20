@@ -11,10 +11,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.Configuration;
-import player.Keyboard;
-import player.Mouse;
-import player.PlayerBlockController;
-import player.PlayerMovementController;
+import player.*;
 import render.*;
 import shader.Shader;
 import ui.UIModelComponent;
@@ -102,6 +99,7 @@ public class Main {
         ));
         EntityManager.addComponent(camera, new PlayerMovementController());
         EntityManager.addComponent(camera, new PlayerBlockController());
+        EntityManager.addComponent(camera, new PlayerMiscController());
 
         Keyboard.init(display.getWindow());
         Mouse.init(display.getWindow(),

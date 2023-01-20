@@ -7,18 +7,20 @@ import entity.TransformationComponent;
 import main.Timer;
 import org.joml.Vector3f;
 
-public class ItemBobComponent extends Component {
+public class ItemComponent extends Component {
 
+    // bobbing
     private Vector3f actualPosition, actualRotation;
     private float positionTimer = 0,
                   rotationTimer = 0;
 
-    private static final float MIN_HOVER_HEIGHT = 0.25f,
+    // bob variables
+    private static final float  MIN_HOVER_HEIGHT = 0.25f,
                                 HOVER_AMPLITUDE  = 0.10f,
                                 POSITION_SPEED = 2f,
                                 ROTATION_SPEED = 2f;
 
-    public ItemBobComponent(Vector3f actualPosition, Vector3f actualRotation) {
+    public ItemComponent(Vector3f actualPosition, Vector3f actualRotation) {
         this.actualPosition = actualPosition;
         this.actualRotation = actualRotation;
     }
@@ -45,5 +47,13 @@ public class ItemBobComponent extends Component {
                 actualRotation.y + rotationTimer,
                 0
         ));
+    }
+
+    public Vector3f getActualPosition() {
+        return actualPosition;
+    }
+
+    public Vector3f getActualRotation() {
+        return actualRotation;
     }
 }

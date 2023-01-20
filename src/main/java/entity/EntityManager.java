@@ -1,6 +1,11 @@
 package entity;
 
+import item.ItemComponent;
+
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class should be used statically. It handles relationships between entities and components.
@@ -9,11 +14,23 @@ import java.util.HashMap;
 public class EntityManager {
     private static HashMap<Class<? extends Component>, HashMap<Entity, Component>> map = new HashMap<>();
     private static HashMap<Class<? extends Component>, Boolean> updatedThisFrame = new HashMap<>();
+    private static ArrayList<Map.Entry<Entity, Component>> toBeRemoved = new ArrayList<>();
 
     /**
      * Calls start() on all components and resets the map of already updated classes.
      */
     public static synchronized void start() {
+        // remove components that must be removed.
+        var it = toBeRemoved.iterator();
+        while (it.hasNext()) {
+            var entry = it.next();
+            var classMap = map.get(entry.getValue());
+            if (classMap != null) {
+                classMap.remove(entry.getKey());
+            }
+            it.remove();
+        }
+
         // nothing has been updated yet.
         for (var clazz : map.keySet()) {
             updatedThisFrame.put(clazz, false);
@@ -54,6 +71,10 @@ public class EntityManager {
         classMap.put(entity, component);
     }
 
+    public static synchronized void removeComponentSafe(Entity entity, Class<? extends Component> clazz) {
+        toBeRemoved.add(new AbstractMap.SimpleEntry(entity, clazz));
+    }
+
     /** Attempts to remove a component from an entity. NOTE: Do not call from entity update. */
     public static synchronized <T extends Component> T removeComponent(Entity entity, Class<T> clazz) {
         var classMap = map.get(clazz);
@@ -63,7 +84,11 @@ public class EntityManager {
 
     /** Attemps to remove all components associated with an entity. NOTE: Do not call from entity update. */
     public static synchronized void removeEntity(Entity entity) {
-        map.forEach((key, value) -> value.remove(entity));
+        map.forEach((_x, value) -> value.remove(entity));
+    }
+
+    public static synchronized void removeEntitySafe(Entity entity) {
+        map.keySet().forEach(clazz -> removeComponentSafe(entity, clazz));
     }
 
     public static synchronized boolean hasComponent(Entity entity, Class<? extends Component> clazz) {
@@ -82,7 +107,6 @@ public class EntityManager {
         var classMap = (HashMap<Entity, T>) map.get(clazz);
         if (classMap == null) {
             classMap = new HashMap<>();
-            map.put(clazz, (HashMap<Entity, Component>) classMap);
         }
         return classMap;
     }

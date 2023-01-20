@@ -52,7 +52,7 @@ public enum ItemType {
                 new Vector3f(ITEM_SIZE, ITEM_SIZE, ITEM_SIZE)
         ));
 
-        EntityManager.addComponent(item, new ItemBobComponent(position, rotation));
+        EntityManager.addComponent(item, new ItemComponent(position, rotation));
 
         var itemSpec = ItemType.getByID(itemID);
         EntityManager.addComponent(item, new ItemModelComponent(itemSpec.getModel()));
