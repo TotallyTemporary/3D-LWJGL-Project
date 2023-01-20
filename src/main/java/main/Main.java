@@ -15,6 +15,7 @@ import player.PlayerBlockController;
 import player.PlayerMovementController;
 import render.*;
 import shader.Shader;
+import ui.UIModelComponent;
 
 public class Main {
 
@@ -65,42 +66,10 @@ public class Main {
         TerrainModelLoader.setChunkTexture(terrainTexture);
         TerrainModelLoader.setShader(terrainShader);
 
-        var uiTexture = new ArrayTexture(
-                "src/main/resources/ui_array.png",
-                "arrayTexture", 16, 16);
-
-        var uiShader = new Shader(
-                "src/main/resources/shaders/ui_vertex.glsl",
-                "src/main/resources/shaders/ui_fragment.glsl"
-        )
-                .addUniform("transformationMatrix");
-
+        UIModelComponent.createUIModels(display);
         var crosshair = new Entity();
-        var as = (float) display.getWidth() / display.getHeight();
-        EntityManager.addComponent(crosshair, new UIModelComponent(
-                new Model()
-                    .addPosition3D(new float[] {
-                        -1f / as, -1f, -1f,
-                         1f / as, -1f, -1f,
-                         1f / as,  1f, -1f,
-                         1f / as,  1f, -1f,
-                        -1f / as,  1f, -1f,
-                        -1f / as, -1f, -1f
-                    })
-                    .addTextureCoords3D(
-                            new float[]{
-                        0f, 1f, 15f,
-                        1f, 1f, 15f,
-                        1f, 0f, 15f,
-                        1f, 0f, 15f,
-                        0f, 0f, 15f,
-                        0f, 1f, 15f,
-                    })
-                    .setTexture(uiTexture)
-                    .setShader(uiShader)
-                    .end()
-        ));
-        EntityManager.addComponent(crosshair, new TransformationComponent(new Vector3f(), new Vector3f(), 0.05f));
+        EntityManager.addComponent(crosshair, new UIModelComponent(15));
+        EntityManager.addComponent(crosshair, new TransformationComponent(new Vector3f(), new Vector3f(), new Vector3f(0.05f, 0.05f, 0.05f)));
 
         var playerStartPosition = new Vector3f(1000f, 120f, 1000f);
 
@@ -113,7 +82,7 @@ public class Main {
         EntityManager.addComponent(camera, new TransformationComponent(
                 playerStartPosition,
                 new Vector3f(0, 0, 0),
-                1f
+                new Vector3f(1f, 1f, 1f)
         ));
         EntityManager.addComponent(camera, new PlayerMovementController());
         EntityManager.addComponent(camera, new PlayerBlockController());

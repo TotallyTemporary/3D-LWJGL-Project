@@ -1,8 +1,11 @@
 package render;
 
+import chunk.ChunkModelComponent;
 import chunk.ChunkRenderer;
 import entity.*;
 import org.lwjgl.opengl.GL30;
+import ui.UIModelComponent;
+
 import java.util.stream.Collectors;
 
 public class Renderer {
@@ -101,11 +104,19 @@ public class Renderer {
     }
 
     private int render(Entity entity, Model model) {
+        // load possible transform
         var transformComponent = EntityManager
                 .getComponent(entity, TransformationComponent.class);
         if (transformComponent != null) {
             model.getShader().setMatrix4f("transformationMatrix", transformComponent.getTransformationMatrix());
         }
+
+        // load possible ui texture index
+        var uiComponent = EntityManager.getComponent(entity, UIModelComponent.class);
+        if (uiComponent != null) {
+            model.getShader().setFloat("uiIndex", uiComponent.getTextureIndex());
+        }
+
         if (model.hasIndexBuffer()) {
             GL30.glDrawElements(GL30.GL_TRIANGLES, model.getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
         } else {

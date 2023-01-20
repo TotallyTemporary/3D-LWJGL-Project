@@ -1,6 +1,7 @@
-package entity;
+package chunk;
 
 import chunk.CardinalDirection;
+import entity.ModelComponent;
 import render.Model;
 
 public class ChunkModelComponent extends ModelComponent {

@@ -1,6 +1,5 @@
 package chunk;
 
-import entity.ChunkModelComponent;
 import entity.Entity;
 import entity.EntityManager;
 import entity.TransformationComponent;

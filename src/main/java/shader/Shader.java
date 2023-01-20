@@ -36,6 +36,14 @@ public class Shader {
         GL30.glUniform1i(id, value);
     }
 
+    public void setFloat(String name, float value) {
+        var id = uniforms.get(name);
+        if (id == null) {
+            throw new IllegalStateException("No uniform with name " + name);
+        }
+        GL30.glUniform1f(id, value);
+    }
+
     public Shader addUniform(String name) {
         int id = GL30.glGetUniformLocation(program, name);
         uniforms.put(name, id);

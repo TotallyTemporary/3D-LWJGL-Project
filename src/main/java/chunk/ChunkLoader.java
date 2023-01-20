@@ -1,6 +1,5 @@
 package chunk;
 
-import entity.ChunkModelComponent;
 import entity.EntityManager;
 import entity.TransformationComponent;
 import org.joml.Vector3f;

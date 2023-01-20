@@ -1,6 +1,5 @@
 package chunk;
 
-import entity.ChunkModelComponent;
 import entity.EntityManager;
 import entity.TransformationComponent;
 import org.joml.Vector3f;
@@ -56,7 +55,7 @@ public class TerrainModelLoader {
             EntityManager.addComponent(chunk, new TransformationComponent(
                     new Vector3f(pos.x * Chunk.SIZE, pos.y * Chunk.SIZE, pos.z * Chunk.SIZE),
                     new Vector3f(0, 0, 0),
-                    1f
+                    new Vector3f(1, 1, 1)
             ));
 
             var model = new Model()
