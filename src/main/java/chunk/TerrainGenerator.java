@@ -16,6 +16,7 @@ public class TerrainGenerator {
                                CAVE_CUTOFF = 0.2f;
 
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+    static { System.out.println("TerrainGenerator running"); }
 
     public static void addChunks(Chunk chunk) {
         executor.submit(() -> loadChunk(chunk));
@@ -32,6 +33,7 @@ public class TerrainGenerator {
 
     public static void stop() {
         executor.shutdownNow();
+        System.out.println("TerrainGenerator stopped");
     }
 
     private static int[][] generateHeightmap(Chunk chunk) {

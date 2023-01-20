@@ -34,12 +34,14 @@ public class StructureGenerator {
     }
 
     private static void run() {
+        System.out.println("StructureGenerator running");
         while (running) {
             try {
                 var chunk = loadQueue.take();
                 loadChunk(chunk);
             } catch (InterruptedException e) {}
         }
+        System.out.println("StructureGenerator stopped");
     }
 
     public static void loadChunk(Chunk chunk) {

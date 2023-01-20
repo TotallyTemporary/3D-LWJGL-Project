@@ -101,6 +101,7 @@ public class Display {
         int swapInterval = settings.vsync ? 1 : 0;
         GLFW.glfwSwapInterval(swapInterval);
 
+        System.out.println("Created window at " + width + "x" + height);
         this.width = width;
         this.height = height;
         this.monitor = monitor;

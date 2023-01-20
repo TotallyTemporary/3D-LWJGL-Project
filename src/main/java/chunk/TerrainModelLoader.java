@@ -50,7 +50,6 @@ public class TerrainModelLoader {
         assert EntityManager.hasComponent(chunk, ChunkModelDataComponent.class);
 
         var chunkModelData = EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
-        assert chunkModelData != null;
 
         if (chunkModelData.positions.length != 0) {
             var pos = chunk.getChunkPos();

@@ -22,6 +22,7 @@ public class Main {
         Configuration.DEBUG_STACK.set(true);
         Configuration.DEBUG.set(true);
 
+        // initializing the display also initialized glfw and creates the context.
         var displaySettings = new Display.DisplaySettings(
                 "A display",   // title
                 1280, 720,     // resolution
@@ -29,9 +30,23 @@ public class Main {
                 false,         // vsync
                 Display.DisplayMode.WINDOWED
         );
-
         var display = new Display(displaySettings);
         GLFWErrorCallback.createPrint(System.err).set();
+
+        int major = GL30.glGetInteger(GL30.GL_MAJOR_VERSION);
+        int minor = GL30.glGetInteger(GL30.GL_MINOR_VERSION);
+        System.out.println("OpenGL version: " + major + "." + minor);
+        System.out.println("Need OpenGL 4.3 to run.");
+
+        if (major < 4 || (major == 4 && minor < 3)) {
+            System.out.println("Your OpenGL version can't run this program, sorry!");
+            throw new IllegalStateException("Jump to this stacktrace for more information");
+            /*
+                Most of the code is built to work around OpenGL 3.0, but loading an array texture at
+                ArrayTexture.java requires two GL43 calls. There is a way to load it with 3.0, but I
+                couldn't get it to work.
+             */
+        }
 
         GL30.glClearColor(0.2f, 0.3f, 0.4f, 0f);
 
@@ -128,9 +143,11 @@ public class Main {
         renderer.render(camera);
         GLFW.glfwSwapBuffers(display.getWindow());
 
+        System.out.println("Starting world preload");
         while (ChunkLoader.update(playerStartPosition) > 0 || ChunkLoader.getQueueSize() > 0) {
             TerrainModelLoader.loadChunks(999);
         }
+        System.out.println("Chunks loaded");
 
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_K)) {
@@ -159,7 +176,10 @@ public class Main {
 
             // render
             int verticesRendered = renderer.render(camera);
-            GLFW.glfwSetWindowTitle(display.getWindow(), verticesRendered/3 + " triangles @" + (int) Timer.getFrametimeMillis() + " ms");
+            GLFW.glfwSetWindowTitle(display.getWindow(),
+                    verticesRendered/3 + " triangles @" +
+                    (int) Timer.getFrametimeMillis() + " ms " +
+                    ChunkLoader.getQueueSize() + " chunks queued");
 
             // glfw stuff
             GLFW.glfwSwapBuffers(display.getWindow());
@@ -178,6 +198,8 @@ public class Main {
         display.destroy();
         GLFW.glfwSetErrorCallback(null).free();
         GLFW.glfwTerminate();
+
+        System.out.println("Thank you for playing wing commander!");
     }
 
 }

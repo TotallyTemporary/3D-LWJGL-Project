@@ -27,7 +27,8 @@ public class PlayerMovementController extends Component {
 
     public static final float
         SMALL_OFFSET = 0.001f, // so we're never really on the bounds of a block
-        MAX_MOVE_DISTANCE = 0.5f;
+        MAX_STEP_DISTANCE = 0.5f,
+        MAX_TOTAL_DISTANCE = 100f;
 
     private boolean canJump = false;
     private Vector3f
@@ -47,18 +48,25 @@ public class PlayerMovementController extends Component {
         {
             acceleration = new Vector3f(0, GRAVITY, 0);
             velocity.add(
-                    acceleration.mul(Timer.getFrametimeSeconds(), new Vector3f())
+                acceleration.mul(Timer.getFrametimeSeconds(), new Vector3f())
             );
         }
 
         // get player input (desired change in position)
         Vector3f deltaPos = getInput(transComp)
-                .add(
-                        velocity.mul(Timer.getFrametimeSeconds(), new Vector3f())
-                );
+            .add(
+                velocity.mul(Timer.getFrametimeSeconds(), new Vector3f())
+            );
+
+        // A bit of a failsafe, if the game is stuck for a long time, the deltaPos might be huge thanks to the Timer multiplication
+        // so we limit it to a maximum magnitude
+        if (deltaPos.length() > MAX_TOTAL_DISTANCE) {
+            System.err.println("deltaPos had length " + deltaPos.length() + ", limited to " + MAX_TOTAL_DISTANCE);
+            deltaPos.div(deltaPos.length() / MAX_TOTAL_DISTANCE);
+        }
 
         // if deltaPos is too big, we might need to calculate our movement multiple times in this for loop.
-        int steps = (int) (deltaPos.length() / MAX_MOVE_DISTANCE + 1);
+        int steps = (int) (deltaPos.length() / MAX_STEP_DISTANCE + 1);
         var deltaPosStepped = deltaPos.div(steps);
         for (int i = 0; i < steps; i++) {
             resolve(pos, deltaPosStepped);
@@ -66,6 +74,7 @@ public class PlayerMovementController extends Component {
     }
 
     private void resolve(Vector3f pos, Vector3f deltaPos) {
+        // TODO always resolving Y first leads to some problems, do calculate timeY and compare that with the other axis.
         // we always resolve Y first, then we see if we should resolve X or Z next.
         resolveY(pos, deltaPos);
 
