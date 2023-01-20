@@ -97,6 +97,11 @@ public class Main {
                 new Vector3f(0, 0, 0),
                 new Vector3f(1f, 1f, 1f)
         ));
+        EntityManager.addComponent(camera, new PhysicsObjectComponent(new Vector3f(
+            PlayerMovementController.WIDTH,
+            PlayerMovementController.HEIGHT,
+            PlayerMovementController.DEPTH
+        )));
         EntityManager.addComponent(camera, new PlayerMovementController());
         EntityManager.addComponent(camera, new PlayerBlockController());
         EntityManager.addComponent(camera, new PlayerMiscController());

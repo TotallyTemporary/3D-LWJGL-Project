@@ -5,15 +5,14 @@ import entity.Entity;
 import entity.EntityManager;
 import entity.TransformationComponent;
 import item.ItemComponent;
-import main.Timer;
 import org.joml.Vector3f;
 
 // TODO This class represents miscellaneous bits and bobs of player functionality.
 public class PlayerMiscController extends Component {
 
-    private static final float ITEM_PICKUP_RANGE  = 0.75f,
-                               ITEM_ATTRACT_RANGE = 3.0f,
-                               ATTRACT_SPEED      = 0.5f;
+    private static final float ITEM_PICKUP_RANGE    = 0.5f,
+                               ITEM_ATTRACT_RANGE   = 3.5f,
+                               ATTRACT_ACCELERATION = 40f;
 
     @Override public void start(Entity entity) {}
     @Override public void stop(Entity entity) {}
@@ -27,7 +26,8 @@ public class PlayerMiscController extends Component {
 
         for (var entry : comps) {
             var item = entry.getKey();
-            var itemPos = entry.getValue().getActualPosition();
+            var itemPos = EntityManager.getComponent(item, TransformationComponent.class).getPosition();
+            var physics = EntityManager.getComponent(item, PhysicsObjectComponent.class);
 
             itemPos.sub(pos, res);
             if (res.length() < ITEM_PICKUP_RANGE) {
@@ -35,8 +35,8 @@ public class PlayerMiscController extends Component {
                 EntityManager.removeEntitySafe(item);
             }
             else if (res.length() < ITEM_ATTRACT_RANGE) {
-                var moveDir = res.normalize().mul( Timer.getFrametimeSeconds() * -ATTRACT_SPEED );
-                itemPos.add(moveDir);
+                var moveDir = res.normalize().mul(-ATTRACT_ACCELERATION);
+                physics.acceleration.add(moveDir);
             }
         }
     }

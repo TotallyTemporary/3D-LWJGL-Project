@@ -9,6 +9,7 @@ import org.joml.Vector3f;
 
 public class ItemComponent extends Component {
 
+    /*
     // bobbing
     private Vector3f actualPosition, actualRotation;
     private float positionTimer = 0,
@@ -20,9 +21,11 @@ public class ItemComponent extends Component {
                                 POSITION_SPEED = 2f,
                                 ROTATION_SPEED = 2f;
 
-    public ItemComponent(Vector3f actualPosition, Vector3f actualRotation) {
-        this.actualPosition = actualPosition;
-        this.actualRotation = actualRotation;
+     */
+
+    public ItemComponent(/*Vector3f actualPosition, Vector3f actualRotation*/) {
+        /*this.actualPosition = actualPosition;
+        this.actualRotation = actualRotation;*/
     }
 
     @Override public void start(Entity entity) {}
@@ -30,7 +33,7 @@ public class ItemComponent extends Component {
 
     @Override
     public void apply(Entity entity) {
-        var transform = EntityManager.getComponent(entity, TransformationComponent.class);
+        /*var transform = EntityManager.getComponent(entity, TransformationComponent.class);
 
         positionTimer = (float) ((positionTimer + Timer.getFrametimeSeconds() * POSITION_SPEED) % (2*Math.PI));
         rotationTimer = (float) ((rotationTimer + Timer.getFrametimeSeconds() * ROTATION_SPEED) % (2*Math.PI));
@@ -45,9 +48,10 @@ public class ItemComponent extends Component {
                 actualRotation.x,
                 actualRotation.y + rotationTimer,
                 0
-        ));
+        ));*/
     }
 
+    /*
     public Vector3f getActualPosition() {
         return actualPosition;
     }
@@ -55,4 +59,5 @@ public class ItemComponent extends Component {
     public Vector3f getActualRotation() {
         return actualRotation;
     }
+     */
 }

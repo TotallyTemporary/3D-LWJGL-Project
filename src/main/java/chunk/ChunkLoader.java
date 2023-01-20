@@ -10,8 +10,8 @@ import java.util.Iterator;
 
 public class ChunkLoader {
 
-    private static final int HORIZONTAL_LOAD_RADIUS = 14;
-    private static final int VERTICAL_LOAD_RADIUS = 7;
+    private static final int HORIZONTAL_LOAD_RADIUS = 7;
+    private static final int VERTICAL_LOAD_RADIUS = 4;
 
     private static final HashMap<Vector3i, Chunk> chunks = new HashMap<>();
 

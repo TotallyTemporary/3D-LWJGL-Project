@@ -5,6 +5,7 @@ import entity.EntityManager;
 import entity.TransformationComponent;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import player.PhysicsObjectComponent;
 import render.Model;
 
 public enum ItemType {
@@ -44,7 +45,7 @@ public enum ItemType {
     public static Entity makeItem(Vector3i intPos, int itemID) {
         var item = new Entity();
 
-        var position = new Vector3f(intPos.x + 0.5f, intPos.y, intPos.z + 0.5f);
+        var position = new Vector3f(intPos.x + 0.5f, intPos.y + 0.5f, intPos.z + 0.5f);
         var rotation = new Vector3f();
         EntityManager.addComponent(item, new TransformationComponent(
                 position,
@@ -52,10 +53,10 @@ public enum ItemType {
                 new Vector3f(ITEM_SIZE, ITEM_SIZE, ITEM_SIZE)
         ));
 
-        EntityManager.addComponent(item, new ItemComponent(position, rotation));
-
         var itemSpec = ItemType.getByID(itemID);
         EntityManager.addComponent(item, new ItemModelComponent(itemSpec.getModel()));
+        EntityManager.addComponent(item, new ItemComponent());
+        EntityManager.addComponent(item, new PhysicsObjectComponent(new Vector3f(0.05f, 0.05f, 0.05f)));
 
         return item;
     }
