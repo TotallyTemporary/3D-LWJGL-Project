@@ -163,6 +163,7 @@ public class Main {
         terrainShader.destroy();
 
         Keyboard.destroy(display.getWindow());
+        Mouse.destroy(display.getWindow());
         GL.setCapabilities(null);
         display.destroy();
         GLFW.glfwSetErrorCallback(null).free();

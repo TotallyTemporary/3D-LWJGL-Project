@@ -33,6 +33,11 @@ public class Mouse {
         });
     }
 
+   public static void destroy(long window) {
+        GLFW.glfwSetCursorPosCallback(window, null).free();
+        GLFW.glfwSetMouseButtonCallback(window, null).free();
+   }
+
     public static Vector2f getCursorDelta() {
         var vec = new Vector2f((float) deltaX, (float) deltaY);
         deltaX = 0;
