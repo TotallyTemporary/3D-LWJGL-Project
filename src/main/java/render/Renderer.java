@@ -3,6 +3,7 @@ package render;
 import chunk.ChunkModelComponent;
 import chunk.ChunkRenderer;
 import entity.*;
+import item.ItemModelComponent;
 import org.lwjgl.opengl.GL30;
 import ui.UIModelComponent;
 
@@ -19,9 +20,10 @@ public class Renderer {
 
         int vertexTally = 0; // count number of vertices rendered
 
-        // first render terrain
+        // first render terrain and items
         GL30.glEnable(GL30.GL_DEPTH_TEST);
         vertexTally += renderChunks(camera);
+        vertexTally += render(camera, ItemModelComponent.class);
 
         // then render ui on top of everything
         GL30.glEnable(GL30.GL_BLEND);

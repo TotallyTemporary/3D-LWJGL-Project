@@ -2,6 +2,8 @@ package main;
 
 import chunk.*;
 import entity.*;
+import item.ItemType;
+import item.ItemModel;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
@@ -52,19 +54,33 @@ public class Main {
         GL30.glClearColor(0.2f, 0.3f, 0.4f, 0f);
 
         var terrainShader = new Shader(
-                "src/main/resources/shaders/terrain_vertex.glsl",
-                "src/main/resources/shaders/terrain_fragment.glsl"
+            "src/main/resources/shaders/terrain_vertex.glsl",
+            "src/main/resources/shaders/terrain_fragment.glsl"
         )
-                .addUniform("transformationMatrix")
-                .addUniform("projectionMatrix")
-                .addUniform("viewMatrix");
+        .addUniform("transformationMatrix")
+        .addUniform("projectionMatrix")
+        .addUniform("viewMatrix");
 
         var terrainTexture = new ArrayTexture(
-                            "src/main/resources/blocks_array.png",
-                            "arrayTexture", 16, 16);
+                "src/main/resources/blocks_array.png",
+                "arrayTexture", 16, 16);
 
         TerrainModelLoader.setChunkTexture(terrainTexture);
         TerrainModelLoader.setShader(terrainShader);
+
+        var itemsShader = new Shader(
+            "src/main/resources/shaders/item_vertex.glsl",
+            "src/main/resources/shaders/item_fragment.glsl"
+        )
+        .addUniform("transformationMatrix")
+        .addUniform("projectionMatrix")
+        .addUniform("viewMatrix");
+
+        var itemsTexture = new ArrayTexture(
+            "src/main/resources/items_array.png",
+            "arrayTexture", 16, 16);
+
+        ItemModel.init(itemsShader, terrainTexture, itemsTexture);
 
         UIModelComponent.createUIModels(display);
         var crosshair = new Entity();
@@ -94,6 +110,7 @@ public class Main {
                     Vector3i pos;
                     if ((pos = blockController.getHitBlock()) != null) {
                         ChunkLoader.setBlockAt(pos, Block.AIR.getID());
+                        ItemType.makeItem(pos, ItemType.DIRT.getID());
                         ChunkLoader.updateSpoiled();
                     }
                 },
