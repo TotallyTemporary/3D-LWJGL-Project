@@ -147,6 +147,7 @@ public class Main {
 
             // update
             Timer.tick();
+            Mouse.update();
             {
                 var transform = EntityManager.getComponent(camera, TransformationComponent.class);
                 ChunkLoader.update(transform.getPosition());
