@@ -30,10 +30,11 @@ public class PhysicsObjectComponent extends Component {
     private boolean grounded = false;
 
     public PhysicsObjectComponent(Vector3f dimensions) {
-        this.width  = dimensions.x;
+        this.width = dimensions.x;
         this.height = dimensions.y;
-        this.depth  = dimensions.z;
+        this.depth = dimensions.z;
     }
+    
     @Override public void apply(Entity entity) {
         velocity.add(
                 acceleration.mul(Timer.getFrametimeSeconds(), new Vector3f())

@@ -1,12 +1,14 @@
 package player;
 
 import chunk.Block;
+import chunk.CardinalDirection;
 import chunk.ChunkLoader;
 import entity.Component;
 import entity.Entity;
 import entity.EntityManager;
 import entity.TransformationComponent;
 import item.ItemType;
+import main.AABB;
 import org.joml.RoundingMode;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -43,8 +45,13 @@ public class PlayerBlockController extends Component {
     public void onBuildClicked(Camera player) {
         if (beforeHitLocation == null) return;
 
+        // TODO this still spoils the chunk
         ChunkLoader.setBlockAt(beforeHitLocation, Block.COBBLESTONE.getID());
-        ChunkLoader.updateSpoiled();
+        if (isInsideBlock(player)) {
+            ChunkLoader.setBlockAt(beforeHitLocation, Block.AIR.getID());
+        } else {
+            ChunkLoader.updateSpoiled();
+        }
     }
 
     public void onBreakClicked(Camera player) {
@@ -54,6 +61,26 @@ public class PlayerBlockController extends Component {
         ChunkLoader.updateSpoiled();
 
         ItemType.makeItem(hitLocation, ItemType.DIRT.getID());
+    }
+
+    private boolean isInsideBlock(Camera player) {
+        var transform = EntityManager.getComponent(player, TransformationComponent.class);
+        var pos = transform.getPosition();
+
+        var aabb = new AABB(pos,
+                            PlayerMovementController.WIDTH,
+                            PlayerMovementController.HEIGHT,
+                            PlayerMovementController.DEPTH);
+
+        for (int dir = 0; dir < CardinalDirection.COUNT; dir++) {
+            for (var point : aabb.getTestPoints(dir)) {
+                if (Block.getBlock(ChunkLoader.getBlockAt(point)).isSolid()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /*
