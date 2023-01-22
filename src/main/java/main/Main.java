@@ -107,25 +107,13 @@ public class Main {
         EntityManager.addComponent(camera, new PlayerBlockController());
         EntityManager.addComponent(camera, new PlayerMiscController());
 
+        var playerBlockController = EntityManager.getComponent(camera, PlayerBlockController.class);
+
         Keyboard.init(display.getWindow());
         Mouse.init(display.getWindow(),
-                () -> {
-                    var blockController = EntityManager.getComponent(camera, PlayerBlockController.class);
-                    Vector3i pos;
-                    if ((pos = blockController.getHitBlock()) != null) {
-                        ChunkLoader.setBlockAt(pos, Block.AIR.getID());
-                        ItemType.makeItem(pos, ItemType.DIRT.getID());
-                        ChunkLoader.updateSpoiled();
-                    }
-                },
-                () -> {
-                    var blockController = EntityManager.getComponent(camera, PlayerBlockController.class);
-                    Vector3i pos;
-                    if ((pos = blockController.getBeforeHitBlock()) != null) {
-                        ChunkLoader.setBlockAt(pos, Block.COBBLESTONE.getID());
-                        ChunkLoader.updateSpoiled();
-                    }
-                });
+                () -> playerBlockController.onBreakClicked(camera),
+                () -> playerBlockController.onBuildClicked(camera)
+        );
 
         var renderer = new Renderer();
 

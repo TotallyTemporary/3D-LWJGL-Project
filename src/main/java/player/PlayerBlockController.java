@@ -6,6 +6,7 @@ import entity.Component;
 import entity.Entity;
 import entity.EntityManager;
 import entity.TransformationComponent;
+import item.ItemType;
 import org.joml.RoundingMode;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -13,7 +14,7 @@ import render.Camera;
 
 public class PlayerBlockController extends Component {
 
-    private static final int MAX_DISTANCE = 50;
+    private static final int MAX_DISTANCE = 10;
 
     private static Vector3i beforeHitLocation = null;
     private static Vector3i hitLocation = null;
@@ -32,71 +33,45 @@ public class PlayerBlockController extends Component {
         var iViewMatrix = camera.getViewMatrix();
         var lookVector = new Vector3f(-iViewMatrix.m02(), -iViewMatrix.m12(), -iViewMatrix.m22());
 
-        getBlockIntersect(eyePos, lookVector);
-    }
-
-    public Vector3i getHitBlock() {
-        return hitLocation;
-    }
-
-    public Vector3i getBeforeHitBlock() {
-        return beforeHitLocation;
-    }
-
-    // http://www.cse.yorku.ca/~amana/research/grid.pdf
-    private void getBlockIntersect(Vector3f pos, Vector3f t) {
-        if (Math.floor(pos.x) - pos.x == 0) pos.x += 1f/10_000;
-        if (Math.floor(pos.y) - pos.y == 0) pos.y += 1f/10_000;
-        if (Math.floor(pos.z) - pos.z == 0) pos.z += 1f/10_000;
-
-        Vector3i ipos = new Vector3i(pos, RoundingMode.FLOOR);
-
-        float stepX = Math.signum(t.x);
-        float stepY = Math.signum(t.y);
-        float stepZ = Math.signum(t.z);
-
-        float tMaxX = calcMaxT(pos.x, t.x);
-        float tMaxY = calcMaxT(pos.y, t.y);
-        float tMaxZ = calcMaxT(pos.z, t.z);
-
-        float tDeltaX = stepX/t.x;
-        float tDeltaY = stepY/t.y;
-        float tDeltaZ = stepZ/t.z;
-
-        Vector3i lastBlock = new Vector3i().set(ipos);
-        int steps = 0;
-        while (steps < MAX_DISTANCE) {
-            steps++;
-            if (ChunkLoader.getBlockAt(ipos) != Block.AIR.getID()) {
-                hitLocation = ipos;
-                beforeHitLocation = lastBlock;
-
-                break;
-            }
-            lastBlock.set(ipos);
-
-            if (Math.abs(tMaxX) < Math.abs(tMaxY)) {
-                if (Math.abs(tMaxX) < Math.abs(tMaxZ)) {
-                    ipos.x += stepX;
-                    tMaxX += tDeltaX;
-                } else {
-                    ipos.z += stepZ;
-                    tMaxZ += tDeltaZ;
-                }
-            } else {
-                if (Math.abs(tMaxY) < Math.abs(tMaxZ)) {
-                    ipos.y += stepY;
-                    tMaxY += tDeltaY;
-                } else {
-                    ipos.z += stepZ;
-                    tMaxZ += tDeltaZ;
-                }
-            }
+        var rayCastData = Raycast.raycast(eyePos, lookVector, MAX_DISTANCE);
+        if (rayCastData != null) {
+            beforeHitLocation = rayCastData.beforeHitBlock;
+            hitLocation = rayCastData.hitBlock;
         }
     }
 
-    private float calcMaxT(float pos, float vec) {
-        if (vec > 0) return ((float) Math.ceil(pos) - pos) / Math.abs(vec);
-        return -((float) Math.floor(pos) - pos) / Math.abs(vec);
+    public void onBuildClicked(Camera player) {
+        if (beforeHitLocation == null) return;
+
+        ChunkLoader.setBlockAt(beforeHitLocation, Block.COBBLESTONE.getID());
+        ChunkLoader.updateSpoiled();
     }
+
+    public void onBreakClicked(Camera player) {
+        if (hitLocation == null) return;
+
+        ChunkLoader.setBlockAt(hitLocation, Block.AIR.getID());
+        ChunkLoader.updateSpoiled();
+
+        ItemType.makeItem(hitLocation, ItemType.DIRT.getID());
+    }
+
+    /*
+    *                 () -> {
+                    var blockController = EntityManager.getComponent(camera, PlayerBlockController.class);
+                    Vector3i pos;
+                    if ((pos = blockController.getHitBlock()) != null) {
+                        ChunkLoader.setBlockAt(pos, Block.AIR.getID());
+                        ItemType.makeItem(pos, ItemType.DIRT.getID());
+                        ChunkLoader.updateSpoiled();
+                    }
+                },
+                () -> {
+                    var blockController = EntityManager.getComponent(camera, PlayerBlockController.class);
+                    Vector3i pos;
+                    if ((pos = blockController.getBeforeHitBlock()) != null) {
+                        ChunkLoader.setBlockAt(pos, Block.COBBLESTONE.getID());
+                        ChunkLoader.updateSpoiled();
+                    }
+                });*/
 }
