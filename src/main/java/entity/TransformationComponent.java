@@ -14,10 +14,6 @@ public class TransformationComponent extends Component {
         this.rotation = rotation;
         this.scale = scale;
     }
-
-    @Override public void start(Entity entity) {}
-    @Override public void stop(Entity entity) {}
-
     // assume this gets called right before rendering.
     @Override public void apply(Entity entity) {
         calculateTransformationMatrix();

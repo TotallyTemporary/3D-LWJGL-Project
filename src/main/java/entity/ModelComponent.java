@@ -13,8 +13,6 @@ public class ModelComponent extends Component {
         this.model = model;
     }
 
-    @Override public void start(Entity entity) {}
-    @Override public void stop(Entity entity) {}
     @Override public void apply(Entity entity) {}
 
     public Model getModel() {

@@ -2,6 +2,7 @@ package main;
 
 import chunk.*;
 import entity.*;
+import item.ItemComponent;
 import item.ItemType;
 import item.ItemModel;
 import org.joml.Vector3f;
@@ -153,16 +154,21 @@ public class Main {
                 ChunkLoader.update(transform.getPosition());
             }
 
-            EntityManager.start();
-
-            // these control chunks so call them before transformation components are updated to prevent flicker.
             TerrainModelLoader.loadChunks();
+
+            // start comp update
+            EntityManager.update(); // remove toBeRemoved components.
+
             EntityManager.updateComponents(PlayerMovementController.class);
             EntityManager.updateComponents(PlayerBlockController.class);
+            EntityManager.updateComponents(PlayerMiscController.class);
 
-            EntityManager.stop();
+            EntityManager.updateComponents(ItemComponent.class);
 
-            // end update
+            EntityManager.updateComponents(PhysicsObjectComponent.class);
+            EntityManager.updateComponents(TransformationComponent.class);
+
+            // end comp update
 
             // render
             int verticesRendered = renderer.render(camera);

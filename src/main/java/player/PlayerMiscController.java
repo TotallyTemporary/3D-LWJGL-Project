@@ -14,9 +14,6 @@ public class PlayerMiscController extends Component {
                                ITEM_ATTRACT_RANGE   = 3.5f,
                                ATTRACT_ACCELERATION = 40f;
 
-    @Override public void start(Entity entity) {}
-    @Override public void stop(Entity entity) {}
-
     @Override
     public void apply(Entity entity) {
         var pos = EntityManager.getComponent(entity, TransformationComponent.class).getPosition();

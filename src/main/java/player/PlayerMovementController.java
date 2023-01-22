@@ -24,9 +24,6 @@ public class PlayerMovementController extends Component {
         JUMP_SPEED = 9f, // blocks/second
         SENSITIVITY = 1/500f; // radians per pixel
 
-    @Override public void start(Entity entity) {}
-    @Override public void stop(Entity entity) {}
-
     @Override public void apply(Entity entity) {
         // get player position
         var transComp = EntityManager.getComponent(entity, TransformationComponent.class);

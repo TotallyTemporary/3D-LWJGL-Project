@@ -34,17 +34,9 @@ public class PhysicsObjectComponent extends Component {
         this.height = dimensions.y;
         this.depth  = dimensions.z;
     }
-    @Override public void apply(Entity entity) {} // do no logic in update method to ensure correct order
-
-    @Override
-    public void start(Entity entity) {
-        acceleration = new Vector3f(0, GRAVITY, 0);
-    }
-
-    @Override
-    public void stop(Entity entity) {
+    @Override public void apply(Entity entity) {
         velocity.add(
-            acceleration.mul(Timer.getFrametimeSeconds(), new Vector3f())
+                acceleration.mul(Timer.getFrametimeSeconds(), new Vector3f())
         );
 
         velocity.mul((float) Math.pow(DAMPING, Timer.getFrametimeSeconds() * 60f));
@@ -55,7 +47,7 @@ public class PhysicsObjectComponent extends Component {
         var pos = transform.getPosition();
 
         Vector3f deltaPos = velocity.mul(Timer.getFrametimeSeconds(), new Vector3f())
-                                    .add(altVelocity.mul(Timer.getFrametimeSeconds()));
+                .add(altVelocity.mul(Timer.getFrametimeSeconds()));
 
         // A bit of a failsafe, if the game is stuck for a long time, the deltaPos might be huge thanks to the Timer multiplication
         // so we limit it to a maximum magnitude
@@ -72,6 +64,8 @@ public class PhysicsObjectComponent extends Component {
         for (int i = 0; i < steps; i++) {
             resolve(pos, deltaPosStepped);
         }
+
+        acceleration = new Vector3f(0, GRAVITY, 0);
     }
 
     private void resolve(Vector3f pos, Vector3f deltaPos) {

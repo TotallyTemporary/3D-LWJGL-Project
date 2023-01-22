@@ -13,13 +13,11 @@ import java.util.Map;
  */
 public class EntityManager {
     private static HashMap<Class<? extends Component>, HashMap<Entity, Component>> map = new HashMap<>();
-    private static HashMap<Class<? extends Component>, Boolean> updatedThisFrame = new HashMap<>();
     private static ArrayList<Map.Entry<Entity, Component>> toBeRemoved = new ArrayList<>();
 
-    /**
-     * Calls start() on all components and resets the map of already updated classes.
-     */
-    public static synchronized void start() {
+    /** This updates the state of the EntityManager.
+     * it removes components that have been marked as toBeRemoved. */
+    public static synchronized void update() {
         // remove components that must be removed.
         var it = toBeRemoved.iterator();
         while (it.hasNext()) {
@@ -29,34 +27,6 @@ public class EntityManager {
                 classMap.remove(entry.getKey());
             }
             it.remove();
-        }
-
-        // nothing has been updated yet.
-        for (var clazz : map.keySet()) {
-            updatedThisFrame.put(clazz, false);
-        }
-        // start all comps
-        for (var hashMap : map.values()) {
-            for (var entry : hashMap.entrySet()) {
-                entry.getValue().start(entry.getKey());
-            }
-        }
-    }
-
-    /**
-     * Calls stop() for all components, and also calls apply() on all components not yet updated.
-     */
-    public static synchronized void stop() {
-        for (var clazz : map.keySet()) {
-            if (!updatedThisFrame.get(clazz)) {
-                updateComponents(clazz);
-            }
-        }
-        // stop all comps
-        for (var hashMap : map.values()) {
-            for (var entry : hashMap.entrySet()) {
-                entry.getValue().stop(entry.getKey());
-            }
         }
     }
 
@@ -112,7 +82,6 @@ public class EntityManager {
     }
 
     public static synchronized void updateComponents(Class<? extends Component> clazz) {
-        updatedThisFrame.put(clazz, true);
         var classMap = map.get(clazz);
         if (classMap == null) return;
         for (var entry : classMap.entrySet()) {
