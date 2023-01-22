@@ -76,7 +76,10 @@ public class ChunkRenderer {
     private static int renderFace(ChunkModelComponent modelComp, int face) {
         int start = modelComp.getPositionIndex(face);
         int end = modelComp.getPositionIndex(face+1);
-        GL30.glDrawArrays(GL30.GL_TRIANGLES, start, end-start);
-        return end-start;
+        int count = end-start;
+
+        if (count == 0) return 0;
+        GL30.glDrawArrays(GL30.GL_TRIANGLES, start, count);
+        return count;
     }
 }
