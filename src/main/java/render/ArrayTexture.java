@@ -1,5 +1,6 @@
 package render;
 
+import main.Capabilities;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL43;
 
@@ -13,6 +14,17 @@ public class ArrayTexture extends Texture {
         // assume one long texture.
         assert tileWidth == super.width;
         int depth = super.height / tileHeight;
+
+        if (depth > Capabilities.MAX_ARRAY_TEXTURE_LAYERS) {
+            System.err.println("Trying to make array texture of depth " + depth
+                    + " but maximum depth is set to " + Capabilities.MAX_ARRAY_TEXTURE_LAYERS);
+        }
+
+        if (width > Capabilities.MAX_TEXTURE_SIZE
+        || height > Capabilities.MAX_TEXTURE_SIZE) {
+            System.err.println("Trying to make texture of size " + width + "x" + height
+                        + " but maximum size is " + Capabilities.MAX_TEXTURE_SIZE);
+        }
 
         super.id = GL30.glGenTextures();
         GL30.glBindTexture(type, id);

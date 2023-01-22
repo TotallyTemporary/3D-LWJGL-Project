@@ -48,6 +48,8 @@ public class Main {
                 couldn't get it to work.
              */
         }
+        Capabilities.get();
+        System.out.println(Capabilities.MAX_ARRAY_TEXTURE_LAYERS);
 
         GL30.glClearColor(0.2f, 0.3f, 0.4f, 0f);
 
