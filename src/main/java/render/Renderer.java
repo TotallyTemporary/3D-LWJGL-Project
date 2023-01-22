@@ -9,11 +9,18 @@ import ui.UIModelComponent;
 
 import java.util.stream.Collectors;
 
+/** This class works to render all the renderable objects in a scene.
+ * rendering a particular model has a generic path,
+ * but some objects (chunks and particles for example) require custom rendering code
+ * */
 public class Renderer {
 
     public Renderer() {}
 
-    public int render(Camera camera) {
+    /** Renders the entire scene.
+     * @param player This entity should be the camera.
+     *               It is used to get the viewMatrix and cull some faces in the chunk render function. */
+    public int render(Player player) {
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
         GL30.glCullFace(GL30.GL_BACK);
         GL30.glEnable(GL30.GL_CULL_FACE);
@@ -22,32 +29,32 @@ public class Renderer {
 
         // first render terrain and items
         GL30.glEnable(GL30.GL_DEPTH_TEST);
-        vertexTally += renderChunks(camera);
-        vertexTally += render(camera, ItemModelComponent.class);
+        vertexTally += renderChunks(player);
+        vertexTally += render(player, ItemModelComponent.class);
 
         // then render ui on top of everything
         GL30.glEnable(GL30.GL_BLEND);
         GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
         GL30.glDisable(GL30.GL_DEPTH_TEST);
-        vertexTally += render(camera, UIModelComponent.class);
+        vertexTally += render(player, UIModelComponent.class);
         GL30.glDisable(GL30.GL_BLEND);
 
         return vertexTally;
     }
 
-    public int renderChunks(Camera camera) {
-        var viewMatrix = camera.getViewMatrix();
-        var projectionMatrix = camera.getProjectionMatrix();
+    private int renderChunks(Player player) {
+        var viewMatrix = player.getViewMatrix();
+        var projectionMatrix = player.getProjectionMatrix();
 
         var chunks = EntityManager.getComponents(ChunkModelComponent.class);
-        return ChunkRenderer.render(chunks, viewMatrix, projectionMatrix, camera.getEyePosition());
+        return ChunkRenderer.render(chunks, viewMatrix, projectionMatrix, player.getEyePosition());
     }
 
-    public <T extends ModelComponent> int render(Camera camera, Class<T> modelClass) {
+    private <T extends ModelComponent> int render(Player player, Class<T> modelClass) {
         int vertexTally = 0;
 
-        var viewMatrix = camera.getViewMatrix();
-        var projectionMatrix = camera.getProjectionMatrix();
+        var viewMatrix = player.getViewMatrix();
+        var projectionMatrix = player.getProjectionMatrix();
 
         // 1 model for multiple entities
         var modelMap = EntityManager.getComponents(modelClass)

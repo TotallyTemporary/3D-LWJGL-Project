@@ -94,38 +94,38 @@ public class Main {
 
         var playerStartPosition = new Vector3f(1000f, 120f, 1000f);
 
-        var camera = new Camera(
+        var player = new Player(
                 (float) Math.toRadians(60f),
                 (float) display.getWidth() / display.getHeight(),
                 0.1f,
                 1000f
         );
-        EntityManager.addComponent(camera, new TransformationComponent(
+        EntityManager.addComponent(player, new TransformationComponent(
                 playerStartPosition,
                 new Vector3f(0, 0, 0),
                 new Vector3f(1f, 1f, 1f)
         ));
-        EntityManager.addComponent(camera, new PhysicsObjectComponent(new Vector3f(
+        EntityManager.addComponent(player, new PhysicsObjectComponent(new Vector3f(
             PlayerMovementController.WIDTH,
             PlayerMovementController.HEIGHT,
             PlayerMovementController.DEPTH
         )));
-        EntityManager.addComponent(camera, new PlayerMovementController());
-        EntityManager.addComponent(camera, new PlayerBlockController());
-        EntityManager.addComponent(camera, new PlayerMiscController());
+        EntityManager.addComponent(player, new PlayerMovementController());
+        EntityManager.addComponent(player, new PlayerBlockController());
+        EntityManager.addComponent(player, new PlayerMiscController());
 
-        var playerBlockController = EntityManager.getComponent(camera, PlayerBlockController.class);
+        var playerBlockController = EntityManager.getComponent(player, PlayerBlockController.class);
 
         Keyboard.init(display.getWindow());
         Mouse.init(display.getWindow(),
-                () -> playerBlockController.onBreakClicked(camera),
-                () -> playerBlockController.onBuildClicked(camera)
+                () -> playerBlockController.onBreakClicked(player),
+                () -> playerBlockController.onBuildClicked(player)
         );
 
         var renderer = new Renderer();
 
         // render 1 frame before beginning load, later swap this for loading text
-        renderer.render(camera);
+        renderer.render(player);
         GLFW.glfwSwapBuffers(display.getWindow());
 
         System.out.println("Starting world preload");
@@ -145,7 +145,7 @@ public class Main {
             Timer.tick();
             Mouse.update();
             {
-                var transform = EntityManager.getComponent(camera, TransformationComponent.class);
+                var transform = EntityManager.getComponent(player, TransformationComponent.class);
                 ChunkLoader.update(transform.getPosition());
             }
 
@@ -166,7 +166,7 @@ public class Main {
             // end comp update
 
             // render
-            int verticesRendered = renderer.render(camera);
+            int verticesRendered = renderer.render(player);
             GLFW.glfwSetWindowTitle(display.getWindow(),
                     verticesRendered/3 + " triangles @" +
                     (int) Timer.getFrametimeMillis() + " ms " +

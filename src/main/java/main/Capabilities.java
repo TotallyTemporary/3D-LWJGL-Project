@@ -3,6 +3,8 @@ package main;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
+/** This global object gets a bunch of OpenGL constants about maximum values and other restrictions.
+ * These may be used for validation or taking different code paths depending on system requirements. */
 public class Capabilities {
 
     public static int MAX_ARRAY_TEXTURE_LAYERS = -1,

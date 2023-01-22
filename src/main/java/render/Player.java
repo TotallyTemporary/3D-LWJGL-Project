@@ -7,12 +7,15 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import player.PlayerMovementController;
 
-public class Camera extends Entity {
+/** This class is the player entity that all player components should be attached to.*/
+public class Player extends Entity {
+
+    // TODO Separate camera stuff into a camera component, problem: how to ensure only 1 camera?
 
     private final Matrix4f projectionMatrix = new Matrix4f();
     private final Matrix4f viewMatrix       = new Matrix4f();
 
-    public Camera(float FOV, float aspect, float near, float far) {
+    public Player(float FOV, float aspect, float near, float far) {
         calcProjectionMatrix(FOV, aspect, near, far);
     }
 

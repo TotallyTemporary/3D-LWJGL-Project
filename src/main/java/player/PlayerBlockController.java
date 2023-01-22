@@ -9,11 +9,12 @@ import entity.EntityManager;
 import entity.TransformationComponent;
 import item.ItemType;
 import main.AABB;
-import org.joml.RoundingMode;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import render.Camera;
+import render.Player;
 
+/** This component gives an entity (player) the ability to break and place blocks.
+ * */
 public class PlayerBlockController extends Component {
 
     private static final int MAX_DISTANCE = 10;
@@ -31,8 +32,8 @@ public class PlayerBlockController extends Component {
                                   playerPos.y + PlayerMovementController.EYE_LEVEL,
                                   playerPos.z);
 
-        Camera camera = (Camera) entity;
-        var iViewMatrix = camera.getViewMatrix();
+        Player player = (Player) entity;
+        var iViewMatrix = player.getViewMatrix();
         var lookVector = new Vector3f(-iViewMatrix.m02(), -iViewMatrix.m12(), -iViewMatrix.m22());
 
         var rayCastData = Raycast.raycast(eyePos, lookVector, MAX_DISTANCE);
@@ -45,19 +46,25 @@ public class PlayerBlockController extends Component {
         }
     }
 
-    public void onBuildClicked(Camera player) {
+     /* TODO: Make a controls system the component can subscribe to, so it doesn't have to be called externally,
+        TODO: since this breaks principles of the component system */
+
+    /** Call this function to build a block at the location this particular entity is facing.
+     *  NOTE: This does not replace blocks, it places them in the location of the last airblock before hitting a solid block. */
+    public void onBuildClicked(Entity entity) {
         if (beforeHitLocation == null) return;
 
         // TODO this still spoils the chunk
         ChunkLoader.setBlockAt(beforeHitLocation, Block.COBBLESTONE.getID());
-        if (isInsideBlock(player)) {
+        if (isInsideBlock(entity)) {
             ChunkLoader.setBlockAt(beforeHitLocation, Block.AIR.getID());
         } else {
             ChunkLoader.updateSpoiled();
         }
     }
 
-    public void onBreakClicked(Camera player) {
+    /** Call this function to break a block at the location this entity is facing. */
+    public void onBreakClicked(Entity entity) {
         if (hitLocation == null) return;
 
         ChunkLoader.setBlockAt(hitLocation, Block.AIR.getID());
@@ -66,8 +73,8 @@ public class PlayerBlockController extends Component {
         ItemType.makeItem(hitLocation, ItemType.DIRT.getID());
     }
 
-    private boolean isInsideBlock(Camera player) {
-        var transform = EntityManager.getComponent(player, TransformationComponent.class);
+    private boolean isInsideBlock(Entity entity) {
+        var transform = EntityManager.getComponent(entity, TransformationComponent.class);
         var pos = transform.getPosition();
 
         var aabb = new AABB(pos,
@@ -85,23 +92,4 @@ public class PlayerBlockController extends Component {
 
         return false;
     }
-
-    /*
-    *                 () -> {
-                    var blockController = EntityManager.getComponent(camera, PlayerBlockController.class);
-                    Vector3i pos;
-                    if ((pos = blockController.getHitBlock()) != null) {
-                        ChunkLoader.setBlockAt(pos, Block.AIR.getID());
-                        ItemType.makeItem(pos, ItemType.DIRT.getID());
-                        ChunkLoader.updateSpoiled();
-                    }
-                },
-                () -> {
-                    var blockController = EntityManager.getComponent(camera, PlayerBlockController.class);
-                    Vector3i pos;
-                    if ((pos = blockController.getBeforeHitBlock()) != null) {
-                        ChunkLoader.setBlockAt(pos, Block.COBBLESTONE.getID());
-                        ChunkLoader.updateSpoiled();
-                    }
-                });*/
 }
