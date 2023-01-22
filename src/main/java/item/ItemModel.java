@@ -16,12 +16,7 @@ public class ItemModel {
     }
 
     public static Model noModel() {
-        return new Model()
-                .addPosition3D(new float[0])
-                .addTextureCoords3D(new float[0])
-                .setTexture(blockTexture)
-                .setShader(itemShader)
-                .end();
+        return new Model().end();
     }
 
     // idx=texture index (z coordinate)

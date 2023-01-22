@@ -11,6 +11,8 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GLUtil;
+import org.lwjgl.system.Callback;
 import org.lwjgl.system.Configuration;
 import player.*;
 import render.*;
@@ -19,10 +21,14 @@ import ui.UIModelComponent;
 
 public class Main {
 
-    public static void main(String[] args) {
-        Configuration.DEBUG_STACK.set(true);
-        Configuration.DEBUG.set(true);
+    public static final boolean DEBUG = true;
+    public static Callback debugMessageCallback = null;
 
+    public static void main(String[] args) {
+        if (DEBUG) {
+            Configuration.DEBUG_STACK.set(true);
+            Configuration.DEBUG.set(true);
+        }
         // initializing the display also initialized glfw and creates the context.
         var displaySettings = new Display.DisplaySettings(
                 "A display",   // title
@@ -180,9 +186,14 @@ public class Main {
 
         Keyboard.destroy(display.getWindow());
         Mouse.destroy(display.getWindow());
+        GLFW.glfwSetErrorCallback(null).free();
+        if (DEBUG) {
+            debugMessageCallback.free();
+        }
+
+
         GL.setCapabilities(null);
         display.destroy();
-        GLFW.glfwSetErrorCallback(null).free();
         GLFW.glfwTerminate();
 
         System.out.println("Thank you for playing wing commander!");

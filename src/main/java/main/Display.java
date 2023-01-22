@@ -3,6 +3,7 @@ package main;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
@@ -76,6 +77,10 @@ public class Display {
             monitor = 0;
         }
 
+        if (Main.DEBUG) {
+            GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GLFW.GLFW_TRUE);
+        }
+
         long window = GLFW.glfwCreateWindow(width, height, settings.title, monitor, 0);
         if (window == 0) {
             throw new IllegalStateException("Could not create a GLFW window.");
@@ -97,6 +102,10 @@ public class Display {
 
         GL.createCapabilities();
         GL30.glViewport(0, 0, width, height);
+
+        if (Main.DEBUG) {
+            Main.debugMessageCallback = GLUtil.setupDebugMessageCallback(System.out);
+        }
 
         int swapInterval = settings.vsync ? 1 : 0;
         GLFW.glfwSwapInterval(swapInterval);
