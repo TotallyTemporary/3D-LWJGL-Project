@@ -39,6 +39,9 @@ public class PlayerBlockController extends Component {
         if (rayCastData != null) {
             beforeHitLocation = rayCastData.beforeHitBlock;
             hitLocation = rayCastData.hitBlock;
+        } else {
+            beforeHitLocation = null;
+            hitLocation = null;
         }
     }
 
