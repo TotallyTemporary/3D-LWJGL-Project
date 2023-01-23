@@ -42,9 +42,9 @@ public class Chunk extends Entity {
 
     public static Vector3i blockPosToWorldPos(Vector3i pos, Chunk chunk) {
         return new Vector3i(
-            pos.x + chunk.getChunkPos().x * SIZE,
-            pos.y + chunk.getChunkPos().y * SIZE,
-            pos.z + chunk.getChunkPos().z * SIZE
+            pos.x + chunk.getChunkGridPos().x * SIZE,
+            pos.y + chunk.getChunkGridPos().y * SIZE,
+            pos.z + chunk.getChunkGridPos().z * SIZE
         );
     }
 
@@ -57,16 +57,15 @@ public class Chunk extends Entity {
     }
 
     public enum Status {
-        NONE(0, false),
-        TERRAIN_GENERATING(1, true),    // generating simple blocks
-        WAIT_NEIGHBORS(2, false),
-        STRUCTURE_GENERATING(3, true),  // generating structures (needs neighbors for bleed-over)
-        LOADED(4, false),
-
-        MESH_GENERATING(5, true),       // make the vertices and texture coords for the chunk
-        PREPARED(6, false),
-        MESH_LOADING(7, true),          // load those vertices into opengl (main thread)
-        FINAL(8, false);                 // chunk can be rendered
+        NONE                    (0, false),
+        BASIC_TERRAIN_GENERATING(1, true),  // generating simple blocks
+        BASIC_TERRAIN_GENERATED (2, false),
+        STRUCTURE_GENERATING    (3, true),  // generating structures (needs neighbors for bleed-over)
+        BLOCKS_GENERATED        (4, false),
+        MESH_GENERATING         (5, true),  // make the vertices and texture coords for the chunk
+        MESH_GENERATED          (6, false),
+        MESH_LOADING            (7, true),  // load those vertices into opengl (main thread)
+        FINAL                   (8, false); // chunk can be rendered
 
         public final int urgency;
         public final boolean working;
@@ -75,7 +74,7 @@ public class Chunk extends Entity {
 
     // chunk instance stuff below
 
-    private final Vector3i chunkPos;
+    private final Vector3i chunkGridPos;
     private Status status;
     private boolean isAllAir; // if a chunk is all air, we don't store blocks.
     private byte[] blocks;
@@ -83,15 +82,15 @@ public class Chunk extends Entity {
 
     public boolean spoiled = false; // temp flag used by chunkloader
 
-    public Chunk(Vector3i chunkPos) {
+    public Chunk(Vector3i chunkGridPos) {
         super();
-        this.chunkPos = chunkPos;
+        this.chunkGridPos = chunkGridPos;
         this.status = Status.NONE;
 
         // get all surrounding neighbors, add them as neighbor and add us as their neighbor.
         var index = 0;
         for (var offset : DiagonalDirection.offsets) {
-            var neighborPos = offset.add(chunkPos, new Vector3i());
+            var neighborPos = offset.add(chunkGridPos, new Vector3i());
             var neighbor = ChunkLoader.getChunkAt(neighborPos);
             if (neighbor != null) {
                 setNeighbor(neighbor, index);
@@ -101,8 +100,8 @@ public class Chunk extends Entity {
         }
     }
 
-    public Vector3i getChunkPos() {
-        return chunkPos;
+    public Vector3i getChunkGridPos() {
+        return chunkGridPos;
     }
 
     public Status getStatus() {
@@ -130,7 +129,7 @@ public class Chunk extends Entity {
         var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
         var chunkPos = Chunk.worldPosToChunkPos(worldPos);
 
-        int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkPos));
+        int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkGridPos));
         return neighbors.get(
             dirIndex
         ).get().getBlock(Chunk.worldPosToBlockPos(worldPos));
@@ -148,7 +147,7 @@ public class Chunk extends Entity {
         var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
         var chunkPos = Chunk.worldPosToChunkPos(worldPos);
 
-        if (chunkPos.equals(this.chunkPos)) {
+        if (chunkPos.equals(this.chunkGridPos)) {
             if (this.isAllAir) {
                 this.blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
                 this.isAllAir = false;
@@ -159,7 +158,7 @@ public class Chunk extends Entity {
         }
 
         // get neighbor at chunkPos
-        int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkPos));
+        int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkGridPos));
         var neighbor = neighbors.get(dirIndex).get();
 
         var blockPos = Chunk.worldPosToBlockPos(worldPos);

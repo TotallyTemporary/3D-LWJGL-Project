@@ -51,7 +51,7 @@ public class TerrainModelLoader {
         var chunkModelData = EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
 
         if (chunkModelData.positions.length != 0) {
-            var pos = chunk.getChunkPos();
+            var pos = chunk.getChunkGridPos();
             EntityManager.addComponent(chunk, new TransformationComponent(
                     new Vector3f(pos.x * Chunk.SIZE, pos.y * Chunk.SIZE, pos.z * Chunk.SIZE),
                     new Vector3f(0, 0, 0),

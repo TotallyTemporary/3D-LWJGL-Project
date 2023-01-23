@@ -69,7 +69,7 @@ public class StructureGenerator {
             }
         }
 
-        chunk.setStatus(Chunk.Status.LOADED);
+        chunk.setStatus(Chunk.Status.BLOCKS_GENERATED);
     }
 
 }

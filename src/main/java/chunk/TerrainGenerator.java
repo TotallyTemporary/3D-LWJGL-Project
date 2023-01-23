@@ -24,7 +24,7 @@ public class TerrainGenerator {
 
     public static void loadChunk(Chunk chunk) {
         generateFirstpass(chunk);
-        chunk.setStatus(Chunk.Status.WAIT_NEIGHBORS);
+        chunk.setStatus(Chunk.Status.BASIC_TERRAIN_GENERATED);
     }
 
     public static int getQueueSize() {

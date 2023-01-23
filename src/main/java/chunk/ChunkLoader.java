@@ -42,7 +42,7 @@ public class ChunkLoader {
         var it = chunks.values().iterator();
         while (it.hasNext()) {
             var chunk = it.next();
-            var pos = chunk.getChunkPos();
+            var pos = chunk.getChunkGridPos();
 
             if (pos.x < minX || pos.x > maxX ||
                 pos.y < minY || pos.y > maxY ||
@@ -97,7 +97,7 @@ public class ChunkLoader {
         var chunkPos = Chunk.worldPosToChunkPos(pos);
         var blockPos = Chunk.worldPosToBlockPos(pos);
         var chunk = chunks.get(chunkPos);
-        if (chunk == null || chunk.getStatus().urgency < Chunk.Status.LOADED.urgency) return;
+        if (chunk == null || chunk.getStatus().urgency < Chunk.Status.BLOCKS_GENERATED.urgency) return;
         chunk.setBlockSafe(blockPos, block);
         chunk.spoiled = true;
 
@@ -114,7 +114,7 @@ public class ChunkLoader {
         var chunkRemainderPos = Chunk.worldPosToBlockPos(pos);
 
         var chunk = chunks.get(chunkPos);
-        if (chunk == null || chunk.getStatus().urgency < Chunk.Status.LOADED.urgency) {
+        if (chunk == null || chunk.getStatus().urgency < Chunk.Status.BLOCKS_GENERATED.urgency) {
             return Block.INVALID.getID();
         }
         return chunk.getBlock(chunkRemainderPos);
@@ -138,26 +138,30 @@ public class ChunkLoader {
 
     private static boolean doUpdateChunk(Chunk chunk) {
         switch (chunk.getStatus()) {
+            // if chunk has no data, load heightmap terrain
             case NONE           -> {
-                chunk.setStatus(Chunk.Status.TERRAIN_GENERATING);
+                chunk.setStatus(Chunk.Status.BASIC_TERRAIN_GENERATING);
                 TerrainGenerator.addChunks(chunk);
                 return true;
             }
-            case WAIT_NEIGHBORS -> {
-                if (neighborsUrgencyAtLeast(chunk, Chunk.Status.WAIT_NEIGHBORS.urgency)) {
+            // once chunk and all its neighbors have heightmapped terrain, load structures
+            case BASIC_TERRAIN_GENERATED -> {
+                if (neighborsUrgencyAtLeast(chunk, Chunk.Status.BASIC_TERRAIN_GENERATED.urgency)) {
                     chunk.setStatus(Chunk.Status.STRUCTURE_GENERATING);
                     StructureGenerator.addChunk(chunk);
                     return true;
                 }
             }
-            case LOADED -> {
-                if (neighborsUrgencyAtLeast(chunk, Chunk.Status.LOADED.urgency)) {
+            // once chunk has block data, generate block faces to form a mesh
+            case BLOCKS_GENERATED -> {
+                if (neighborsUrgencyAtLeast(chunk, Chunk.Status.BLOCKS_GENERATED.urgency)) {
                     chunk.setStatus(Chunk.Status.MESH_GENERATING);
                     TerrainModelGenerator.addChunk(chunk);
                     return true;
                 }
             }
-            case PREPARED -> {
+            // after mesh has been generated, load it into opengl.
+            case MESH_GENERATED -> {
                 chunk.setStatus(Chunk.Status.MESH_LOADING);
                 TerrainModelLoader.addChunk(chunk);
                 return true;
