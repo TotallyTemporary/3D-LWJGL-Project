@@ -86,6 +86,7 @@ public class Main {
             "arrayTexture", 16, 16);
 
         ItemModel.init(itemsShader, terrainTexture, itemsTexture);
+        DefaultTexture.init();
 
         UIModelComponent.createUIModels(display);
         var crosshair = new Entity();

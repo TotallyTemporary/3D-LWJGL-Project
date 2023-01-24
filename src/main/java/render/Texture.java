@@ -2,7 +2,9 @@ package render;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL30;
+import player.Keyboard;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -44,8 +46,14 @@ public abstract class Texture {
 
         this.imageData = buffer.flip();
     }
+    public int forcedGetTexture() {
+        return id;
+    }
 
     public int getTexture() {
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_C)) {
+            return DefaultTexture.texture.forcedGetTexture();
+        }
         return id;
     }
 
