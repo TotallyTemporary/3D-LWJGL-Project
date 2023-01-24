@@ -1,5 +1,6 @@
 package player;
 
+import main.Display;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
@@ -16,13 +17,13 @@ public class Mouse {
 
     private static boolean isFocused = true;
 
-    private static long window = -1;
+    private static Display display;
 
-    public static void init(long _window, Runnable onLeftClick, Runnable onRightClick) {
-        window = _window;
+    public static void init(Display _display, Runnable onLeftClick, Runnable onRightClick) {
+        display = _display;
 
         focus();
-        GLFW.glfwSetCursorPosCallback(window, new GLFWCursorPosCallback() {
+        GLFW.glfwSetCursorPosCallback(display.getWindow(), new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double xpos, double ypos) {
                 if (!isFocused) return;
@@ -35,7 +36,7 @@ public class Mouse {
             }
         });
 
-        GLFW.glfwSetMouseButtonCallback(window, new GLFWMouseButtonCallback() {
+        GLFW.glfwSetMouseButtonCallback(display.getWindow(), new GLFWMouseButtonCallback() {
             @Override
             public void invoke(long window, int button, int action, int mods) {
                 if (action != GLFW.GLFW_PRESS) return;
@@ -61,7 +62,7 @@ public class Mouse {
 
     public static void focus() {
         isFocused = true;
-        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+        GLFW.glfwSetInputMode(display.getWindow(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
         var mousePosNow = getMousePositionNow();
         lastX = mousePosNow.x;
         lastY = mousePosNow.y;
@@ -69,19 +70,22 @@ public class Mouse {
 
     public static void unfocus() {
         isFocused = false;
-        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(display.getWindow(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
     }
 
     public static void update() {
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_ESCAPE) && isFocused) {
             unfocus();
+            if (display.getDisplayMode() == Display.DisplayMode.FULLSCREEN || display.getDisplayMode() == Display.DisplayMode.FULLSCREEN_BORDERLESS) {
+                display.close();
+            }
         }
     }
 
     private static Vector2d getMousePositionNow() {
         DoubleBuffer x = BufferUtils.createDoubleBuffer(1);
         DoubleBuffer y = BufferUtils.createDoubleBuffer(1);
-        GLFW.glfwGetCursorPos(window, x, y);
+        GLFW.glfwGetCursorPos(display.getWindow(), x, y);
         return new Vector2d(x.get(), y.get());
     }
 }

@@ -40,6 +40,7 @@ public class Display {
     private long window;
     private int width, height;
     private long monitor;
+    private DisplayMode mode;
 
     public Display(DisplaySettings settings) {
         // unpack settings ; these values will be updated as we go.
@@ -115,6 +116,11 @@ public class Display {
         this.height = height;
         this.monitor = monitor;
         this.window = window;
+        this.mode = mode;
+    }
+
+    public void close() {
+        GLFW.glfwSetWindowShouldClose(window, true);
     }
 
     public void destroy() {
@@ -135,5 +141,9 @@ public class Display {
 
     public long getMonitor() {
         return monitor;
+    }
+
+    public DisplayMode getDisplayMode() {
+        return mode;
     }
 }

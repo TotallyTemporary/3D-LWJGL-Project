@@ -32,10 +32,10 @@ public class Main {
         // initializing the display also initialized glfw and creates the context.
         var displaySettings = new Display.DisplaySettings(
                 "A display",   // title
-                1280, 720,     // resolution
+                1920, 1080,     // resolution
                 -1,            // monitor? (-1 gets primary)
                 false,         // vsync
-                Display.DisplayMode.WINDOWED
+                Display.DisplayMode.FULLSCREEN_BORDERLESS
         );
         var display = new Display(displaySettings);
         GLFWErrorCallback.createPrint(System.err).set();
@@ -117,7 +117,7 @@ public class Main {
         var playerBlockController = EntityManager.getComponent(player, PlayerBlockController.class);
 
         Keyboard.init(display.getWindow());
-        Mouse.init(display.getWindow(),
+        Mouse.init(display,
                 () -> playerBlockController.onBreakClicked(player),
                 () -> playerBlockController.onBuildClicked(player)
         );
