@@ -115,13 +115,8 @@ public class Main {
         EntityManager.addComponent(player, new PlayerBlockController());
         EntityManager.addComponent(player, new PlayerMiscController());
 
-        var playerBlockController = EntityManager.getComponent(player, PlayerBlockController.class);
-
         Keyboard.init(display.getWindow());
-        Mouse.init(display,
-                () -> playerBlockController.onBreakClicked(player),
-                () -> playerBlockController.onBuildClicked(player)
-        );
+        Mouse.init(display);
 
         var renderer = new Renderer();
 
@@ -131,7 +126,7 @@ public class Main {
 
         System.out.println("Starting world preload");
         while (ChunkLoader.update(playerStartPosition) > 0 || ChunkLoader.getQueueSize() > 0) {
-            TerrainModelLoader.loadChunks(999);
+            TerrainModelLoader.loadChunks(Integer.MAX_VALUE);
         }
         System.out.println("Chunks loaded");
 
@@ -169,9 +164,9 @@ public class Main {
             // render
             int verticesRendered = renderer.render(player);
             GLFW.glfwSetWindowTitle(display.getWindow(),
-                    verticesRendered/3 + " triangles @" +
-                    (int) Timer.getFps() + " fps @" +
-                    (int) Timer.getFrametimeMillis() + " ms " +
+                    verticesRendered/3 + " triangles : " +
+                            Timer.getFps() + " fps : " +
+                    "%.2f".formatted(Timer.getFrametimeMillis()) + " ms : " +
                     ChunkLoader.getQueueSize() + " chunks queued");
 
             // glfw stuff

@@ -9,6 +9,7 @@ import entity.EntityManager;
 import entity.TransformationComponent;
 import item.ItemType;
 import main.AABB;
+import main.Timer;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import render.Player;
@@ -17,15 +18,27 @@ import render.Player;
  * */
 public class PlayerBlockController extends Component {
 
-    private static final int MAX_DISTANCE = 10;
+    private static final int MAX_DISTANCE = 8;
+    private static final long TIME_BETWEEN_ACTIONS = 150; // millis
 
-    private static Vector3i beforeHitLocation = null;
-    private static Vector3i hitLocation = null;
+    private Vector3i beforeHitLocation = null;
+    private Vector3i hitLocation = null;
+
+    private Vector3i lastUpdateHitLocation = null;
+    private float breakage = 0;
+
+    private long lastActionTime = System.currentTimeMillis();
+
+    public PlayerBlockController() {
+
+    }
 
     @Override
     public void apply(Entity entity) {
         var transform = EntityManager.getComponent(entity, TransformationComponent.class);
         assert transform != null;
+
+        lastUpdateHitLocation = hitLocation;
 
         var playerPos = transform.getPosition();
         var eyePos = new Vector3f(playerPos.x,
@@ -44,16 +57,32 @@ public class PlayerBlockController extends Component {
             beforeHitLocation = null;
             hitLocation = null;
         }
+
+        // can't switch away from a block mid-breaking it
+        if (lastUpdateHitLocation == null
+            || hitLocation == null
+            || !(lastUpdateHitLocation.equals(hitLocation))) {
+            breakage = 0;
+        }
+
+        if ((System.currentTimeMillis() - lastActionTime) > TIME_BETWEEN_ACTIONS) {
+            if (Mouse.isLeftClickDown()) {
+                breakage += Timer.getFrametimeSeconds();
+
+                if (breakage >= 0.5f) { // TODO will be set on a per-block basis.
+                    breakAction(entity);
+                    lastActionTime = System.currentTimeMillis();
+                }
+            }
+            if (Mouse.isRightClickDown()) {
+                buildAction(entity);
+                lastActionTime = System.currentTimeMillis();
+            }
+        }
     }
 
-     /* TODO: Make a controls system the component can subscribe to, so it doesn't have to be called externally,
-        TODO: since this breaks principles of the component system */
-
-    /** Call this function to build a block at the location this particular entity is facing.
-     *  NOTE: This does not replace blocks, it places them in the location of the last airblock before hitting a solid block. */
-    public void onBuildClicked(Entity entity) {
+    private void buildAction(Entity entity) {
         if (beforeHitLocation == null) return;
-
         // TODO this still spoils the chunk
         ChunkLoader.setBlockAt(beforeHitLocation, Block.COBBLESTONE.getID());
         if (isInsideBlock(entity)) {
@@ -61,12 +90,9 @@ public class PlayerBlockController extends Component {
         }
     }
 
-    /** Call this function to break a block at the location this entity is facing. */
-    public void onBreakClicked(Entity entity) {
+    private void breakAction(Entity entity) {
         if (hitLocation == null) return;
-
         ChunkLoader.setBlockAt(hitLocation, Block.AIR.getID());
-
         ItemType.makeItem(hitLocation, ItemType.DIRT.getID());
     }
 

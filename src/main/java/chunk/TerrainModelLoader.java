@@ -15,7 +15,9 @@ public class TerrainModelLoader {
     // opengl models can only be loaded on the main thread, so no multithreading here.
     // if you want to be fancy, you could stream the data in though...
 
-    private static final int DEFAULT_LOAD_LIMIT = 3;
+    private static final int DEFAULT_LOAD_LIMIT = 20;
+    private static final int HIGH_LOAD_LIMIT = 200; // if we've got a large queue, increase limit
+
     private static final Queue<Chunk> modelLoadQueue = new ArrayDeque<>();
 
     private static Shader chunkShader = null;
@@ -27,7 +29,8 @@ public class TerrainModelLoader {
     }
 
     public static void loadChunks() {
-        loadChunks(DEFAULT_LOAD_LIMIT);
+        var limit = getQueueSize() > HIGH_LOAD_LIMIT ? HIGH_LOAD_LIMIT : DEFAULT_LOAD_LIMIT;
+        loadChunks(limit);
     }
 
     public static void loadChunks(int loadLimit) {
@@ -55,7 +58,6 @@ public class TerrainModelLoader {
         // if the chunk already has a loaded model, we unload it. This might fix a memory leak.
         var chunkModelComponent = EntityManager.removeComponent(chunk, ChunkModelComponent.class);
         if (chunkModelComponent != null) {
-            System.err.println("Chunk at " + chunk.getChunkGridPos() + " already had a model. Unloading...");
             chunkModelComponent.getModel().destroy();
         }
 

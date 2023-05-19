@@ -157,10 +157,11 @@ public class Chunk extends Entity {
 
         if (chunkPos.equals(this.chunkGridPos)) {
             if (this.isAllAir) {
+                if (block == Block.AIR.getID()) return;
                 this.blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
                 this.isAllAir = false;
+                this.setBlock(x, y, z, block);
             }
-
             this.setBlock(x, y, z, block);
             return;
         }

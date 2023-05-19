@@ -28,11 +28,16 @@ public class PhysicsObjectComponent extends Component {
 
     private float width, height, depth;
     private boolean grounded = false;
+    private Runnable doOnSqueeze = () -> {};
 
     public PhysicsObjectComponent(Vector3f dimensions) {
         this.width = dimensions.x;
         this.height = dimensions.y;
         this.depth = dimensions.z;
+    }
+
+    public void setActionOnSqueeze(Runnable action) {
+        this.doOnSqueeze = action;
     }
     
     @Override public void apply(Entity entity) {
@@ -124,16 +129,16 @@ public class PhysicsObjectComponent extends Component {
             }
         }
 
-        // if both max and min are nonzero, we're being squeezed in some way. there's no logic to deal with it now, so the physics may explode.
-        if (max != 0 && min != 0) {
-            System.err.println("Player is being squeezed!");
-        }
-
         pos.y += (deltaPos.y + max + min);
 
         grounded = (max != 0); // if we have to be moved up due to hitting something on the bottom, we're grounded.
         if (min != 0 || max != 0) {
             velocity.y = 0;
+        }
+
+        // if both max and min are nonzero, we're being squeezed in some way. there's no logic to deal with it now, so the physics may explode.
+        if (max != 0 && min != 0) {
+            doOnSqueeze.run();
         }
     }
 
@@ -159,6 +164,10 @@ public class PhysicsObjectComponent extends Component {
         if (max != 0 || min != 0) {
             velocity.x = 0;
         }
+
+        if (max != 0 && min != 0) {
+            doOnSqueeze.run();
+        }
     }
 
     // see resolveY for comments
@@ -182,6 +191,10 @@ public class PhysicsObjectComponent extends Component {
         pos.z += (deltaPos.z + max + min);
         if (max != 0 || min != 0) {
             velocity.z = 0;
+        }
+
+        if (max != 0 && min != 0) {
+            doOnSqueeze.run();
         }
     }
 
