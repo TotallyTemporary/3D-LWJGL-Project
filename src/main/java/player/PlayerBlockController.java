@@ -58,8 +58,6 @@ public class PlayerBlockController extends Component {
         ChunkLoader.setBlockAt(beforeHitLocation, Block.COBBLESTONE.getID());
         if (isInsideBlock(entity)) {
             ChunkLoader.setBlockAt(beforeHitLocation, Block.AIR.getID());
-        } else {
-            ChunkLoader.updateSpoiled();
         }
     }
 
@@ -68,7 +66,6 @@ public class PlayerBlockController extends Component {
         if (hitLocation == null) return;
 
         ChunkLoader.setBlockAt(hitLocation, Block.AIR.getID());
-        ChunkLoader.updateSpoiled();
 
         ItemType.makeItem(hitLocation, ItemType.DIRT.getID());
     }

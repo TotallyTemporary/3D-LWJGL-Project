@@ -13,8 +13,12 @@ import java.util.Iterator;
 public class ChunkLoader {
 
     // if these variables are to be user controlled, they should have 2-3 chunks added to them, to enable the player to always be in a fully loaded chunk.
-    private static final int HORIZONTAL_LOAD_RADIUS = 8;
-    private static final int VERTICAL_LOAD_RADIUS = 4;
+    private static final int HORIZONTAL_LOAD_RADIUS = (512 / Chunk.SIZE);
+    private static final int VERTICAL_LOAD_RADIUS = (256 / Chunk.SIZE);
+
+    // a chunk within this grid distance of the player's chunk will instantly get updated
+    private static final int INSTANT_LOAD_DISTANCE = 2;
+    private static final int INSTANT_LOAD_DISTANCE_SQR = INSTANT_LOAD_DISTANCE*INSTANT_LOAD_DISTANCE;
 
     private static final HashMap<Vector3i, Chunk> chunks = new HashMap<>();
 
@@ -52,10 +56,29 @@ public class ChunkLoader {
             if (pos.x < minX || pos.x > maxX ||
                 pos.y < minY || pos.y > maxY ||
                 pos.z < minZ || pos.z > maxZ) {
-                unloadChunk(chunk, it);
+                unloadChunk(chunk);
+                if (hasAllUnloadedNeighbors(chunk)) {
+                    it.remove();
+                }
             } else {
                 if (doUpdateChunk(chunk)) {
                     updatedCount++;
+                }
+            }
+
+            // update any spoiled chunks that need updating
+            // if they're being worked on, wait until they're ready (check again next frame)
+            // if they've not had their blocks generated something's gone wrong but still we wait.
+            if (chunk.spoiled
+                    && !chunk.getStatus().working
+                    && chunk.getStatus().urgency >= Chunk.Status.BLOCKS_GENERATED.urgency) {
+                chunk.spoiled = false;
+                var dst = playerChunkPos.sub(chunk.getChunkGridPos()).lengthSquared();
+
+                if (dst < INSTANT_LOAD_DISTANCE_SQR) {
+                    updateNow(chunk); // update on same frame on main thread
+                } else {
+                    forceChunkUpdate(chunk); // update multi-threaded on some future frame.
                 }
             }
         }
@@ -63,17 +86,6 @@ public class ChunkLoader {
         return updatedCount;
     }
 
-    /** Immediately update all chunks with the spoiled-flag {@link Chunk#spoiled} set to true. */
-    public static void updateSpoiled() {
-        for (Chunk chunk : chunks.values()) {
-            if (chunk.spoiled) {
-                chunk.spoiled = false;
-                updateNow(chunk);
-            }
-        }
-    }
-
-    // TODO make sure method is not called on chunks that are being loaded
     public static void updateNow(Chunk chunk) {
         // generate mesh
         chunk.setStatus(Chunk.Status.MESH_GENERATING);
@@ -145,6 +157,12 @@ public class ChunkLoader {
         return getChunkAt(Chunk.worldPosToChunkPos(pos));
     }
 
+    private static void forceChunkUpdate(Chunk chunk) {
+        // we assume this doesnt cause problems
+        chunk.setStatus(Chunk.Status.BLOCKS_GENERATED);
+        doUpdateChunk(chunk);
+    }
+
     private static boolean doUpdateChunk(Chunk chunk) {
         switch (chunk.getStatus()) {
             // if chunk has no data, load heightmap terrain
@@ -200,7 +218,7 @@ public class ChunkLoader {
         return true;
     }
 
-    private static void unloadChunk(Chunk chunk, Iterator<Chunk> it) {
+    private static void unloadChunk(Chunk chunk) {
         if (chunk.getStatus().working) return; // don't want to unload a chunk that is queued somewhere.
 
         // remove components associated with this chunk
@@ -216,11 +234,6 @@ public class ChunkLoader {
         // this just prevents log spam
         if (chunk.getStatus() != Chunk.Status.NONE) {
             chunk.setStatus(Chunk.Status.NONE);
-        }
-
-        // once a chunk has status NONE and all its neighbors have status NONE, we can safely remove it from the list.
-        if (hasAllUnloadedNeighbors(chunk)) {
-            it.remove();
         }
     }
 }
