@@ -32,10 +32,10 @@ public class Main {
         // initializing the display also initialized glfw and creates the context.
         var displaySettings = new Display.DisplaySettings(
                 "A display",   // title
-                1920, 1080,     // resolution
+                1280, 720,     // resolution
                 -1,            // monitor? (-1 gets primary)
                 false,         // vsync
-                Display.DisplayMode.FULLSCREEN_BORDERLESS
+                Display.DisplayMode.WINDOWED
         );
         var display = new Display(displaySettings);
         GLFWErrorCallback.createPrint(System.err).set();
@@ -170,6 +170,7 @@ public class Main {
             int verticesRendered = renderer.render(player);
             GLFW.glfwSetWindowTitle(display.getWindow(),
                     verticesRendered/3 + " triangles @" +
+                    (int) Timer.getFps() + " fps @" +
                     (int) Timer.getFrametimeMillis() + " ms " +
                     ChunkLoader.getQueueSize() + " chunks queued");
 
@@ -177,6 +178,7 @@ public class Main {
             GLFW.glfwSwapBuffers(display.getWindow());
             GLFW.glfwPollEvents();
         }
+
         TerrainGenerator.stop();
         StructureGenerator.stop();
         TerrainModelGenerator.stop();

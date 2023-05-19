@@ -9,6 +9,9 @@ import org.joml.Vector3f;
 
 public class ItemComponent extends Component {
 
+    // TODO bobbing was removed because it updated the transformationcomponent of the item, which is used by the PhysicsObjectComponent
+    // TODO to apply physics onto the item.
+
     /*
     // bobbing
     private Vector3f actualPosition, actualRotation;

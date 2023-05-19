@@ -1,5 +1,6 @@
 package chunk;
 
+/** Represents one of the 6 faces of a block. */
 public abstract class BlockFace {
     protected final int blockID;
     protected final int direction;

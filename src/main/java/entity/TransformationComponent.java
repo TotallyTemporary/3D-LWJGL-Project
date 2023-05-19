@@ -3,6 +3,7 @@ package entity;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+/** Contains position, rotating and scale for an entity. */
 public class TransformationComponent extends Component {
 
     private Vector3f position, rotation, scale;

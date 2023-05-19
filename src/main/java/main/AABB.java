@@ -3,8 +3,8 @@ package main;
 import chunk.CardinalDirection;
 import org.joml.Vector3f;
 
-/**
- * AABB=Axis Aligned Bounding Box
+/** Axis Aligned Bounding Box
+ * Used for physics.
  * */
 public class AABB {
 

@@ -2,6 +2,7 @@ package chunk;
 
 import org.joml.Vector3i;
 
+/** The 26 directions in a grid. Includes diagonal neighbors. */
 public class DiagonalDirection {
 
     public static final int COUNT = 26;
@@ -43,6 +44,7 @@ public class DiagonalDirection {
            new Vector3i( 1,  1,  1),
     };
 
+    /** Given an offset, this method returns the index, or -1 if it wasn't found. */
     public static int indexOf(Vector3i vec) {
         int count = 0;
         for (var offset : offsets) {

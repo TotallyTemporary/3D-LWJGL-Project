@@ -3,6 +3,9 @@ package chunk;
 import entity.Component;
 import entity.Entity;
 
+/** Contains data that can be loaded into an OpenGL model.
+ * It's stored separately, because the model loading into OpenGL must happen on the main thread,
+ * but generating the data can happen in a thread pool. */
 public class ChunkModelDataComponent extends Component {
 
     // these contain the entire position (vec3) and textureCoords (vec3) data of a chunk.

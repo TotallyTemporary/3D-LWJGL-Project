@@ -10,15 +10,15 @@ import shader.Shader;
 public class UIModelComponent extends ModelComponent {
 
     public static void createUIModels(Display display) {
-        var as = (float) display.getWidth() / display.getHeight();
+        var ratio = (float) display.getWidth() / display.getHeight();
         halfHeightSquare = new Model()
             .addPosition3D(new float[] {
-                -1f / as, -1f, -1f,
-                 1f / as, -1f, -1f,
-                 1f / as,  1f, -1f,
-                 1f / as,  1f, -1f,
-                -1f / as,  1f, -1f,
-                -1f / as, -1f, -1f
+                -1f / ratio, -1f, -1f,
+                 1f / ratio, -1f, -1f,
+                 1f / ratio,  1f, -1f,
+                 1f / ratio,  1f, -1f,
+                -1f / ratio,  1f, -1f,
+                -1f / ratio, -1f, -1f
             })
             .addTextureCoords2D(new float[]{
                 0f, 1f,

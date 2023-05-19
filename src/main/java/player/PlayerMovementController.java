@@ -17,10 +17,10 @@ public class PlayerMovementController extends Component {
         WIDTH  = 0.75f,
         DEPTH = 0.75f,
         HEIGHT = 1.75f,
-        EYE_LEVEL = 1.5f;
+        EYE_LEVEL = 1.5f; // camera offset
 
     public static final float
-        MOVE_SPEED = 5f, // blocks/second
+        MOVE_SPEED = 8f, // blocks/second
         JUMP_SPEED = 9f, // blocks/second
         SENSITIVITY = 1/500f; // radians per pixel
 

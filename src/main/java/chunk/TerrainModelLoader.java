@@ -46,9 +46,18 @@ public class TerrainModelLoader {
     }
 
     public static void loadChunk(Chunk chunk) {
+        // previous step should have given the chunk its model data as a component
         assert EntityManager.hasComponent(chunk, ChunkModelDataComponent.class);
 
+        // set get this component and remove it
         var chunkModelData = EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
+
+        // if the chunk already has a loaded model, we unload it. This might fix a memory leak.
+        var chunkModelComponent = EntityManager.removeComponent(chunk, ChunkModelComponent.class);
+        if (chunkModelComponent != null) {
+            System.err.println("Chunk at " + chunk.getChunkGridPos() + " already had a model. Unloading...");
+            chunkModelComponent.getModel().destroy();
+        }
 
         if (chunkModelData.positions.length != 0) {
             var pos = chunk.getChunkGridPos();

@@ -1,9 +1,9 @@
 package chunk;
 
-public class DefaultBlockFace extends BlockFace {
+public class SquareBlockFace extends BlockFace {
 
     /* This class represents a cubic block. It has flat rectangles for faces in all directions. */
-    public DefaultBlockFace(Integer blockID, Integer direction) {
+    public SquareBlockFace(Integer blockID, Integer direction) {
         super(blockID, direction);
     }
 

@@ -7,7 +7,7 @@ import entity.TransformationComponent;
 import item.ItemComponent;
 import org.joml.Vector3f;
 
-// TODO This class represents miscellaneous bits and bobs of player functionality.
+// TODO This class contains miscellaneous bits and bobs of player functionality.
 public class PlayerMiscController extends Component {
 
     private static final float ITEM_PICKUP_RANGE    = 0.5f,
@@ -18,7 +18,7 @@ public class PlayerMiscController extends Component {
     public void apply(Entity entity) {
         var pos = EntityManager.getComponent(entity, TransformationComponent.class).getPosition();
 
-        var res = new Vector3f();
+        var res = new Vector3f(); // reuseable vector object
         var comps = EntityManager.getComponents(ItemComponent.class).entrySet();
 
         for (var entry : comps) {
@@ -28,7 +28,7 @@ public class PlayerMiscController extends Component {
 
             itemPos.sub(pos, res);
             if (res.length() < ITEM_PICKUP_RANGE) {
-                // TODO Pickup item
+                // TODO Pickup item to inventory
                 EntityManager.removeEntitySafe(item);
             }
             else if (res.length() < ITEM_ATTRACT_RANGE) {

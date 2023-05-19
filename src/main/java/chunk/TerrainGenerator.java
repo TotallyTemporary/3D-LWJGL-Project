@@ -5,6 +5,7 @@ import org.joml.Vector3i;
 
 import java.util.concurrent.*;
 
+/** Makes terrain via simplex noise. The terrain consists of a heightmap, and caves are carved with a simple noise check. */
 public class TerrainGenerator {
 
     private static final int WORLD_SEED = 1235;

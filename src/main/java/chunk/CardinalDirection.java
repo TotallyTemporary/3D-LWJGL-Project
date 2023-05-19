@@ -2,6 +2,8 @@ package chunk;
 
 import org.joml.Vector3i;
 
+/** The 6 cardinal directions.
+ * @see DiagonalDirection for the 26 directions including diagonals. */
 public class CardinalDirection {
 
     public static final int COUNT = 6;

@@ -7,11 +7,13 @@ import org.joml.Vector3i;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+/** Loads a block array into model data. */
 public class TerrainModelGenerator {
 
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
     static { System.out.println("TerrainModelGenerator running"); }
 
+    // 6 lists, one for every cardinal direction.
     private static final ThreadLocal<FloatArrayList[]> verticesBufferLocal = ThreadLocal.withInitial(() -> new FloatArrayList[] {
             new FloatArrayList(), new FloatArrayList(),
             new FloatArrayList(), new FloatArrayList(),
@@ -21,11 +23,12 @@ public class TerrainModelGenerator {
             new FloatArrayList(), new FloatArrayList(),
             new FloatArrayList(), new FloatArrayList() });
 
-    // adds a chunk to the queue
+    // adds a chunk to the queue to be loaded in the future
     public static void addChunk(Chunk chunk) {
         executor.submit(() -> loadChunk(chunk));
     }
 
+    // loads a chunk immediately
     public static void loadChunk(Chunk chunk) {
         var comp = generateModelData(chunk);
         EntityManager.addComponent(chunk, comp);
@@ -42,6 +45,7 @@ public class TerrainModelGenerator {
     }
 
     private static ChunkModelDataComponent generateModelData(Chunk chunk) {
+        // clear buffers
         var verticesBuffer = verticesBufferLocal.get();
         var textureCoordsBuffer = textureCoordsBufferLocal.get();
         for (int i = 0; i < CardinalDirection.COUNT; i++) {
@@ -49,15 +53,18 @@ public class TerrainModelGenerator {
             textureCoordsBuffer[i].clear();
         }
 
+        // go through every block and every face
         for (int x = 0; x < Chunk.SIZE; x++)
         for (int y = 0; y < Chunk.SIZE; y++)
         for (int z = 0; z < Chunk.SIZE; z++) {
             var block = Block.getBlock(chunk.getBlock(x, y, z));
             for (int index = 0; index < CardinalDirection.COUNT; index++) {
+
                 var face = block.getFace(index);
                 if (face == null) continue;
                 if (!face.isTransparent() && !isFaceVisible(chunk, index, x, y, z)) continue;
 
+                // get vertices of a face, and move them to the correct place (add block x,y,z to face x,y,z)
                 float[] vertices = face.getVertices();
                 float[] transformedVertices = new float[vertices.length];
                 for (int i = 0; i < vertices.length/3; i++) {
@@ -90,6 +97,7 @@ public class TerrainModelGenerator {
         textureCoords.clear();
 
         // put all the vertices and texture coordinates into the combined lists
+        // addElements is a fast arraycopy because fastutil devs are geniuses
         for (int i = 0; i < CardinalDirection.COUNT; i++) {
             vertices.addElements(vertices.size(), verticesBuffer[i].elements(), 0, verticesBuffer[i].size());
             textureCoords.addElements(textureCoords.size(), textureCoordsBuffer[i].elements(), 0, textureCoordsBuffer[i].size());

@@ -8,13 +8,18 @@ import org.joml.Vector3i;
 import java.util.HashMap;
 import java.util.Iterator;
 
+/** This class stores and handles the loading of chunks.
+ * It loads chunks by sending the chunks to various workers to be processed. */
 public class ChunkLoader {
 
-    private static final int HORIZONTAL_LOAD_RADIUS = 12;
-    private static final int VERTICAL_LOAD_RADIUS = 6;
+    // if these variables are to be user controlled, they should have 2-3 chunks added to them, to enable the player to always be in a fully loaded chunk.
+    private static final int HORIZONTAL_LOAD_RADIUS = 8;
+    private static final int VERTICAL_LOAD_RADIUS = 4;
 
     private static final HashMap<Vector3i, Chunk> chunks = new HashMap<>();
 
+    /** Updates chunks based on the player's position in the world.
+     * @return number of chunks whose status was changed this frame. */
     public static int update(Vector3f playerPos) {
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
         int updatedCount = 0;
@@ -58,6 +63,7 @@ public class ChunkLoader {
         return updatedCount;
     }
 
+    /** Immediately update all chunks with the spoiled-flag {@link Chunk#spoiled} set to true. */
     public static void updateSpoiled() {
         for (Chunk chunk : chunks.values()) {
             if (chunk.spoiled) {
@@ -67,7 +73,7 @@ public class ChunkLoader {
         }
     }
 
-    // assume this will only ever be called on chunks that are loaded or higher.
+    // TODO make sure method is not called on chunks that are being loaded
     public static void updateNow(Chunk chunk) {
         // generate mesh
         chunk.setStatus(Chunk.Status.MESH_GENERATING);
@@ -86,6 +92,7 @@ public class ChunkLoader {
         assert chunk.getStatus() == Chunk.Status.FINAL;
     }
 
+    /** Returns the size of the queue of all the chunk workers combined. */
     public static int getQueueSize() {
         return TerrainGenerator.getQueueSize()
                 + StructureGenerator.getQueueSize()
@@ -101,6 +108,8 @@ public class ChunkLoader {
         chunk.setBlockSafe(blockPos, block);
         chunk.spoiled = true;
 
+        // setting a block at a chunk border requires the neighbor to update their mesh as well
+        // TODO this might only apply with transparent blocks, maybe add a check for that?
         if (blockPos.x == 0)            chunk.getNeighbor(DiagonalDirection.LEFT).spoiled = true;
         if (blockPos.x == Chunk.SIZE-1) chunk.getNeighbor(DiagonalDirection.RIGHT).spoiled = true;
         if (blockPos.y == 0)            chunk.getNeighbor(DiagonalDirection.DOWN).spoiled = true;
@@ -171,6 +180,7 @@ public class ChunkLoader {
         return false;
     }
 
+    /** Returns true if the chunk's neighbors have a status of at least `urgency`. */
     private static boolean neighborsUrgencyAtLeast(Chunk chunk, int urgency) {
         for (int dir = 0; dir < DiagonalDirection.COUNT; dir++) {
             var neighbor = chunk.getNeighbor(dir);
@@ -181,6 +191,7 @@ public class ChunkLoader {
         return true;
     }
 
+    /** Returns true if all neighbors of this chunk have status NONE. */
     private static boolean hasAllUnloadedNeighbors(Chunk chunk) {
         for (int dir = 0; dir < DiagonalDirection.COUNT; dir++) {
             var neighbor = chunk.getNeighbor(dir);
@@ -192,18 +203,22 @@ public class ChunkLoader {
     private static void unloadChunk(Chunk chunk, Iterator<Chunk> it) {
         if (chunk.getStatus().working) return; // don't want to unload a chunk that is queued somewhere.
 
+        // remove components associated with this chunk
         var modelComp = EntityManager.removeComponent(chunk, ChunkModelComponent.class);
         EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
         EntityManager.removeComponent(chunk, TransformationComponent.class);
 
+        // unload the model of the chunk
         if (modelComp != null) {
             modelComp.getModel().destroy();
         }
 
         // this just prevents log spam
-        if (chunk.getStatus() != Chunk.Status.NONE)
+        if (chunk.getStatus() != Chunk.Status.NONE) {
             chunk.setStatus(Chunk.Status.NONE);
+        }
 
+        // once a chunk has status NONE and all its neighbors have status NONE, we can safely remove it from the list.
         if (hasAllUnloadedNeighbors(chunk)) {
             it.remove();
         }

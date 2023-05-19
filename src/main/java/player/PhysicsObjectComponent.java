@@ -102,28 +102,36 @@ public class PhysicsObjectComponent extends Component {
         var max = 0f; // how much should we move up (testing down dir)
         var min = 0f; // how much should we move down (testing up dir)
 
-        // get the 4 points at the corners of our bounding box, DOWN.
         var box = new AABB(new Vector3f(pos.x, pos.y+deltaPos.y, pos.z),
                                         width, height, depth);
 
+        // get the 4 bottom points of our bounding box
         for (var point : box.getTestPoints(CardinalDirection.DOWN)) {
             if (Block.getBlock(ChunkLoader.getBlockAt(point)).isSolid()) {
+                // if y is 2.75 and we're inside the block, we want delta to be 0.25 + small offset.
                 var delta = 1 - frac(point.y) + SMALL_OFFSET;
                 // we get the max of these deltas, since if 3 of our corners have no obstruction but 1 does, we obey the 1 that does.
                 if (delta > max) max = delta;
             }
         }
+
+        // get the 4 top points of our bounding box
         for (var point : box.getTestPoints(CardinalDirection.UP)) {
             if (Block.getBlock(ChunkLoader.getBlockAt(point)).isSolid()) {
+                // if y is 2.15, delta is -0.15 - small offset
                 var delta = -frac(point.y) - SMALL_OFFSET;
                 if (delta < min) min = delta;
             }
         }
 
         // if both max and min are nonzero, we're being squeezed in some way. there's no logic to deal with it now, so the physics may explode.
+        if (max != 0 && min != 0) {
+            System.err.println("Player is being squeezed!");
+        }
+
         pos.y += (deltaPos.y + max + min);
 
-        grounded = (max != 0);
+        grounded = (max != 0); // if we have to be moved up due to hitting something on the bottom, we're grounded.
         if (min != 0 || max != 0) {
             velocity.y = 0;
         }

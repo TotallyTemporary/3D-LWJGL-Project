@@ -51,6 +51,9 @@ public class StructureGenerator {
         for (int y = 0; y < Chunk.SIZE; y++)
         for (int z = 0; z < Chunk.SIZE; z++)
         {
+            // yes, this is very ugly, but it's more of a proof of concept.
+            // in the future, we should have a special "structure" -class, and maybe even biomes that determine which structures can spawn where.
+            // for now, we just find a random grass block and programmatically generate a tree.
             if (chunk.getBlock(x, y, z) == Block.GRASS.getID()) {
                 if (random.nextFloat() < 0.01f) {
                     chunk.setBlockSafe(x, y+1, z, Block.OAK_LOG.getID());

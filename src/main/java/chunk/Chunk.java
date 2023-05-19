@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/** A chunk is a 32x32x32 ({@link #SIZE}) area of space which contains blocks.
+ * */
 public class Chunk extends Entity {
 
     // static stuff at the top here
@@ -74,11 +76,11 @@ public class Chunk extends Entity {
 
     // chunk instance stuff below
 
-    private final Vector3i chunkGridPos;
+    private final Vector3i chunkGridPos; // the chunk's position in the grid. the chunk's neighboring chunks differ from this by 1.
     private Status status;
     private boolean isAllAir; // if a chunk is all air, we don't store blocks.
-    private byte[] blocks;
-    private final List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(DiagonalDirection.COUNT, null));
+    private byte[] blocks; // if isAllAir = true, then blocks = null.
+    private final List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(DiagonalDirection.COUNT, null)); // 26 chunk neighbors
 
     public boolean spoiled = false; // temp flag used by chunkloader
 
@@ -121,6 +123,8 @@ public class Chunk extends Entity {
         return getBlock(pos.x, pos.y, pos.z);
     }
 
+    /** Returns the id of the block at x,y,z.
+     * Ensures given values are between 0-31. For example, if passed x=-1, this function would return the block of the neighboring chunk at x=31. */
     public byte getBlockSafe(int x, int y, int z) {
         if (isInsideChunk(x, y, z)) {
             return this.getBlock(x, y, z);
@@ -128,11 +132,12 @@ public class Chunk extends Entity {
 
         var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
         var chunkPos = Chunk.worldPosToChunkPos(worldPos);
-
-        int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkGridPos));
-        return neighbors.get(
-            dirIndex
-        ).get().getBlock(Chunk.worldPosToBlockPos(worldPos));
+        try {
+            int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkGridPos));
+            return getNeighbor(dirIndex).getBlock(Chunk.worldPosToBlockPos(worldPos));
+        } catch (NullPointerException e) {
+            return Block.INVALID.getID();
+        }
     }
 
     public byte getBlockSafe(Vector3i pos) {
@@ -143,6 +148,9 @@ public class Chunk extends Entity {
         setBlockSafe(pos.x, pos.y, pos.z, block);
     }
 
+    /** Sets a block at x,y,z. If x,y,z values are not within 0-31, they overflow or underflow to a neighboring chunk.
+     * For example, given x=-1, we would set the block of a neighboring chunk at x=31.
+     * @see Chunk#getBlockSafe  */
     public void setBlockSafe(int x, int y, int z, byte block) {
         var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
         var chunkPos = Chunk.worldPosToChunkPos(worldPos);
@@ -158,11 +166,15 @@ public class Chunk extends Entity {
         }
 
         // get neighbor at chunkPos
-        int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkGridPos));
-        var neighbor = neighbors.get(dirIndex).get();
+        try {
+            int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkGridPos));
+            var neighbor = getNeighbor(dirIndex);
 
-        var blockPos = Chunk.worldPosToBlockPos(worldPos);
-        neighbor.setBlockSafe(blockPos, block);
+            var blockPos = Chunk.worldPosToBlockPos(worldPos);
+            neighbor.setBlockSafe(blockPos, block);
+        } catch (NullPointerException e) {
+            System.err.println("setBlockSafe failed across chunk border at " + worldPos);
+        }
     }
 
     public void setBlock(Vector3i pos, byte block) {

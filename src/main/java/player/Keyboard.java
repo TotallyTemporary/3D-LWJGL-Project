@@ -13,11 +13,11 @@ public class Keyboard {
         GLFW.glfwSetKeyCallback(window, new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
-                switch (action) {
-                    case GLFW.GLFW_PRESS -> keys.put(key, true);
-                    case GLFW.GLFW_RELEASE -> keys.put(key, false);
-                    default -> { } // ignore repeats
-                }
+            switch (action) {
+                case GLFW.GLFW_PRESS -> keys.put(key, true);
+                case GLFW.GLFW_RELEASE -> keys.put(key, false);
+                default -> { } // ignore repeats
+            }
             }
         });
     }

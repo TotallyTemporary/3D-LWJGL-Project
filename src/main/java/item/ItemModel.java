@@ -15,11 +15,13 @@ public class ItemModel {
         itemTexture = _itemTexture;
     }
 
+    /** Creates empty model with no vertices */
     public static Model noModel() {
         return new Model().end();
     }
 
-    // idx=texture index (z coordinate)
+    /** Creates a new cube model for the item
+     * @param idx texture index (z coordinate)*/
     public static Model cubeModel(int idx) {
         float[] vertices = new float[] {
             0.5f, 1f, -0.5f,
