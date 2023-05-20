@@ -15,6 +15,13 @@ public class TransformationComponent extends Component {
         this.rotation = rotation;
         this.scale = scale;
     }
+
+    public TransformationComponent() {
+        this.position = new Vector3f();
+        this.rotation = new Vector3f();
+        this.scale = new Vector3f();
+    }
+
     // assume this gets called right before rendering.
     @Override public void apply(Entity entity) {
         calculateTransformationMatrix();

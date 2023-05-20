@@ -1,5 +1,11 @@
 package chunk;
 
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.floats.FloatList;
+import render.Model;
+import render.Texture;
+import shader.Shader;
+
 import java.lang.reflect.InvocationTargetException;
 
 /** Represents data about a particular block.
@@ -66,6 +72,8 @@ public enum Block {
 
     private boolean hasTransparentFace;
 
+    private Model blockBreakModel = null;
+
     Block(int id, boolean isSolid, BlockFace[] faces) {
         this.id = (byte) id;
         this.faces = faces;
@@ -90,10 +98,53 @@ public enum Block {
         return isSolid;
     }
 
+    public Model getBreakModel() {
+        return blockBreakModel;
+    }
+
+    // make array of references for lookup
     private static final Block[] vals = new Block[Byte.MAX_VALUE];
     static {
         for (var block : Block.values()) {
             vals[block.getID()] = block;
+        }
+    }
+
+    public static void createBlockBreakModels(Texture blockBreakTexture, Shader blockBreakShader) {
+        for (var block : Block.values()) {
+            var vertices = new FloatArrayList();
+            var texCoords = new FloatArrayList();
+
+            for (var face : block.faces) {
+                if (face == null) continue;
+
+                // transform all vertices xyz down by 0.5 to center them around 0 (for proper scaling)
+                float[] faceVertsRaw = face.getVertices();
+                float[] faceVerts = new float[faceVertsRaw.length];
+                for (int i = 0; i < faceVertsRaw.length; i++) {
+                    faceVerts[i] = faceVertsRaw[i] - 0.5f;
+                }
+
+                // 3d texture coords (include block texture index) needs to be transformed to 2d coordinates.
+                float[] faceTexCoords3D = face.getTextureCoords();
+                float[] faceTexCoords2D = new float[faceTexCoords3D.length / 3 * 2];
+                for (int i = 0; i < faceTexCoords3D.length/3; i += 1) {
+                    faceTexCoords2D[2*i    ] = faceTexCoords3D[3*i  ];
+                    faceTexCoords2D[2*i + 1] = faceTexCoords3D[3*i + 1];
+                }
+
+                vertices.addElements(vertices.size(), faceVerts);
+                texCoords.addElements(texCoords.size(), faceTexCoords2D);
+            }
+
+            var model = new Model()
+                    .addPosition3D(vertices.elements())
+                    .addTextureCoords2D(texCoords.elements())
+                    .setTexture(blockBreakTexture)
+                    .setShader(blockBreakShader)
+                    .end();
+
+            block.blockBreakModel = model;
         }
     }
 

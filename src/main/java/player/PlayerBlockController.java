@@ -3,10 +3,7 @@ package player;
 import chunk.Block;
 import chunk.CardinalDirection;
 import chunk.ChunkLoader;
-import entity.Component;
-import entity.Entity;
-import entity.EntityManager;
-import entity.TransformationComponent;
+import entity.*;
 import item.ItemType;
 import main.AABB;
 import main.Timer;
@@ -29,8 +26,10 @@ public class PlayerBlockController extends Component {
 
     private long lastActionTime = System.currentTimeMillis();
 
-    public PlayerBlockController() {
+    private BlockBreak blockBreakEntity;
 
+    public PlayerBlockController() {
+        blockBreakEntity = new BlockBreak();
     }
 
     @Override
@@ -58,6 +57,13 @@ public class PlayerBlockController extends Component {
             hitLocation = null;
         }
 
+        Block selectedBlock;
+        if (hitLocation != null) {
+            selectedBlock = Block.getBlock(ChunkLoader.getBlockAt(hitLocation));
+        } else {
+            selectedBlock = Block.INVALID;
+        }
+
         // can't switch away from a block mid-breaking it
         if (lastUpdateHitLocation == null
             || hitLocation == null
@@ -65,20 +71,32 @@ public class PlayerBlockController extends Component {
             breakage = 0;
         }
 
+        var breakTime = 0.5f; // TODO will be set on a per-block basis.
+        Block breakBlock = selectedBlock;
         if ((System.currentTimeMillis() - lastActionTime) > TIME_BETWEEN_ACTIONS) {
             if (Mouse.isLeftClickDown()) {
                 breakage += Timer.getFrametimeSeconds();
 
-                if (breakage >= 0.5f) { // TODO will be set on a per-block basis.
+                if (breakage >= breakTime) {
                     breakAction(entity);
                     lastActionTime = System.currentTimeMillis();
                 }
+            } else {
+                breakBlock = Block.INVALID;
+                breakage = 0;
             }
+
+
             if (Mouse.isRightClickDown()) {
                 buildAction(entity);
                 lastActionTime = System.currentTimeMillis();
             }
         }
+
+        // update block break visual
+        blockBreakEntity.setBlock(breakBlock);
+        blockBreakEntity.setBreakage(breakage / breakTime);
+        blockBreakEntity.setLocation(hitLocation);
     }
 
     private void buildAction(Entity entity) {

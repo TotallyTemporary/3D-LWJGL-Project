@@ -81,6 +81,17 @@ public class Main {
         .addUniform("projectionMatrix")
         .addUniform("viewMatrix");
 
+        var blockBreakShader = new Shader(
+                "src/main/resources/shaders/breaking_vertex.glsl",
+                "src/main/resources/shaders/breaking_fragment.glsl"
+        )
+                .addUniform("transformationMatrix")
+                .addUniform("projectionMatrix")
+                .addUniform("viewMatrix")
+                .addUniform("textureIndex");
+
+        Block.createBlockBreakModels(terrainTexture, blockBreakShader);
+
         var itemsTexture = new ArrayTexture(
             "src/main/resources/items_array.png",
             "arrayTexture", 16, 16);
@@ -131,6 +142,8 @@ public class Main {
         System.out.println("Chunks loaded");
 
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
+
+            // press K for wireframe
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_K)) {
                 GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
             } else {
@@ -150,6 +163,7 @@ public class Main {
             // start comp update
             EntityManager.update(); // remove toBeRemoved components.
 
+            // this is our component update order
             EntityManager.updateComponents(PlayerMovementController.class);
             EntityManager.updateComponents(PlayerBlockController.class);
             EntityManager.updateComponents(PlayerMiscController.class);

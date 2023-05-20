@@ -5,6 +5,7 @@ import chunk.ChunkRenderer;
 import entity.*;
 import item.ItemModelComponent;
 import org.lwjgl.opengl.GL30;
+import player.BlockBreakModelComponent;
 import ui.UIModelComponent;
 
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ public class Renderer {
         GL30.glEnable(GL30.GL_DEPTH_TEST);
         vertexTally += renderChunks(player);
         vertexTally += render(player, ItemModelComponent.class);
+        vertexTally += render(player, BlockBreakModelComponent.class);
 
         // then render ui on top of everything
         GL30.glEnable(GL30.GL_BLEND);
@@ -60,13 +62,12 @@ public class Renderer {
         var modelMap = EntityManager.getComponents(modelClass)
                 .keySet().stream()
                 .collect(Collectors.groupingBy(
-                        entity -> EntityManager.getComponent(entity, modelClass).getModel()
+                    entity -> EntityManager.getComponent(entity, modelClass).getModel()
                 ));
 
         // 1 shader for multiple models
         var shaderMap = modelMap.keySet().stream()
-                .collect(Collectors.groupingBy(Model::getShader));
-
+            .collect(Collectors.groupingBy(Model::getShader));
 
         // render
         for (var shaderEntry : shaderMap.entrySet()) {
@@ -120,10 +121,18 @@ public class Renderer {
             model.getShader().setMatrix4f("transformationMatrix", transformComponent.getTransformationMatrix());
         }
 
+        // TODO figure out a way to do this more elegantly
+
         // load possible ui texture index
         var uiComponent = EntityManager.getComponent(entity, UIModelComponent.class);
         if (uiComponent != null) {
             model.getShader().setFloat("uiIndex", uiComponent.getTextureIndex());
+        }
+
+        // load possible block break index
+        var breakComponent = EntityManager.getComponent(entity, BlockBreakModelComponent.class);
+        if (breakComponent != null) {
+            model.getShader().setInt("textureIndex", breakComponent.getIndex());
         }
 
         if (model.hasIndexBuffer()) {

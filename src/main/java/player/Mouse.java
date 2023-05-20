@@ -102,6 +102,8 @@ public class Mouse {
     }
 
     public static void unfocus() {
+        isLeftClickDown = false;
+        isRightClickDown = false;
         isFocused = false;
         GLFW.glfwSetInputMode(display.getWindow(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
     }
