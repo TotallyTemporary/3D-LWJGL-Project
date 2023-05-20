@@ -27,9 +27,11 @@ public class PlayerBlockController extends Component {
     private long lastActionTime = System.currentTimeMillis();
 
     private BlockBreak blockBreakEntity;
+    private BlockSelection blockSelectionEntity;
 
     public PlayerBlockController() {
         blockBreakEntity = new BlockBreak();
+        blockSelectionEntity = new BlockSelection();
     }
 
     @Override
@@ -63,6 +65,9 @@ public class PlayerBlockController extends Component {
         } else {
             selectedBlock = Block.INVALID;
         }
+
+        blockSelectionEntity.setBlock(selectedBlock);
+        blockSelectionEntity.setLocation(hitLocation);
 
         // can't switch away from a block mid-breaking it
         if (lastUpdateHitLocation == null

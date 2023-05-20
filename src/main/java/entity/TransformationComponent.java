@@ -27,6 +27,10 @@ public class TransformationComponent extends Component {
         calculateTransformationMatrix();
     }
 
+    public void forceRecalculate() {
+        calculateTransformationMatrix();
+    }
+
     private void calculateTransformationMatrix() {
         transformationMatrix.translation(position)
                 .rotate(rotation.x, new Vector3f(1, 0, 0))

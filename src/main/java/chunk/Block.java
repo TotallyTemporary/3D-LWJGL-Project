@@ -1,7 +1,6 @@
 package chunk;
 
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.floats.FloatList;
 import render.Model;
 import render.Texture;
 import shader.Shader;
@@ -73,6 +72,7 @@ public enum Block {
     private boolean hasTransparentFace;
 
     private Model blockBreakModel = null;
+    private Model blockSelectionModel = null;
 
     Block(int id, boolean isSolid, BlockFace[] faces) {
         this.id = (byte) id;
@@ -102,6 +102,10 @@ public enum Block {
         return blockBreakModel;
     }
 
+    public Model getSelectModel() {
+        return blockSelectionModel;
+    }
+
     // make array of references for lookup
     private static final Block[] vals = new Block[Byte.MAX_VALUE];
     static {
@@ -110,10 +114,13 @@ public enum Block {
         }
     }
 
-    public static void createBlockBreakModels(Texture blockBreakTexture, Shader blockBreakShader) {
+    public static void createBreakAndSelectionModels(Texture blocksTexture,
+                                                     Shader blockBreakShader,
+                                                     Shader blockSelectionShader) {
         for (var block : Block.values()) {
             var vertices = new FloatArrayList();
-            var texCoords = new FloatArrayList();
+            var breakTexCoords = new FloatArrayList();
+            var selectionTexCoords = new FloatArrayList();
 
             for (var face : block.faces) {
                 if (face == null) continue;
@@ -125,7 +132,8 @@ public enum Block {
                     faceVerts[i] = faceVertsRaw[i] - 0.5f;
                 }
 
-                // 3d texture coords (include block texture index) needs to be transformed to 2d coordinates.
+                // block breaking requires 2D texture coords
+                // block selection requires 3D texture coords
                 float[] faceTexCoords3D = face.getTextureCoords();
                 float[] faceTexCoords2D = new float[faceTexCoords3D.length / 3 * 2];
                 for (int i = 0; i < faceTexCoords3D.length/3; i += 1) {
@@ -134,17 +142,23 @@ public enum Block {
                 }
 
                 vertices.addElements(vertices.size(), faceVerts);
-                texCoords.addElements(texCoords.size(), faceTexCoords2D);
+                breakTexCoords.addElements(breakTexCoords.size(), faceTexCoords2D);
+                selectionTexCoords.addElements(selectionTexCoords.size(), faceTexCoords3D);
             }
 
-            var model = new Model()
+            block.blockBreakModel = new Model()
                     .addPosition3D(vertices.elements())
-                    .addTextureCoords2D(texCoords.elements())
-                    .setTexture(blockBreakTexture)
+                    .addTextureCoords2D(breakTexCoords.elements())
+                    .setTexture(blocksTexture)
                     .setShader(blockBreakShader)
                     .end();
 
-            block.blockBreakModel = model;
+            block.blockSelectionModel = new Model()
+                    .addPosition3D(vertices.elements())
+                    .addTextureCoords3D(selectionTexCoords.elements())
+                    .setTexture(blocksTexture)
+                    .setShader(blockSelectionShader)
+                    .end();
         }
     }
 

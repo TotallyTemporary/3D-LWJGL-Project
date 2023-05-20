@@ -3,15 +3,12 @@ package main;
 import chunk.*;
 import entity.*;
 import item.ItemComponent;
-import item.ItemType;
 import item.ItemModel;
 import org.joml.Vector3f;
-import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.Callback;
 import org.lwjgl.system.Configuration;
 import player.*;
@@ -90,7 +87,16 @@ public class Main {
                 .addUniform("viewMatrix")
                 .addUniform("textureIndex");
 
-        Block.createBlockBreakModels(terrainTexture, blockBreakShader);
+        var blockSelectionShader = new Shader(
+                "src/main/resources/shaders/selection_vertex.glsl",
+                "src/main/resources/shaders/selection_fragment.glsl"
+        )
+                .addUniform("transformationMatrix")
+                .addUniform("projectionMatrix")
+                .addUniform("viewMatrix")
+                .addUniform("colourMultiplier");
+
+        Block.createBreakAndSelectionModels(terrainTexture, blockBreakShader, blockSelectionShader);
 
         var itemsTexture = new ArrayTexture(
             "src/main/resources/items_array.png",
@@ -142,7 +148,6 @@ public class Main {
         System.out.println("Chunks loaded");
 
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
-
             // press K for wireframe
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_K)) {
                 GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);

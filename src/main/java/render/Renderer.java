@@ -4,8 +4,12 @@ import chunk.ChunkModelComponent;
 import chunk.ChunkRenderer;
 import entity.*;
 import item.ItemModelComponent;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
 import player.BlockBreakModelComponent;
+import player.BlockSelectModelComponent;
+import player.BlockSelection;
+import player.BlockSelectionRenderer;
 import ui.UIModelComponent;
 
 import java.util.stream.Collectors;
@@ -22,17 +26,23 @@ public class Renderer {
      * @param player This entity should be the camera.
      *               It is used to get the viewMatrix and cull some faces in the chunk render function. */
     public int render(Player player) {
-        GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
+        GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT | GL30.GL_STENCIL_BUFFER_BIT);
         GL30.glCullFace(GL30.GL_BACK);
         GL30.glEnable(GL30.GL_CULL_FACE);
+        GL30.glEnable(GL30.GL_DEPTH_TEST);
+
+        GL30.glEnable(GL30.GL_STENCIL_TEST);
+        GL30.glStencilOp(GL30.GL_KEEP, GL30.GL_KEEP, GL30.GL_REPLACE);
+        GL30.glStencilMask(0x00); // disable stenciling
 
         int vertexTally = 0; // count number of vertices rendered
 
+        vertexTally += renderSelections(player);
+        vertexTally += render(player, BlockBreakModelComponent.class);
+
         // first render terrain and items
-        GL30.glEnable(GL30.GL_DEPTH_TEST);
         vertexTally += renderChunks(player);
         vertexTally += render(player, ItemModelComponent.class);
-        vertexTally += render(player, BlockBreakModelComponent.class);
 
         // then render ui on top of everything
         GL30.glEnable(GL30.GL_BLEND);
@@ -50,6 +60,10 @@ public class Renderer {
 
         var chunks = EntityManager.getComponents(ChunkModelComponent.class);
         return ChunkRenderer.render(chunks, viewMatrix, projectionMatrix, player.getEyePosition());
+    }
+
+    private int renderSelections(Player player) {
+        return BlockSelectionRenderer.render(player);
     }
 
     private <T extends ModelComponent> int render(Player player, Class<T> modelClass) {
