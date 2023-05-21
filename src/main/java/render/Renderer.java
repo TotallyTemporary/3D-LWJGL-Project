@@ -4,11 +4,8 @@ import chunk.ChunkModelComponent;
 import chunk.ChunkRenderer;
 import entity.*;
 import item.ItemModelComponent;
-import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
 import player.BlockBreakModelComponent;
-import player.BlockSelectModelComponent;
-import player.BlockSelection;
 import player.BlockSelectionRenderer;
 import ui.UIModelComponent;
 
@@ -37,12 +34,12 @@ public class Renderer {
 
         int vertexTally = 0; // count number of vertices rendered
 
-        vertexTally += renderSelections(player);
-        vertexTally += render(player, BlockBreakModelComponent.class);
-
         // first render terrain and items
         vertexTally += renderChunks(player);
         vertexTally += render(player, ItemModelComponent.class);
+
+        vertexTally += renderSelections(player);
+        vertexTally += render(player, BlockBreakModelComponent.class);
 
         // then render ui on top of everything
         GL30.glEnable(GL30.GL_BLEND);

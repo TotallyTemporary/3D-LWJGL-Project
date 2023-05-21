@@ -170,6 +170,10 @@ public class Model {
         return vao;
     }
 
+    public int getVBO(int index) {
+        return vbos.get(index);
+    }
+
     public int getNumberOfVBOs() {
         return vbos.size();
     }

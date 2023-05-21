@@ -2,60 +2,45 @@ package player;
 
 import entity.Entity;
 import entity.EntityManager;
-import entity.ModelComponent;
 import entity.TransformationComponent;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
-import render.Model;
 import render.Player;
-import render.Texture;
-import ui.UIModelComponent;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class BlockSelectionRenderer {
 
-    private static int render(HashMap<Entity, BlockSelectModelComponent> selections) {
-        var tally = 0;
-        for (var entry : selections.entrySet()) {
-            var entity = entry.getKey();
-            var modelComponent = entry.getValue();
-            var model = modelComponent.getModel();
+    private static int render(SelectedFaceModelComponent modelComponent, TransformationComponent transform) {
+        var model = modelComponent.getModel();
 
-            GL30.glBindVertexArray(model.getVAO());
-            for (int i = 0; i < model.getNumberOfVBOs(); i++) {
-                GL30.glEnableVertexAttribArray(i);
-            }
-
-            var transform = EntityManager.getComponent(entity, TransformationComponent.class);
-            model.getShader().setMatrix4f("transformationMatrix", transform.getTransformationMatrix());
-
-            GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, model.getVertexCount());
-
-            for (int i = 0; i < model.getNumberOfVBOs(); i++) {
-                GL30.glDisableVertexAttribArray(i);
-            }
-            GL30.glBindVertexArray(0);
-
-            tally += model.getVertexCount();
+        GL30.glBindVertexArray(model.getVAO());
+        for (int i = 0; i < model.getNumberOfVBOs(); i++) {
+            GL30.glEnableVertexAttribArray(i);
         }
 
-        return tally;
+        model.getShader().setMatrix4f("transformationMatrix", transform.getTransformationMatrix());
+
+        GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, model.getVertexCount());
+
+        for (int i = 0; i < model.getNumberOfVBOs(); i++) {
+            GL30.glDisableVertexAttribArray(i);
+        }
+        GL30.glBindVertexArray(0);
+
+        return model.getVertexCount();
     }
 
     public static int render(Player player) {
         var viewMatrix = player.getViewMatrix();
         var projectionMatrix = player.getProjectionMatrix();
 
-        var selections = EntityManager.getComponents(BlockSelectModelComponent.class);
+        var selections = EntityManager.getComponents(SelectedFaceModelComponent.class);
         if (selections.isEmpty()) return 0;
         var firstSelection = selections.values().iterator().next();
         int tally = 0;
 
         // assume shared shader
-        var transforms = selections.keySet().stream().map(entity -> EntityManager.getComponent(entity, TransformationComponent.class)).toList();
         var shader = firstSelection.getModel().getShader();
         GL30.glUseProgram(shader.getProgram());
 
@@ -70,40 +55,48 @@ public class BlockSelectionRenderer {
 
         /* thank you: https://learnopengl.com/Advanced-OpenGL/Stencil-testing */
 
-        // regular size, full colour
-        transforms.forEach(transform -> {
-            transform.setScale(new Vector3f(BlockSelection.NORMAL_SCALE));
-            transform.forceRecalculate();
-        });
-        shader.setFloat("colourMultiplier", BlockSelection.NORMAL_DARKNESS);
+        for (var entity : selections.keySet()) {
+            var modelComp = EntityManager.getComponent(entity, SelectedFaceModelComponent.class);
+            var transformComp = EntityManager.getComponent(entity, TransformationComponent.class);
 
-        GL30.glStencilOp(GL30.GL_KEEP, GL30.GL_KEEP, GL30.GL_REPLACE);
-        GL30.glStencilFunc(GL30.GL_ALWAYS, 1, 0xFF);
-        GL30.glStencilMask(0xFF);
+            GL30.glClear(GL30.GL_STENCIL_BUFFER_BIT); // clear stencil from last selection
 
-        // GL30.glDisable(GL30.GL_DEPTH_TEST);
-        GL30.glEnable(GL30.GL_DEPTH_TEST);
+            // regular size, full colour
+            transformComp.setScale(new Vector3f(BlockSelection.NORMAL_SCALE));
+            transformComp.forceRecalculate();
+            shader.setFloat("colourMultiplier", BlockSelection.NORMAL_DARKNESS);
 
-        tally += render(selections);
+            // write to stencil at all times
+            GL30.glStencilOp(GL30.GL_KEEP, GL30.GL_KEEP, GL30.GL_REPLACE);
+            GL30.glStencilFunc(GL30.GL_ALWAYS, 1, 0xFF);
+            GL30.glStencilMask(0xFF);
 
-        // larger, fully black
-        transforms.forEach(transform -> {
-            transform.setScale(new Vector3f(BlockSelection.OUTLINE_SCALE));
-            transform.forceRecalculate();
-        });
-        shader.setFloat("colourMultiplier", BlockSelection.OUTLINE_DARKNESS);
+            // dont write colour and dont check depth
+            GL30.glColorMask(false, false, false, false); // don't write colour
+            GL30.glDisable(GL30.GL_DEPTH_TEST);
 
-        GL30.glStencilFunc(GL30.GL_NOTEQUAL, 1, 0xFF);
-        GL30.glStencilMask(0x00);
+            tally += render(modelComp, transformComp);
 
-        //GL30.glDisable(GL30.GL_DEPTH_TEST);
-        GL30.glEnable(GL30.GL_DEPTH_TEST);
+            // larger, darker
+            transformComp.setScale(new Vector3f(BlockSelection.OUTLINE_SCALE));
+            transformComp.forceRecalculate();
+            shader.setFloat("colourMultiplier", BlockSelection.OUTLINE_DARKNESS);
 
-        tally += render(selections);
+            // dont render a pixel if stencil was set by the render above
+            GL30.glStencilFunc(GL30.GL_NOTEQUAL, 1, 0xFF);
+            GL30.glStencilMask(0x00);
 
-        GL30.glStencilMask(0xFF);
-        GL30.glStencilFunc(GL30.GL_ALWAYS, 0, 0xFF);
-        GL30.glEnable(GL30.GL_DEPTH_TEST);
+            // write colour, test depth
+            GL30.glColorMask(true, true, true, true);
+            GL30.glEnable(GL30.GL_DEPTH_TEST); // turn this to glDisable if you want outlines you can see through ground
+
+            tally += render(modelComp, transformComp);
+
+            // return defaults
+            GL30.glStencilMask(0xFF);
+            GL30.glStencilFunc(GL30.GL_ALWAYS, 0, 0xFF);
+            GL30.glEnable(GL30.GL_DEPTH_TEST);
+        }
 
         return tally;
     }

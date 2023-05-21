@@ -11,5 +11,5 @@ void main()
     if (tex.a < 0.5) {
         discard;
     }
-    FragColor = colourMultiplier * vec4(tex.rgb, 0.5f);
+    FragColor = colourMultiplier * vec4(tex.rgb, 1);
 }

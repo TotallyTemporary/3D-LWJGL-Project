@@ -72,7 +72,6 @@ public enum Block {
     private boolean hasTransparentFace;
 
     private Model blockBreakModel = null;
-    private Model blockSelectionModel = null;
 
     Block(int id, boolean isSolid, BlockFace[] faces) {
         this.id = (byte) id;
@@ -102,10 +101,6 @@ public enum Block {
         return blockBreakModel;
     }
 
-    public Model getSelectModel() {
-        return blockSelectionModel;
-    }
-
     // make array of references for lookup
     private static final Block[] vals = new Block[Byte.MAX_VALUE];
     static {
@@ -115,12 +110,10 @@ public enum Block {
     }
 
     public static void createBreakAndSelectionModels(Texture blocksTexture,
-                                                     Shader blockBreakShader,
-                                                     Shader blockSelectionShader) {
+                                                     Shader blockBreakShader) {
         for (var block : Block.values()) {
             var vertices = new FloatArrayList();
             var breakTexCoords = new FloatArrayList();
-            var selectionTexCoords = new FloatArrayList();
 
             for (var face : block.faces) {
                 if (face == null) continue;
@@ -133,7 +126,6 @@ public enum Block {
                 }
 
                 // block breaking requires 2D texture coords
-                // block selection requires 3D texture coords
                 float[] faceTexCoords3D = face.getTextureCoords();
                 float[] faceTexCoords2D = new float[faceTexCoords3D.length / 3 * 2];
                 for (int i = 0; i < faceTexCoords3D.length/3; i += 1) {
@@ -143,7 +135,6 @@ public enum Block {
 
                 vertices.addElements(vertices.size(), faceVerts);
                 breakTexCoords.addElements(breakTexCoords.size(), faceTexCoords2D);
-                selectionTexCoords.addElements(selectionTexCoords.size(), faceTexCoords3D);
             }
 
             block.blockBreakModel = new Model()
@@ -151,13 +142,6 @@ public enum Block {
                     .addTextureCoords2D(breakTexCoords.elements())
                     .setTexture(blocksTexture)
                     .setShader(blockBreakShader)
-                    .end();
-
-            block.blockSelectionModel = new Model()
-                    .addPosition3D(vertices.elements())
-                    .addTextureCoords3D(selectionTexCoords.elements())
-                    .setTexture(blocksTexture)
-                    .setShader(blockSelectionShader)
                     .end();
         }
     }

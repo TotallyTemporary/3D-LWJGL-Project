@@ -1,41 +1,58 @@
 package player;
 
 import chunk.Block;
+import chunk.CardinalDirection;
 import entity.Entity;
 import entity.EntityManager;
 import entity.TransformationComponent;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import render.Texture;
+import shader.Shader;
 
-public class BlockSelection extends Entity {
+public class BlockSelection {
 
-    public static final float OUTLINE_SCALE = 1.04f;
-    public static final float NORMAL_SCALE = 1.01f;
+    public static final float OUTLINE_SCALE = 1.02f;
+    public static final float NORMAL_SCALE = 1f;
     public static final float OUTLINE_DARKNESS = 0.45f;
-    public static final float NORMAL_DARKNESS = 0.80f;
+    public static final float NORMAL_DARKNESS = 0.80f; // unused since selection block has its colour mask turned to false
 
-    private TransformationComponent transformationComponent;
-    private BlockSelectModelComponent modelComponent;
+    private static Shader selectionShader = null;
+    private static Texture blockTexture = null;
+
+    public static void setShader(Shader shader) {
+        selectionShader = shader;
+    }
+
+    public static void setTexture(Texture texture) {
+        blockTexture = texture;
+    }
+
+    private SelectedFaceModelComponent[] modelComponents = new SelectedFaceModelComponent[CardinalDirection.COUNT];
+    private TransformationComponent[] transformationComponents = new TransformationComponent[CardinalDirection.COUNT];
+    private Entity[] faceEntities = new Entity[CardinalDirection.COUNT];
 
     public BlockSelection() {
-        super();
+        for (int i = 0; i < CardinalDirection.COUNT; i++) {
+            faceEntities[i] = new Entity();
 
-        modelComponent = new BlockSelectModelComponent();
-        transformationComponent = new TransformationComponent(
-                new Vector3f(),
-                new Vector3f(),
-                new Vector3f(1f)
-        );
+            modelComponents[i] = new SelectedFaceModelComponent(blockTexture, selectionShader);
+            transformationComponents[i] = new TransformationComponent();
 
-        EntityManager.addComponent(this, modelComponent);
-        EntityManager.addComponent(this, transformationComponent);
+            EntityManager.addComponent(faceEntities[i], modelComponents[i]);
+            EntityManager.addComponent(faceEntities[i], transformationComponents[i]);
+        }
+
     }
 
     public void setBlock(Block block) {
         if (block == null) {
             setBlock(Block.INVALID);
-        } else {
-            modelComponent.setBlock(block);
+            return;
+        }
+
+        for (int i = 0; i < CardinalDirection.COUNT; i++) {
+            modelComponents[i].setFace(block.getFace(i));
         }
     }
 
@@ -43,6 +60,12 @@ public class BlockSelection extends Entity {
         if (loc == null) {
             return;
         }
-        transformationComponent.getPosition().set(loc.x + 0.5f, loc.y + 0.5f, loc.z + 0.5f);
+
+        for (int i = 0; i < CardinalDirection.COUNT; i++) {
+            transformationComponents[i]
+                    .getPosition()
+                    .set(new Vector3f(loc.x + 0.5f, loc.y + 0.5f, loc.z + 0.5f));
+            transformationComponents[i].forceRecalculate();
+        }
     }
 }

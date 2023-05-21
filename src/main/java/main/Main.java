@@ -96,7 +96,9 @@ public class Main {
                 .addUniform("viewMatrix")
                 .addUniform("colourMultiplier");
 
-        Block.createBreakAndSelectionModels(terrainTexture, blockBreakShader, blockSelectionShader);
+        BlockSelection.setShader(blockSelectionShader);
+        BlockSelection.setTexture(terrainTexture);
+        Block.createBreakAndSelectionModels(terrainTexture, blockBreakShader);
 
         var itemsTexture = new ArrayTexture(
             "src/main/resources/items_array.png",
