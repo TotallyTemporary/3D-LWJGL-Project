@@ -11,7 +11,7 @@ public class BlockBreak extends Entity {
 
     private static final int TEX_INDEX = 240;
     private static final int TEX_COUNT = 10;
-    private static final float MODEL_SIZE = 1.1f;
+    private static final float MODEL_SIZE = 1.03f;
 
     private TransformationComponent transformationComponent;
     private BlockBreakModelComponent modelComponent;

@@ -84,18 +84,19 @@ public class PlayerBlockController extends Component {
 
                 if (breakage >= breakTime) {
                     breakAction(entity);
-                    lastActionTime = System.currentTimeMillis();
                 }
             } else {
-                breakBlock = Block.INVALID;
                 breakage = 0;
             }
 
 
             if (Mouse.isRightClickDown()) {
                 buildAction(entity);
-                lastActionTime = System.currentTimeMillis();
             }
+        }
+
+        if (breakage == 0) {
+            breakBlock = Block.INVALID;
         }
 
         // update block break visual
@@ -105,6 +106,8 @@ public class PlayerBlockController extends Component {
     }
 
     private void buildAction(Entity entity) {
+        lastActionTime = System.currentTimeMillis();
+
         if (beforeHitLocation == null) return;
         // TODO this still spoils the chunk
         ChunkLoader.setBlockAt(beforeHitLocation, Block.COBBLESTONE.getID());
@@ -115,6 +118,8 @@ public class PlayerBlockController extends Component {
 
     private void breakAction(Entity entity) {
         if (hitLocation == null) return;
+        lastActionTime = System.currentTimeMillis();
+
         ChunkLoader.setBlockAt(hitLocation, Block.AIR.getID());
         ItemType.makeItem(hitLocation, ItemType.DIRT.getID());
     }
