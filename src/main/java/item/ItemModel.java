@@ -1,122 +1,186 @@
 package item;
 
+import chunk.Block;
+import chunk.BlockFace;
+import chunk.CardinalDirection;
+import chunk.SquareBlockFace;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import org.joml.Vector3f;
+import org.lwjgl.opengl.GL30;
+import render.ArrayTexture;
 import render.Model;
 import render.Texture;
 import shader.Shader;
 
+import java.nio.ByteBuffer;
+
 public class ItemModel {
 
     private static Shader itemShader;
-    private static Texture blockTexture, itemTexture;
+    private static ArrayTexture blockTexture, itemTexture;
 
-    public static void init(Shader _itemShader, Texture _blockTexture, Texture _itemTexture) {
+    public static void init(Shader _itemShader, ArrayTexture _blockTexture, ArrayTexture _itemTexture) {
         itemShader = _itemShader;
         blockTexture = _blockTexture;
         itemTexture = _itemTexture;
     }
 
-    /** Creates empty model with no vertices */
     public static Model noModel() {
-        return new Model().end();
+        return new Model()
+            .addPosition3D(new float[] {})
+            .addTextureCoords3D(new float[] {})
+            .setShader(itemShader)
+            .setTexture(blockTexture)
+            .end();
     }
 
-    /** Creates a new cube model for the item
-     * @param idx texture index (z coordinate)*/
-    public static Model cubeModel(int idx) {
-        float[] vertices = new float[] {
-            0.5f, 1f, -0.5f,
-            0.5f, 0f, -0.5f,
-            -0.5f, 0f, -0.5f,
-            -0.5f, 0f, -0.5f,
-            -0.5f, 1f, -0.5f,
-            0.5f, 1f, -0.5f,
+    public static Model fromBlock(Block block) {
+        var vertices = new FloatArrayList();
+        var texCoords = new FloatArrayList();
 
-            -0.5f, 0f, 0.5f,
-            0.5f, 0f, 0.5f,
-            0.5f, 1f, 0.5f,
-            0.5f, 1f, 0.5f,
-            -0.5f, 1f, 0.5f,
-            -0.5f, 0f, 0.5f,
+        for (int i = 0; i < CardinalDirection.COUNT; i++) {
+            var face = block.getFace(i);
+            if (face == null) continue;
 
-            -0.5f, 1f, 0.5f,
-            -0.5f, 1f, -0.5f,
-            -0.5f, 0f, -0.5f,
-            -0.5f, 0f, -0.5f,
-            -0.5f, 0f, 0.5f,
-            -0.5f, 1f, 0.5f,
+            // move origin to be at the center of the bottom of the block
+            var faceVertices = face.getVertices();
+            for (int j = 0; j < faceVertices.length/3; j++) {
+                vertices.add(faceVertices[3*j  ]);
+                vertices.add(faceVertices[3*j+1]);
+                vertices.add(faceVertices[3*j+2]);
+            }
 
-            0.5f, 0f, -0.5f,
-            0.5f, 1f, -0.5f,
-            0.5f, 1f, 0.5f,
-            0.5f, 1f, 0.5f,
-            0.5f, 0f, 0.5f,
-            0.5f, 0f, -0.5f,
-
-            0.5f, 1f, 0.5f,
-            0.5f, 1f, -0.5f,
-            -0.5f, 1f, -0.5f,
-            -0.5f, 1f, -0.5f,
-            -0.5f, 1f, 0.5f,
-            0.5f, 1f, 0.5f,
-
-            -0.5f, 0f, -0.5f,
-            0.5f, 0f, -0.5f,
-            0.5f, 0f, 0.5f,
-            0.5f, 0f, 0.5f,
-            -0.5f, 0f, 0.5f,
-            -0.5f, 0f, -0.5f
-        };
-
-        float[] textureCoords = new float[] {
-            1f, 0f, idx,
-            1f, 1f, idx,
-            0f, 1f, idx,
-            0f, 1f, idx,
-            0f, 0f, idx,
-            1f, 0f, idx,
-
-            0f, 1f, idx,
-            1f, 1f, idx,
-            1f, 0f, idx,
-            1f, 0f, idx,
-            0f, 0f, idx,
-            0f, 1f, idx,
-
-            0f, 0f, idx,
-            1f, 0f, idx,
-            1f, 1f, idx,
-            1f, 1f, idx,
-            0f, 1f, idx,
-            0f, 0f, idx,
-
-            1f, 1f, idx,
-            1f, 0f, idx,
-            0f, 0f, idx,
-            0f, 0f, idx,
-            0f, 1f, idx,
-            1f, 1f, idx,
-
-            0f, 1f, idx,
-            1f, 1f, idx,
-            1f, 0f, idx,
-            1f, 0f, idx,
-            0f, 0f, idx,
-            0f, 1f, idx,
-
-            0f, 1f, idx,
-            1f, 1f, idx,
-            1f, 0f, idx,
-            1f, 0f, idx,
-            0f, 0f, idx,
-            0f, 1f, idx,
-        };
+            texCoords.addElements(texCoords.size(), face.getTextureCoords());
+        }
 
         return new Model()
-                .addPosition3D(vertices)
-                .addTextureCoords3D(textureCoords)
-                .setShader(itemShader)
-                .setTexture(blockTexture)
-                .end();
+            .addPosition3D(vertices.elements())
+            .addTextureCoords3D(texCoords.elements())
+            .setShader(itemShader)
+            .setTexture(blockTexture)
+            .end();
+    }
+
+    // takes the texture of a element in the block texture
+    public static Model fromItemTexture(Block block) {
+        var spriteData = getSpriteDataFromTexture(block.getID(), blockTexture);
+        var pixels = bufferTo2DArray(spriteData, blockTexture.getTileWidth(), blockTexture.getTileHeight());
+
+        var vertices = new FloatArrayList();
+        var texCoords = new FloatArrayList();
+
+        int blockID = block.getID();
+
+        for (int y = 0; y < blockTexture.getTileHeight(); y++) {
+            for (int x = 0; x < blockTexture.getTileWidth(); x++) {
+                if (!isOpaque(getPixel(pixels, x, y))) continue;
+
+                var front = makeSmallBlockFaceAt(x, y, CardinalDirection.FRONT, blockID, blockTexture);
+                vertices.addElements(vertices.size(), front.getVertices());
+                texCoords.addElements(texCoords.size(), front.getTextureCoords());
+
+                var back = makeSmallBlockFaceAt(x, y, CardinalDirection.BACK, blockID, blockTexture);
+                vertices.addElements(vertices.size(), back.getVertices());
+                texCoords.addElements(texCoords.size(), back.getTextureCoords());
+
+                if (!isOpaque(getPixel(pixels, x-1, y))) {
+                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.LEFT, blockID, blockTexture);
+                    vertices.addElements(vertices.size(), face.getVertices());
+                    texCoords.addElements(texCoords.size(), face.getTextureCoords());
+                }
+
+                if (!isOpaque(getPixel(pixels, x+1, y))) {
+                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.RIGHT, blockID, blockTexture);
+                    vertices.addElements(vertices.size(), face.getVertices());
+                    texCoords.addElements(texCoords.size(), face.getTextureCoords());
+                }
+
+                if (!isOpaque(getPixel(pixels, x, y+1))) {
+                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.UP, blockID, blockTexture);
+                    vertices.addElements(vertices.size(), face.getVertices());
+                    texCoords.addElements(texCoords.size(), face.getTextureCoords());
+                }
+
+                if (!isOpaque(getPixel(pixels, x, y-1))) {
+                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.DOWN, blockID, blockTexture);
+                    vertices.addElements(vertices.size(), face.getVertices());
+                    texCoords.addElements(texCoords.size(), face.getTextureCoords());
+                }
+            }
+        }
+
+        return new Model()
+            .addPosition3D(vertices.elements())
+            .addTextureCoords3D(texCoords.elements())
+            .setShader(itemShader)
+            .setTexture(blockTexture)
+            .end();
+    }
+
+    private static ByteBuffer getSpriteDataFromTexture(int index, ArrayTexture texture) {
+        var BYTES_PER_PIXEL = 4;
+        var TILE_SIZE_BYTES = texture.getTileWidth() * texture.getTileHeight() * BYTES_PER_PIXEL;
+
+        var data = texture.getImageData();
+
+        var start = index * TILE_SIZE_BYTES;
+        byte[] sprite = new byte[TILE_SIZE_BYTES];
+        data.get(start, sprite, 0, sprite.length);
+        return ByteBuffer.wrap(sprite);
+    }
+
+    // also flips y
+    private static int[][] bufferTo2DArray(ByteBuffer buffer, int width, int height) {
+        int[][] pixels = new int[width][height];
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                pixels[x][height-y-1] = buffer.getInt();
+            }
+        }
+
+        return pixels;
+    }
+
+    private static int getPixel(int[][] pixels, int x, int y) {
+        int xSize = pixels.length;
+        int ySize = pixels[0].length;
+        if (x < 0 || x >= xSize) return 0;
+        if (y < 0 || y >= ySize) return 0;
+        return pixels[x][y];
+    }
+
+    private static boolean isOpaque(int pixel) {
+        return (pixel & 255) != 0;
+    }
+
+    private static BlockFace makeSmallBlockFaceAt(int xPixel, int yPixel, int direction, int index, ArrayTexture texture) {
+        var pixelSize = 1f / texture.getTileWidth();
+
+        var templateBlockFace = new SquareBlockFace(index, direction);
+
+        var verts = templateBlockFace.getVertices();
+        var vertices = new float[verts.length];
+        for (int i = 0; i < verts.length / 3; i++) {
+            vertices[3*i + 0] = verts[3*i + 0]*pixelSize + xPixel*pixelSize;
+            vertices[3*i + 1] = verts[3*i + 1]*pixelSize + yPixel*pixelSize; // flip y
+            vertices[3*i + 2] = verts[3*i + 2]*pixelSize;
+        }
+
+        var tex = templateBlockFace.getTextureCoords();
+        var texCoords = new float[tex.length];
+        for (int i = 0; i < tex.length / 3; i++) {
+            // always the size of 1 pixel so always sample same pixel
+            texCoords[3*i + 0] = (xPixel + 0.5f)*pixelSize;
+            texCoords[3*i + 1] = 1f - ((yPixel + 0.5f)*pixelSize); // flip y
+            texCoords[3*i + 2] = index;
+        }
+
+        return new BlockFace(index, direction) {
+            public float[] getVertices() { return vertices; }
+            public float[] getTextureCoords() { return texCoords; }
+            public boolean isTransparent() { return false; }
+        };
     }
 
 }

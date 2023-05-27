@@ -14,5 +14,6 @@ void main()
     pass_textureCoords = textureCoords.xy;
     pass_textureIndex  = textureCoords.z;
 
-    gl_Position = projectionMatrix * viewMatrix * transformationMatrix * vec4(pos.xyz, 1.0);
+    vec3 movedPos = vec3(pos.x - 0.5, pos.y, pos.z - 0.5);
+    gl_Position = projectionMatrix * viewMatrix * transformationMatrix * vec4(movedPos, 1.0);
 }

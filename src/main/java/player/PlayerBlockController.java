@@ -120,8 +120,9 @@ public class PlayerBlockController extends Component {
         if (hitLocation == null) return;
         lastActionTime = System.currentTimeMillis();
 
+        var blockID = ChunkLoader.getBlockAt(hitLocation);
         ChunkLoader.setBlockAt(hitLocation, Block.AIR.getID());
-        ItemType.makeItem(hitLocation, ItemType.DIRT.getID());
+        ItemType.makeItem(hitLocation, Block.getBlock(blockID).getItemID());
     }
 
     private boolean isInsideBlock(Entity entity) {

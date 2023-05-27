@@ -65,6 +65,18 @@ public abstract class Texture {
         return name;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public ByteBuffer getImageData() {
+        return imageData;
+    }
+
     public void destroy() {
         GL30.glDeleteTextures(this.id);
     }

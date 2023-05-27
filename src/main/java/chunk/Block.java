@@ -1,6 +1,7 @@
 package chunk;
 
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import item.ItemType;
 import render.Model;
 import render.Texture;
 import shader.Shader;
@@ -16,43 +17,43 @@ public enum Block {
     // use the `makeFaces` -method to create multiple faces of the same type, with different indices.
     // the `cubeFaces` and `decorFaces` -methods call the `makeFaces` -method with the same index for all faces.
 
-    INVALID  (1, true, new BlockFace[]{ null, null, null, null, null, null }),
-    AIR      (0, false, new BlockFace[]{ null, null, null, null, null, null }),
-    GRASS    (2, true, makeFaces(SquareBlockFace.class, new int[] { 0, 3, 3, 3, 3, 2 })),
-    STONE    (3, true, cubeFaces(1)),
-    DIRT     (4, true, cubeFaces(2)),
-    OAK_PLANK(5, true, cubeFaces(4)),
-    STONE_SLABS           (6, true, cubeFaces(5)),
-    CHISELLED_STONE_BRICKS(7, true, cubeFaces(6)),
-    BRICKS     (8, true, cubeFaces(7)),
-    TNT        (9, true, makeFaces(SquareBlockFace.class, new int[] { 10, 9, 9, 9, 9, 11 })),
-    COBWEB     (11, false, decorFaces(11)),
-    ROSE       (12, false, decorFaces(12)),
-    DANDELION  (13, false, decorFaces(13)),
-    OAK_SAPLING(15, false, decorFaces(15)),
+    INVALID  (1, 1, true, new BlockFace[]{ null, null, null, null, null, null }),
+    AIR      (0, 0, false, new BlockFace[]{ null, null, null, null, null, null }),
+    GRASS    (2, 4, true, makeFaces(SquareBlockFace.class, new int[] { 0, 3, 3, 3, 3, 2 })),
+    STONE    (3, 16, true, cubeFaces(1)),
+    DIRT     (4, 4, true, cubeFaces(2)),
+    OAK_PLANK(5, 5, true, cubeFaces(4)),
+    STONE_SLABS           (6, 6, true, cubeFaces(5)),
+    CHISELLED_STONE_BRICKS(7, 7, true, cubeFaces(6)),
+    BRICKS     (8, 8, true, cubeFaces(7)),
+    TNT        (9, 9, true, makeFaces(SquareBlockFace.class, new int[] { 10, 9, 9, 9, 9, 11 })),
+    COBWEB     (11, 1, false, decorFaces(11)),
+    ROSE       (12, 12, false, decorFaces(12)),
+    DANDELION  (13, 13, false, decorFaces(13)),
+    OAK_SAPLING(15, 1, false, decorFaces(15)),
 
-    COBBLESTONE(16, true, cubeFaces(16)),
-    BEDROCK    (17, true, cubeFaces(17)),
-    SAND       (18, true, cubeFaces(18)),
-    GRAVEL     (19, true, cubeFaces(19)),
-    OAK_LOG    (20, true, makeFaces(SquareBlockFace.class, new int[] { 21, 20, 20, 20, 20, 21 })),
-    IRON_BLOCK (21, true, cubeFaces(21)),
-    GOLD_BLOCK (22, true, cubeFaces(22)),
+    COBBLESTONE(16, 16, true, cubeFaces(16)),
+    BEDROCK    (17, 1, true, cubeFaces(17)),
+    SAND       (18, 18, true, cubeFaces(18)),
+    GRAVEL     (19, 19, true, cubeFaces(19)),
+    OAK_LOG    (20, 20, true, makeFaces(SquareBlockFace.class, new int[] { 21, 20, 20, 20, 20, 21 })),
+    IRON_BLOCK (21, 21, true, cubeFaces(21)),
+    GOLD_BLOCK (22, 22, true, cubeFaces(22)),
 
-    GOLD_ORE  (32, true, cubeFaces(32)),
-    IRON_ORE  (33, true, cubeFaces(33)),
-    COAL_ORE  (34, true, cubeFaces(34)),
-    BOOKSHELF (35, true, cubeFaces(35)),
-    MOSSY_COBBLESTONE(36, true, cubeFaces(36)),
-    OBSIDIAN  (37, true, cubeFaces(37)),
+    GOLD_ORE  (32, 32, true, cubeFaces(32)),
+    IRON_ORE  (33, 33, true, cubeFaces(33)),
+    COAL_ORE  (34, 34, true, cubeFaces(34)),
+    BOOKSHELF (35, 35, true, cubeFaces(35)),
+    MOSSY_COBBLESTONE(36, 16, true, cubeFaces(36)),
+    OBSIDIAN  (37, 37, true, cubeFaces(37)),
 
-    SPONGE      (48, true, cubeFaces(48)),
-    GLASS       (49, true, cubeFaces(49)),
-    DIAMOND_ORE (50, true, cubeFaces(50)),
-    REDSTONE_ORE(51, true, cubeFaces(51)),
+    SPONGE      (48, 48, true, cubeFaces(48)),
+    GLASS       (49, 1, true, cubeFaces(49)),
+    DIAMOND_ORE (50, 50, true, cubeFaces(50)),
+    REDSTONE_ORE(51, 51, true, cubeFaces(51)),
     // OAK_LEAVES_HQ(52, cubeFaces(52)), // texture pack png didn't have alpha anyway.
-    OAK_LEAVES(53, true, cubeFaces(53)),
-    STONE_BRICKS (54, true, cubeFaces(54));
+    OAK_LEAVES(53, 53, true, cubeFaces(53)),
+    STONE_BRICKS (54, 54, true, cubeFaces(54));
 
     // set the `isTransparent` -flag.
     static {
@@ -66,6 +67,7 @@ public enum Block {
     }
 
     private final byte id;
+    private final int item;
     private final BlockFace[] faces;
     private final boolean isSolid;
 
@@ -73,8 +75,9 @@ public enum Block {
 
     private Model blockBreakModel = null;
 
-    Block(int id, boolean isSolid, BlockFace[] faces) {
+    Block(int id, int item, boolean isSolid, BlockFace[] faces) {
         this.id = (byte) id;
+        this.item = item;
         this.faces = faces;
         this.isSolid = isSolid;
 
@@ -91,6 +94,14 @@ public enum Block {
 
     public byte getID() {
         return id;
+    }
+
+    public int getItemID() {
+        return item;
+    }
+
+    public ItemType getItem() {
+        return ItemType.getByID(item);
     }
 
     public boolean isSolid() {

@@ -6,14 +6,20 @@ import org.lwjgl.opengl.GL43;
 
 public class ArrayTexture extends Texture {
 
+    private int tileWidth, tileHeight;
+    private int depth;
+
     /* Thank you: http://gaarlicbread.com/post/gl_2d_array */
     public ArrayTexture(String path, String name, int tileWidth, int tileHeight) {
         super(path, name);
         super.type = GL30.GL_TEXTURE_2D_ARRAY;
 
+        this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
+
         // assume one long texture.
         assert tileWidth == super.width;
-        int depth = super.height / tileHeight;
+        depth = super.height / tileHeight;
 
         if (depth > Capabilities.MAX_ARRAY_TEXTURE_LAYERS) {
             System.err.println("Trying to make array texture of depth " + depth
@@ -64,4 +70,17 @@ public class ArrayTexture extends Texture {
 
         GL30.glGenerateMipmap(type);
     }
+
+    public int getDepth() {
+        return depth;
+    }
+
+    public int getTileWidth() {
+        return tileWidth;
+    }
+
+    public int getTileHeight() {
+        return tileHeight;
+    }
+
 }
