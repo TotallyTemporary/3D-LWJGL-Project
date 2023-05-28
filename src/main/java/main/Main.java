@@ -98,7 +98,7 @@ public class Main {
 
         BlockSelection.setShader(blockSelectionShader);
         BlockSelection.setTexture(terrainTexture);
-        Block.createBreakAndSelectionModels(terrainTexture, blockBreakShader);
+        Block.createBreakModels(terrainTexture, blockBreakShader);
 
         var itemsTexture = new ArrayTexture(
             "src/main/resources/items_array.png",

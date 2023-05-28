@@ -11,7 +11,9 @@ public class BlockBreak extends Entity {
 
     private static final int TEX_INDEX = 240;
     private static final int TEX_COUNT = 10;
+
     private static final float MODEL_SIZE = 1.03f;
+    private static final float MODEL_ROTATION = (float) Math.toRadians(1);
 
     private TransformationComponent transformationComponent;
     private BlockBreakModelComponent modelComponent;
@@ -22,7 +24,7 @@ public class BlockBreak extends Entity {
         modelComponent = new BlockBreakModelComponent();
         transformationComponent = new TransformationComponent(
                 new Vector3f(),
-                new Vector3f(),
+                new Vector3f(MODEL_ROTATION),
                 new Vector3f(MODEL_SIZE)
         );
 

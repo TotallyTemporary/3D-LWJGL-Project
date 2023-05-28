@@ -120,8 +120,7 @@ public enum Block {
         }
     }
 
-    public static void createBreakAndSelectionModels(Texture blocksTexture,
-                                                     Shader blockBreakShader) {
+    public static void createBreakModels(Texture blocksTexture, Shader blockBreakShader) {
         for (var block : Block.values()) {
             var vertices = new FloatArrayList();
             var breakTexCoords = new FloatArrayList();
@@ -129,28 +128,13 @@ public enum Block {
             for (var face : block.faces) {
                 if (face == null) continue;
 
-                // transform all vertices xyz down by 0.5 to center them around 0 (for proper scaling)
-                float[] faceVertsRaw = face.getVertices();
-                float[] faceVerts = new float[faceVertsRaw.length];
-                for (int i = 0; i < faceVertsRaw.length; i++) {
-                    faceVerts[i] = faceVertsRaw[i] - 0.5f;
-                }
-
-                // block breaking requires 2D texture coords
-                float[] faceTexCoords3D = face.getTextureCoords();
-                float[] faceTexCoords2D = new float[faceTexCoords3D.length / 3 * 2];
-                for (int i = 0; i < faceTexCoords3D.length/3; i += 1) {
-                    faceTexCoords2D[2*i    ] = faceTexCoords3D[3*i  ];
-                    faceTexCoords2D[2*i + 1] = faceTexCoords3D[3*i + 1];
-                }
-
-                vertices.addElements(vertices.size(), faceVerts);
-                breakTexCoords.addElements(breakTexCoords.size(), faceTexCoords2D);
+                vertices.addElements(vertices.size(), face.getVertices());
+                breakTexCoords.addElements(breakTexCoords.size(), face.getTextureCoords());
             }
 
             block.blockBreakModel = new Model()
                     .addPosition3D(vertices.elements())
-                    .addTextureCoords2D(breakTexCoords.elements())
+                    .addTextureCoords3D(breakTexCoords.elements())
                     .setTexture(blocksTexture)
                     .setShader(blockBreakShader)
                     .end();
