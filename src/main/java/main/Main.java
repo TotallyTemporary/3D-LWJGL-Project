@@ -5,6 +5,7 @@ import entity.*;
 import item.ItemComponent;
 import item.ItemModel;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -112,7 +113,7 @@ public class Main {
         EntityManager.addComponent(crosshair, new UIModelComponent(15));
         EntityManager.addComponent(crosshair, new TransformationComponent(new Vector3f(), new Vector3f(), new Vector3f(0.05f, 0.05f, 0.05f)));
 
-        var playerStartPosition = new Vector3f(1000f, 120f, 1000f);
+        var playerStartPosition = new Vector3f(1000f, -120f, 1000f);
 
         var player = new Player(
                 (float) Math.toRadians(60f),
@@ -147,7 +148,21 @@ public class Main {
         while (ChunkLoader.update(playerStartPosition) > 0 || ChunkLoader.getQueueSize() > 0) {
             TerrainModelLoader.loadChunks(Integer.MAX_VALUE);
         }
+
         System.out.println("Chunks loaded");
+
+        // make small safe area around player
+        for (int dx = -3; dx < 4; dx++)
+        for (int dy = -3; dy < 4; dy++)
+        for (int dz = -3; dz < 4; dz++)
+        {
+            Vector3i pos = new Vector3i(
+                    (int) playerStartPosition.x,
+                    (int) playerStartPosition.y,
+                    (int) playerStartPosition.z
+            ).add(new Vector3i(dx, dy, dz));
+            ChunkLoader.setBlockAt(pos, Block.AIR.getID());
+        }
 
         while (!GLFW.glfwWindowShouldClose(display.getWindow())) {
             // press K for wireframe

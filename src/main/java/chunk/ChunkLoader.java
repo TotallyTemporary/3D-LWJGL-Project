@@ -82,6 +82,16 @@ public class ChunkLoader {
             }
         }
 
+        // skip lightmap generation for top chunks
+        int topChunkLevel = maxY - 2;
+        for (var chunk : chunks.values()) {
+            if (chunk.getChunkGridPos().y == topChunkLevel
+                && chunk.getStatus() == Chunk.Status.BLOCKS_GENERATED
+                && !chunk.getIsAirChunk()) {
+                chunk.setStatus(Chunk.Status.LIGHTS_GENERATED);
+            }
+        }
+
         return updatedCount;
     }
 
@@ -159,12 +169,6 @@ public class ChunkLoader {
 
     public static Chunk getChunkAt(Vector3f pos) {
         return getChunkAt(Chunk.worldPosToChunkPos(pos));
-    }
-
-    private static void forceChunkUpdate(Chunk chunk) {
-        // we assume this doesnt cause problems
-        chunk.setStatus(Chunk.Status.BLOCKS_GENERATED);
-        doUpdateChunk(chunk);
     }
 
     private static boolean doUpdateChunk(Chunk chunk) {
