@@ -96,6 +96,17 @@ public class Model {
         return this;
     }
 
+    public Model addLight2D(float[] light) {
+        int attribNum = vbos.size();
+        int vbo = makeVBO();
+        var buf = toFloatBuffer(light);
+        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, buf, GL30.GL_STATIC_DRAW);
+        GL30.glVertexAttribPointer(attribNum, 2, GL30.GL_FLOAT, false, 2 * Float.BYTES, 0);
+
+        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
+        return this;
+    }
+
     public Model addTextureCoords2D(float[] textureCoords) {
         int attribNum = vbos.size();
         int vbo = makeVBO();

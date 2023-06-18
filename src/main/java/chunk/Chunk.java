@@ -1,9 +1,7 @@
 package chunk;
 
 import entity.Entity;
-import org.joml.RoundingMode;
-import org.joml.Vector3f;
-import org.joml.Vector3i;
+import org.joml.*;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -17,6 +15,7 @@ public class Chunk extends Entity {
     // static stuff at the top here
     public final static int SIZE_BITS = 5;
     public final static int SIZE = 1 << SIZE_BITS;
+    public final static int MAX_LIGHT = 15;
 
     public static Vector3i worldPosToChunkPos(Vector3f pos) {
         return worldPosToChunkPos(new Vector3i(pos, RoundingMode.FLOOR));
@@ -50,8 +49,18 @@ public class Chunk extends Entity {
         );
     }
 
+    // funcs for working with lightmap values
+
+    public static byte getBlock(byte colour) {
+        return (byte) ((colour >> 4) & 15);
+    }
+
+    public static byte getSky(byte colour) {
+        return (byte) (colour & 15);
+    }
+
     public static int toIndex(int x, int y, int z) {
-        return z*SIZE*SIZE + y*SIZE + x;
+        return (z << (2*SIZE_BITS)) + (y << SIZE_BITS) + x;
     }
 
     public static int toIndex(Vector3i pos) {
@@ -64,10 +73,12 @@ public class Chunk extends Entity {
         BASIC_TERRAIN_GENERATED (2, false),
         STRUCTURE_GENERATING    (3, true),  // generating structures (needs neighbors for bleed-over)
         BLOCKS_GENERATED        (4, false),
-        MESH_GENERATING         (5, true),  // make the vertices and texture coords for the chunk
-        MESH_GENERATED          (6, false),
-        MESH_LOADING            (7, true),  // load those vertices into opengl (main thread)
-        FINAL                   (8, false); // chunk can be rendered
+        LIGHTS_GENERATING       (5, true),  // generating light map
+        LIGHTS_GENERATED        (6, false),
+        MESH_GENERATING         (7, true),  // make the vertices and texture coords for the chunk
+        MESH_GENERATED          (8, false),
+        MESH_LOADING            (9, true),  // load those vertices into opengl (main thread)
+        FINAL                   (10, false); // chunk can be rendered
 
         public final int urgency;
         public final boolean working;
@@ -78,11 +89,12 @@ public class Chunk extends Entity {
 
     private final Vector3i chunkGridPos; // the chunk's position in the grid. the chunk's neighboring chunks differ from this by 1.
     private Status status;
-    private boolean isAllAir; // if a chunk is all air, we don't store blocks.
     private byte[] blocks; // if isAllAir = true, then blocks = null.
+    private byte[] lightMap;
     private final List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(DiagonalDirection.COUNT, null)); // 26 chunk neighbors
 
-    public boolean spoiled = false; // temp flag used by chunkloader
+    public boolean spoiled = false;
+    private boolean isAirChunk = false; // use this to fill chunk with skylight
 
     public Chunk(Vector3i chunkGridPos) {
         super();
@@ -114,9 +126,69 @@ public class Chunk extends Entity {
         this.status = status;
     }
 
+    public byte getColour(int x, int y, int z) {
+        return lightMap[toIndex(x, y, z)];
+    }
+
+    public byte getColour(Vector3i pos) {
+        return getColour(pos.x, pos.y, pos.z);
+    }
+
+    public byte getColourSafe(int x, int y, int z) {
+        if (isInsideChunk(x, y, z)) {
+            return this.getColour(x, y, z);
+        }
+
+        var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
+        var chunkPos = Chunk.worldPosToChunkPos(worldPos);
+        try {
+            int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkGridPos));
+            return getNeighbor(dirIndex).getColour(Chunk.worldPosToBlockPos(worldPos));
+        } catch (NullPointerException e) {
+            return 0;
+        }
+    }
+
+    public void setColourSafe(Vector3i pos, byte colour) {
+        setColourSafe(pos.x, pos.y, pos.z, colour);
+    }
+
+    public void setColourSafe(int x, int y, int z, byte colour) {
+        var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
+        var chunkPos = Chunk.worldPosToChunkPos(worldPos);
+
+        if (chunkPos.equals(this.chunkGridPos)) {
+            this.setColour(x, y, z, colour);
+            return;
+        }
+
+        // get neighbor at chunkPos
+        try {
+            int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkGridPos));
+            var neighbor = getNeighbor(dirIndex);
+
+            var blockPos = Chunk.worldPosToBlockPos(worldPos);
+            neighbor.setColourSafe(blockPos, colour);
+        } catch (NullPointerException e) {
+            System.err.println("setColourSafe failed across chunk border at " + worldPos);
+        }
+    }
+
+
+    public void setColour(Vector3i pos, byte light) {
+        setColour(pos.x, pos.y, pos.z, light);
+    }
+
+    public void setColour(int x, int y, int z, byte light) {
+        this.lightMap[toIndex(x, y, z)] = light;
+    }
+
+    public void setColours(byte[] lightMap) {
+        this.lightMap = lightMap;
+    }
+
     public byte getBlock(int x, int y, int z) {
-        if (isAllAir) return Block.AIR.getID();
-        else return blocks[toIndex(x, y, z)];
+        return blocks[toIndex(x, y, z)];
     }
 
     public byte getBlock(Vector3i pos) {
@@ -156,12 +228,6 @@ public class Chunk extends Entity {
         var chunkPos = Chunk.worldPosToChunkPos(worldPos);
 
         if (chunkPos.equals(this.chunkGridPos)) {
-            if (this.isAllAir) {
-                if (block == Block.AIR.getID()) return;
-                this.blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
-                this.isAllAir = false;
-                this.setBlock(x, y, z, block);
-            }
             this.setBlock(x, y, z, block);
             return;
         }
@@ -183,6 +249,7 @@ public class Chunk extends Entity {
     }
 
     public void setBlock(int x, int y, int z, byte block) {
+        setIsAirChunk(false);
         this.blocks[Chunk.toIndex(x, y, z)] = block;
     }
 
@@ -190,11 +257,7 @@ public class Chunk extends Entity {
         this.blocks = blocks;
     }
 
-    public void isAllAir() {
-        this.isAllAir = true;
-    }
-
-    private boolean isInsideChunk(int x, int y, int z) {
+    public boolean isInsideChunk(int x, int y, int z) {
         return x < SIZE && x >= 0 &&
                 y < SIZE && y >= 0 &&
                 z < SIZE && z >= 0;
@@ -208,5 +271,20 @@ public class Chunk extends Entity {
 
     public void setNeighbor(Chunk chunk, int index) {
         neighbors.set(index, new WeakReference<>(chunk));
+    }
+
+    public boolean getIsAirChunk() {
+        return this.isAirChunk;
+    }
+
+    public void setIsAirChunk(boolean isAirChunk) {
+        if (this.isAirChunk == false && isAirChunk == true) {
+            // a block is being set into an air chunk
+            if (this.status.urgency >= Status.LIGHTS_GENERATING.urgency) { // regenerate light maps
+                spoiled = true;
+            }
+        }
+
+       this.isAirChunk = isAirChunk;
     }
 }

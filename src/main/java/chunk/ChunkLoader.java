@@ -6,7 +6,6 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import java.util.HashMap;
-import java.util.Iterator;
 
 /** This class stores and handles the loading of chunks.
  * It loads chunks by sending the chunks to various workers to be processed. */
@@ -17,7 +16,7 @@ public class ChunkLoader {
     private static final int VERTICAL_LOAD_RADIUS = 6;
 
     // a chunk within this grid distance of the player's chunk will instantly get updated
-    private static final int INSTANT_LOAD_DISTANCE = 2;
+    private static final int INSTANT_LOAD_DISTANCE = 0;
     private static final int INSTANT_LOAD_DISTANCE_SQR = INSTANT_LOAD_DISTANCE*INSTANT_LOAD_DISTANCE;
 
     private static final HashMap<Vector3i, Chunk> chunks = new HashMap<>();
@@ -53,6 +52,22 @@ public class ChunkLoader {
             var chunk = it.next();
             var pos = chunk.getChunkGridPos();
 
+            // update any spoiled chunks that need updating
+            // if they're being worked on, wait until they're ready (check again next frame)
+            // if they've not had their blocks generated something's gone wrong but still we wait.
+            if (chunk.spoiled
+                    && !chunk.getStatus().working
+                    && chunk.getStatus().urgency >= Chunk.Status.BLOCKS_GENERATED.urgency) {
+                chunk.spoiled = false;
+
+                var dst = playerChunkPos.sub(chunk.getChunkGridPos()).lengthSquared();
+                if (dst < INSTANT_LOAD_DISTANCE_SQR) {
+                    updateNow(chunk); // update on same frame on main thread
+                } else {
+                    chunk.setStatus(Chunk.Status.BLOCKS_GENERATED); // update multi-threaded on some future frame.
+                }
+            }
+
             if (pos.x < minX || pos.x > maxX ||
                 pos.y < minY || pos.y > maxY ||
                 pos.z < minZ || pos.z > maxZ) {
@@ -65,28 +80,16 @@ public class ChunkLoader {
                     updatedCount++;
                 }
             }
-
-            // update any spoiled chunks that need updating
-            // if they're being worked on, wait until they're ready (check again next frame)
-            // if they've not had their blocks generated something's gone wrong but still we wait.
-            if (chunk.spoiled
-                    && !chunk.getStatus().working
-                    && chunk.getStatus().urgency >= Chunk.Status.BLOCKS_GENERATED.urgency) {
-                chunk.spoiled = false;
-                var dst = playerChunkPos.sub(chunk.getChunkGridPos()).lengthSquared();
-
-                if (dst < INSTANT_LOAD_DISTANCE_SQR) {
-                    updateNow(chunk); // update on same frame on main thread
-                } else {
-                    forceChunkUpdate(chunk); // update multi-threaded on some future frame.
-                }
-            }
         }
 
         return updatedCount;
     }
 
     public static void updateNow(Chunk chunk) {
+        // update lightmap
+        chunk.setStatus(Chunk.Status.LIGHTS_GENERATING);
+        LightMapGenerator.loadChunk(chunk);
+
         // generate mesh
         chunk.setStatus(Chunk.Status.MESH_GENERATING);
         EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
@@ -109,7 +112,8 @@ public class ChunkLoader {
         return TerrainGenerator.getQueueSize()
                 + StructureGenerator.getQueueSize()
                 + TerrainModelGenerator.getQueueSize()
-                + TerrainModelLoader.getQueueSize();
+                + TerrainModelLoader.getQueueSize()
+                + LightMapGenerator.getQueueSize();
     }
 
     public static void setBlockAt(Vector3i pos, byte block) {
@@ -179,9 +183,20 @@ public class ChunkLoader {
                     return true;
                 }
             }
-            // once chunk has block data, generate block faces to form a mesh
             case BLOCKS_GENERATED -> {
-                if (neighborsUrgencyAtLeast(chunk, Chunk.Status.BLOCKS_GENERATED.urgency)) {
+                boolean canNormallyGenerate = aboveNeighborsUrgencyAtLeast(chunk, Chunk.Status.LIGHTS_GENERATED.urgency)
+                        && neighborsUrgencyAtLeast(chunk, Chunk.Status.BLOCKS_GENERATED.urgency);
+                boolean isSkyLightChunk = chunk.getIsAirChunk();
+                if (canNormallyGenerate || isSkyLightChunk) {
+                    chunk.setStatus(Chunk.Status.LIGHTS_GENERATING);
+                    LightMapGenerator.addChunk(chunk);
+                    return true;
+                }
+            }
+
+            // once chunk has block and light data, generate block faces to form a mesh
+            case LIGHTS_GENERATED -> {
+                if (neighborsUrgencyAtLeast(chunk, Chunk.Status.LIGHTS_GENERATED.urgency)) {
                     chunk.setStatus(Chunk.Status.MESH_GENERATING);
                     TerrainModelGenerator.addChunk(chunk);
                     return true;
@@ -202,6 +217,19 @@ public class ChunkLoader {
     private static boolean neighborsUrgencyAtLeast(Chunk chunk, int urgency) {
         for (int dir = 0; dir < DiagonalDirection.COUNT; dir++) {
             var neighbor = chunk.getNeighbor(dir);
+            if (neighbor == null || neighbor.getStatus().urgency < urgency) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean aboveNeighborsUrgencyAtLeast(Chunk chunk, int urgency) {
+        for (int dx = -1; dx <= 1; dx++)
+        for (int dz = -1; dz <= 1; dz++)
+        {
+            Vector3i offset = new Vector3i(dx, 1, dz);
+            var neighbor = chunk.getNeighbor(DiagonalDirection.indexOf(offset));
             if (neighbor == null || neighbor.getStatus().urgency < urgency) {
                 return false;
             }

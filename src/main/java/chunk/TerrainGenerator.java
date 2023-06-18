@@ -75,9 +75,9 @@ public class TerrainGenerator {
     private static void generateFirstpass(Chunk chunk) {
         // generate blocks
         byte[] blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
-        boolean isAllAir = true;
 
         int[][] heightMap = generateHeightmap(chunk);
+        boolean isAirChunk = true;
 
         var caveGenerator = getNoiseGenerator();
         var oreGenerator = getNoiseGenerator();
@@ -95,17 +95,20 @@ public class TerrainGenerator {
             } else if (terrainLevel-3 < worldPos.y && worldPos.y < terrainLevel) {
                 block = Block.DIRT.getID();
             } else if (worldPos.y <= terrainLevel-3){
-                if (isCave(worldPos, caveGenerator)) block = Block.AIR.getID();
-                else                                 block = getOre(worldPos, oreGenerator);
+                // if (isCave(worldPos, caveGenerator)) block = Block.AIR.getID();
+                // else                                 block = getOre(worldPos, oreGenerator);
+                block = getOre(worldPos, oreGenerator);
             } else {
                 block = Block.AIR.getID();
             }
+            if (isCave(worldPos, caveGenerator)) block = Block.AIR.getID();
 
-            if (block != Block.AIR.getID()) isAllAir = false;
+            if (block != Block.AIR.getID()) isAirChunk = false;
             blocks[index] = block;
         }
-        if (isAllAir) chunk.isAllAir();
-        else chunk.setBlocks(blocks);
+        chunk.setBlocks(blocks);
+        chunk.setColours(new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE]);
+        chunk.setIsAirChunk(isAirChunk);
     }
 
     private static synchronized FastSimplexNoiseGenerator getNoiseGenerator() {

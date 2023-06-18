@@ -72,6 +72,7 @@ public class TerrainModelLoader {
             var model = new Model()
                 .addPosition3D(chunkModelData.positions)
                 .addTextureCoords3D(chunkModelData.textureCoordinates)
+                .addLight2D(chunkModelData.light)
                 .setTexture(chunkTexture)
                 .setShader(chunkShader)
                 .end();

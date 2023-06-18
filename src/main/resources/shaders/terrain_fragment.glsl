@@ -1,9 +1,14 @@
 #version 330 core
+
 in vec2 pass_textureCoords;
 flat in float pass_textureIndex;
+in vec2 pass_light;
+
 out vec4 FragColor;
 
 uniform sampler2DArray arrayTexture;
+
+const float dayTime = 1.0;
 
 void main()
 {
@@ -11,5 +16,8 @@ void main()
     if (tex.a < 0.5f) {
       discard;
     }
-    FragColor = tex;
+
+    float sky = pass_light.y;
+
+    FragColor = vec4(tex.rgb * sky * dayTime, 1.0);
 }

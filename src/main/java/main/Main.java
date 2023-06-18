@@ -197,6 +197,7 @@ public class Main {
 
         TerrainGenerator.stop();
         StructureGenerator.stop();
+        LightMapGenerator.stop();
         TerrainModelGenerator.stop();
 
         Model.destroyAll();

@@ -22,6 +22,10 @@ public class TerrainModelGenerator {
             new FloatArrayList(), new FloatArrayList(),
             new FloatArrayList(), new FloatArrayList(),
             new FloatArrayList(), new FloatArrayList() });
+    private static final ThreadLocal<FloatArrayList[]> coloursBufferLocal = ThreadLocal.withInitial(() -> new FloatArrayList[] {
+            new FloatArrayList(), new FloatArrayList(),
+            new FloatArrayList(), new FloatArrayList(),
+            new FloatArrayList(), new FloatArrayList() });
 
     // adds a chunk to the queue to be loaded in the future
     public static void addChunk(Chunk chunk) {
@@ -48,9 +52,12 @@ public class TerrainModelGenerator {
         // clear buffers
         var verticesBuffer = verticesBufferLocal.get();
         var textureCoordsBuffer = textureCoordsBufferLocal.get();
+        var lightBuffer = coloursBufferLocal.get();
+
         for (int i = 0; i < CardinalDirection.COUNT; i++) {
             verticesBuffer[i].clear();
             textureCoordsBuffer[i].clear();
+            lightBuffer[i].clear();
         }
 
         // go through every block and every face
@@ -64,6 +71,16 @@ public class TerrainModelGenerator {
                 if (face == null) continue;
                 if (!face.isTransparent() && !isFaceVisible(chunk, index, x, y, z)) continue;
 
+                byte faceLight;
+
+                // transparent faces get their colour from inside the block, not next to it
+                if (face.isTransparent()) {
+                    faceLight = chunk.getColourSafe(x, y, z);
+                } else {
+                    var faceOffset = CardinalDirection.offsets[index];
+                    faceLight = chunk.getColourSafe(x+faceOffset.x, y+faceOffset.y, z+faceOffset.z);
+                }
+
                 // get vertices of a face, and move them to the correct place (add block x,y,z to face x,y,z)
                 float[] vertices = face.getVertices();
                 float[] transformedVertices = new float[vertices.length];
@@ -73,34 +90,46 @@ public class TerrainModelGenerator {
                     transformedVertices[3*i+2] = (vertices[3*i+2] + z);
                 }
 
+                float[] light = new float[vertices.length / 3 * 2];
+                for (int i = 0; i < light.length / 2; i++) {
+                    light[2*i + 0] = Chunk.getBlock(faceLight) / (float) Chunk.MAX_LIGHT; // block
+                    light[2*i + 1] = Chunk.getSky(faceLight) / (float) Chunk.MAX_LIGHT; // sky
+                }
+
                 verticesBuffer[face.direction].addAll(FloatArrayList.wrap(transformedVertices));
                 textureCoordsBuffer[face.direction].addAll(FloatArrayList.wrap(face.getTextureCoords()));
+                lightBuffer[face.direction].addAll(FloatArrayList.wrap(light));
             }
         }
 
-        return wrapIntoModel(verticesBuffer, textureCoordsBuffer);
+        return wrapIntoModel(verticesBuffer, textureCoordsBuffer, lightBuffer);
     }
 
-    private static ChunkModelDataComponent wrapIntoModel(FloatArrayList[] verticesBuffer, FloatArrayList[] textureCoordsBuffer) {
+    private static ChunkModelDataComponent wrapIntoModel(FloatArrayList[] verticesBuffer, FloatArrayList[] textureCoordsBuffer, FloatArrayList[] colourBuffer) {
         // calculate total number of vertices and texture coordinates of each face
         int verticesSize = 0;
         int textureCoordsSize = 0;
+        int coloursSize = 0;
         for (int i = 0; i < CardinalDirection.COUNT; i++) {
             verticesSize += verticesBuffer[i].size();
             textureCoordsSize += textureCoordsBuffer[i].size();
+            coloursSize += colourBuffer[i].size();
         }
 
         // generate empty floatarraylists of that size
         var vertices = FloatArrayList.wrap(new float[verticesSize]);
         var textureCoords = FloatArrayList.wrap(new float[textureCoordsSize]);
+        var colours = FloatArrayList.wrap(new float[coloursSize]);
         vertices.clear();
         textureCoords.clear();
+        colours.clear();
 
         // put all the vertices and texture coordinates into the combined lists
         // addElements is a fast arraycopy because fastutil devs are geniuses
         for (int i = 0; i < CardinalDirection.COUNT; i++) {
             vertices.addElements(vertices.size(), verticesBuffer[i].elements(), 0, verticesBuffer[i].size());
             textureCoords.addElements(textureCoords.size(), textureCoordsBuffer[i].elements(), 0, textureCoordsBuffer[i].size());
+            colours.addElements(colours.size(), colourBuffer[i].elements(), 0, colourBuffer[i].size());
         }
 
         // calculate indices (working with arrays is difficult ok?)
@@ -117,6 +146,7 @@ public class TerrainModelGenerator {
         return new ChunkModelDataComponent(
             vertices.elements(),
             textureCoords.elements(),
+            colours.elements(),
             indices
         );
     }
