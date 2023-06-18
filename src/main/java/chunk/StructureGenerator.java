@@ -1,5 +1,9 @@
 package chunk;
 
+import biome.Biome;
+import biomes.ForestBiome;
+import org.joml.Vector3i;
+
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -14,6 +18,9 @@ public class StructureGenerator {
     static { thread.start(); }
 
     private static BlockingQueue<Chunk> loadQueue = new LinkedBlockingQueue<>();
+
+    private static long STRUCTURE_SEED = 1349L;
+    private static Biome biome = new ForestBiome();
 
     public static void addChunk(Chunk chunk) {
         loadQueue.add(chunk);
@@ -45,29 +52,20 @@ public class StructureGenerator {
     }
 
     public static void loadChunk(Chunk chunk) {
-        var random = new Random();
+        var structures = biome.getStructures();
 
+        Random random = new Random();
         for (int x = 0; x < Chunk.SIZE; x++)
         for (int y = 0; y < Chunk.SIZE; y++)
         for (int z = 0; z < Chunk.SIZE; z++)
         {
-            // yes, this is very ugly, but it's more of a proof of concept.
-            // in the future, we should have a special "structure" -class, and maybe even biomes that determine which structures can spawn where.
-            // for now, we just find a random grass block and programmatically generate a tree.
-            if (chunk.getBlock(x, y, z) == Block.GRASS.getID()) {
-                if (random.nextFloat() < 0.01f) {
-                    chunk.setBlockSafe(x, y+1, z, Block.OAK_LOG.getID());
-                    chunk.setBlockSafe(x, y+2, z, Block.OAK_LOG.getID());
-                    chunk.setBlockSafe(x, y+3, z, Block.OAK_LOG.getID());
+            random.setSeed(STRUCTURE_SEED ^ (x * 10923L + y * 9234L + z * 98259L));
+            byte block = chunk.getBlock(x, y, z);
 
-                    for (int dx = -1; dx <= 1; dx++)
-                    for (int dy = -1; dy <= 1; dy++)
-                    for (int dz = -1; dz <= 1; dz++)
-                    {
-                        chunk.setBlockSafe(x+dx, y+dy+4, z+dz, Block.OAK_LEAVES.getID());
-                    }
-                } else if (random.nextFloat() < 0.05f) {
-                    chunk.setBlockSafe(x, y+1, z, Block.DANDELION.getID());
+            for (Biome.StructureSpawnInfo info : structures) {
+                if (block == info.spawnBlock().getID()
+                    && random.nextFloat() < info.chance()) {
+                    info.structure().make(chunk, new Vector3i(x, y, z), random::nextFloat);
                 }
             }
         }

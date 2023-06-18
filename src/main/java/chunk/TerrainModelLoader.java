@@ -15,7 +15,7 @@ public class TerrainModelLoader {
     // opengl models can only be loaded on the main thread, so no multithreading here.
     // if you want to be fancy, you could stream the data in though...
 
-    private static final int DEFAULT_LOAD_LIMIT = 20;
+    private static final int DEFAULT_LOAD_LIMIT = 10;
     private static final int HIGH_LOAD_LIMIT = 200; // if we've got a large queue, increase limit
 
     private static final Queue<Chunk> modelLoadQueue = new ArrayDeque<>();

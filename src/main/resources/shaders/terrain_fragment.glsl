@@ -9,6 +9,8 @@ out vec4 FragColor;
 uniform sampler2DArray arrayTexture;
 
 const float dayTime = 1.0;
+const float lightGamma = 2.2;
+const float minLight = 1.0 / 64;
 
 void main()
 {
@@ -17,7 +19,8 @@ void main()
       discard;
     }
 
-    float sky = pass_light.y;
+    float sky = max(pass_light.y, minLight);
 
-    FragColor = vec4(tex.rgb * sky * dayTime, 1.0);
+    float light = pow(sky * dayTime, 1.0/lightGamma);
+    FragColor = vec4(tex.rgb * light, 1.0);
 }

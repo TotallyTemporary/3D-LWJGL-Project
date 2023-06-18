@@ -113,7 +113,7 @@ public class Main {
         EntityManager.addComponent(crosshair, new UIModelComponent(15));
         EntityManager.addComponent(crosshair, new TransformationComponent(new Vector3f(), new Vector3f(), new Vector3f(0.05f, 0.05f, 0.05f)));
 
-        var playerStartPosition = new Vector3f(1000f, -120f, 1000f);
+        var playerStartPosition = new Vector3f(1000f, 120f, 1000f);
 
         var player = new Player(
                 (float) Math.toRadians(60f),

@@ -58,10 +58,15 @@ public class PlayerMovementController extends Component {
 
         float angle = transform.getRotation().y;
 
+        float speed = MOVE_SPEED;
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) {
+            speed = 50;
+        }
+
         var forwardVector = new Vector3f(0, 0, -front).rotateY(angle);
         var sidewayVector = new Vector3f(-left,  0, 0).rotateY((float) (angle + 2*Math.PI));
         var comb = forwardVector.add(sidewayVector);
         if (comb.equals(0, 0, 0)) return comb;
-        return comb.normalize().mul(MOVE_SPEED);
+        return comb.normalize().mul(speed);
     }
 }

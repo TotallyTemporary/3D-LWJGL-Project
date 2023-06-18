@@ -34,9 +34,13 @@ public class TerrainModelGenerator {
 
     // loads a chunk immediately
     public static void loadChunk(Chunk chunk) {
-        var comp = generateModelData(chunk);
-        EntityManager.addComponent(chunk, comp);
-        chunk.setStatus(Chunk.Status.MESH_GENERATED);
+        try {
+            var comp = generateModelData(chunk);
+            EntityManager.addComponent(chunk, comp);
+            chunk.setStatus(Chunk.Status.MESH_GENERATED);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static int getQueueSize() {
