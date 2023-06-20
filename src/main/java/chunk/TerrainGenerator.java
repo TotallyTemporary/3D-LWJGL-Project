@@ -1,23 +1,37 @@
 package chunk;
 
 import biome.Biome;
-import biomes.ForestBiome;
+import biomes.Biomes;
+import de.articdive.jnoise.core.api.pipeline.NoiseSource;
 import de.articdive.jnoise.generators.noisegen.opensimplex.FastSimplexNoiseGenerator;
+import de.articdive.jnoise.modules.octavation.OctavationModule;
+import de.articdive.jnoise.modules.octavation.fractal_functions.FractalFunction;
+import entity.EntityManager;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import java.util.Random;
 import java.util.concurrent.*;
-import java.util.function.Supplier;
 
 /** Makes terrain via simplex noise. The terrain consists of a heightmap, and caves are carved with a simple noise check. */
 public class TerrainGenerator {
 
     private static final int TERRAIN_SEED = 1235;
 
-    private static final float CAVE_SCALE = 0.03f,
-                               CAVE_CUTOFF = 0.2f;
+    private static final Object noiseLock = new Object();
 
-    private static final Biome biome = new ForestBiome();
+    private static final Vector3f CAVE_SCALE = new Vector3f(0.025f, 0.035f, 0.025f);
+    private static final float CAVE_CUTOFF = 0.70f;
+
+    private static final float BIOME_SMOOTHING = 1.5f; // 1f=biomes "pull" each other really far away, 2f=biome changes too drastic
+    private static final float BIOME_SCALE = 0.001f;
+
+    private static final float BIOME_WARP_SCALE = 0.04f;
+    private static final float BIOME_WARP_INTENSITY = 0.007f;
+
+    private static final float LOWEST_OCTAVE_SCALE = 0.008f;
+    private static final int OCTAVES = 3;
 
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
     static { System.out.println("TerrainGenerator running"); }
@@ -40,42 +54,119 @@ public class TerrainGenerator {
         System.out.println("TerrainGenerator stopped");
     }
 
-    private static int[][] generateHeightmap(Chunk chunk) {
-        // calc heightmap
-        int[][] heightMap = new int[Chunk.SIZE][Chunk.SIZE];
-        var heightMapRandom = getNoiseGenerator();
+    private static void generateHeightAndBiomemap(Chunk chunk, int[][] heightMap, Biome[][] biomeMap) {
+        // calculate biomemap and heightmap
+        NoiseSource heightMapRandom, humidityRandom, temperatureRandom, biomeWarpX, biomeWarpZ;
+        synchronized (noiseLock) {
+            heightMapRandom = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 90485924).build();
+            humidityRandom = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 4909054).build();
+            temperatureRandom = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 1345090).build();
+            biomeWarpX = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 49115345).build();
+            biomeWarpZ = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 29830913).build();
+        }
 
         for (int chunkX = 0; chunkX < Chunk.SIZE; chunkX++)
         for (int chunkZ = 0; chunkZ < Chunk.SIZE; chunkZ++)
         {
             var worldPos = Chunk.blockPosToWorldPos(new Vector3i(chunkX, 0, chunkZ), chunk);
 
-            float scale = biome.getScale();
-            float noise = (float) heightMapRandom.evaluateNoise(worldPos.x * scale, worldPos.z * scale);
-            float height = biome.getBaselineHeight() + biome.getAmplitude() * noise;
+            float warpX = BIOME_WARP_INTENSITY * (float) biomeWarpX.evaluateNoise(worldPos.x * BIOME_WARP_SCALE, worldPos.z * BIOME_WARP_SCALE);
+            float warpZ = BIOME_WARP_INTENSITY * (float) biomeWarpZ.evaluateNoise(worldPos.x * BIOME_WARP_SCALE, worldPos.z * BIOME_WARP_SCALE);
+
+            float humidity = (float) humidityRandom.evaluateNoise(warpX + worldPos.x * BIOME_SCALE,
+                                                                  warpZ + worldPos.z * BIOME_SCALE);
+            float temperature = (float) temperatureRandom.evaluateNoise(warpX + worldPos.x * BIOME_SCALE,
+                                                                        warpZ + worldPos.z * BIOME_SCALE);
+            humidity = (humidity + 1) / 2f;
+            temperature = (temperature + 1) / 2f;
+
+            float baseline = 0f;
+            float amplitude = 0f;
+            float roughness = 0f;
+            float sumWeights = 0f;
+
+            Biome closestBiome = null;
+            float minDistance = Float.MAX_VALUE;
+
+            for (var entry : Biomes.biomes.entrySet()) {
+                Vector2f vec = entry.getKey();
+                Biome biome = entry.getValue();
+
+                float dh = Math.abs(humidity - vec.x);
+                float dt = Math.abs(temperature - vec.y);
+                float dst = dh*dh + dt*dt;
+
+                // inverse distance weighting
+                float weight = 1f / (float) Math.pow(dst, BIOME_SMOOTHING);
+                baseline += biome.getBaselineHeight() * weight;
+                amplitude += biome.getAmplitude() * weight;
+                roughness += biome.getRoughness() * weight;
+                sumWeights += weight;
+
+                // get closest biome
+                if (dst < minDistance) {
+                    minDistance = dst;
+                    closestBiome = biome;
+                }
+            }
+
+            baseline /= sumWeights;
+            amplitude /= sumWeights;
+            roughness /= sumWeights;
+            biomeMap[chunkX][chunkZ] = closestBiome;
+
+            float sumHeight = 0f;
+
+            float octaveFrequency = LOWEST_OCTAVE_SCALE;
+            float octaveAmplitude = amplitude;
+            for (int i = 0; i < OCTAVES; i++) {
+                float noise = (float) heightMapRandom.evaluateNoise(worldPos.x * octaveFrequency, worldPos.z * octaveFrequency);
+                sumHeight += octaveAmplitude * noise;
+
+                octaveFrequency *= 3f;
+                octaveAmplitude *= roughness;
+            }
+
+            float height = baseline + sumHeight;
+
             heightMap[chunkX][chunkZ] = (int) height;
         }
-
-        return heightMap;
     }
 
-    private static boolean isCave(Vector3i pos, FastSimplexNoiseGenerator generator) {
-        float noise = (1 + (float) generator.evaluateNoise(
-                                    pos.x * CAVE_SCALE,
-                                    pos.y * CAVE_SCALE,
-                                    pos.z * CAVE_SCALE)) / 2f;
-
-        return noise < CAVE_CUTOFF;
+    private static boolean isCave(Vector3i pos, NoiseSource generator) {
+        float noise = (float) generator.evaluateNoise(
+                                    pos.x * CAVE_SCALE.x,
+                                    pos.y * CAVE_SCALE.y,
+                                    pos.z * CAVE_SCALE.z);
+        noise = (1 + noise) / 2f;
+        boolean isCave = noise < CAVE_CUTOFF;
+        return isCave;
     }
 
     private static void generateFirstpass(Chunk chunk) {
         // generate blocks
         byte[] blocks = new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE];
 
-        int[][] heightMap = generateHeightmap(chunk);
+        int[][] heightMap = new int[Chunk.SIZE][Chunk.SIZE];
+        Biome[][] biomeMap = new Biome[Chunk.SIZE][Chunk.SIZE];
+        generateHeightAndBiomemap(chunk, heightMap, biomeMap);
+
         boolean isAirChunk = true;
 
-        var caveGenerator = getNoiseGenerator();
+        NoiseSource caveGenerator;
+        synchronized (noiseLock) {
+            var caveSimplex = FastSimplexNoiseGenerator
+                .newBuilder()
+                .setSeed(TERRAIN_SEED)
+                .build();
+            caveGenerator = OctavationModule
+                    .newBuilder()
+                    .setNoiseSource(caveSimplex)
+                    .setFractalFunction(FractalFunction.RIDGED_MULTI)
+                    .build();
+        }
+
+
         var biomeRandom = new Random();
         for (int chunkX = 0; chunkX < Chunk.SIZE; chunkX++)
         for (int chunkY = 0; chunkY < Chunk.SIZE; chunkY++)
@@ -83,7 +174,9 @@ public class TerrainGenerator {
         {
             int index = Chunk.toIndex(chunkX, chunkY, chunkZ);
             Vector3i worldPos = Chunk.blockPosToWorldPos(new Vector3i(chunkX, chunkY, chunkZ), chunk);
+
             int terrainLevel = heightMap[chunkX][chunkZ];
+            Biome biome = biomeMap[chunkX][chunkZ];
             int depth = terrainLevel - worldPos.y;
 
             byte block;
@@ -105,21 +198,8 @@ public class TerrainGenerator {
         chunk.setBlocks(blocks);
         chunk.setColours(new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE]);
         chunk.setIsAirChunk(isAirChunk);
-    }
 
-    private static synchronized FastSimplexNoiseGenerator getNoiseGenerator() {
-        return FastSimplexNoiseGenerator.newBuilder()
-                .setSeed(TERRAIN_SEED).build();
-    }
-
-    private static float oreChance(float depth, float deep, float deepChance, float high, float highChance) {
-        if (depth < deep) return deepChance;
-        if (depth > high) return highChance;
-        float ratio = (depth - deep) / (high - deep);
-        return highChance + smoothstep(1f - ratio) * deepChance;
-    }
-
-    private static float smoothstep(float x) {
-        return (float) (6*Math.pow(x, 5) - 15*Math.pow(x, 4) + 10*Math.pow(x, 3));
+        var biomeMapComp = new TerrainMapDataComponent(heightMap, biomeMap); // required for structure generation
+        EntityManager.addComponent(chunk, biomeMapComp);
     }
 }

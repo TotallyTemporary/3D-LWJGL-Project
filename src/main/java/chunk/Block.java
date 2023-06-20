@@ -53,7 +53,9 @@ public enum Block {
     REDSTONE_ORE(51, 51, true, cubeFaces(51)),
     // OAK_LEAVES_HQ(52, cubeFaces(52)), // texture pack png didn't have alpha anyway.
     OAK_LEAVES(53, 53, true, cubeFaces(53)),
-    STONE_BRICKS (54, 54, true, cubeFaces(54));
+    STONE_BRICKS (54, 54, true, cubeFaces(54)),
+
+    CACTUS(69, 4, true, makeFaces(SquareBlockFace.class, new int[] { 69, 70, 70, 70, 70, 71 }));
 
     // set the `isTransparent` -flag.
     static {

@@ -10,7 +10,7 @@ public abstract class Biome {
 
     public float getBaselineHeight() { return 120f; }
     public float getAmplitude() { return 20f; }
-    public float getScale() { return 0.01f; }
+    public float getRoughness() { return 0.20f; }
 
     public StructureSpawnInfo[] getStructures() {
         return new StructureSpawnInfo[] {};

@@ -52,16 +52,18 @@ public class PlayerMovementController extends Component {
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_A)) left  += 1;
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_D)) left  -= 1;
 
+        float speed = MOVE_SPEED;
+        float jumpSpeed = JUMP_SPEED;
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) {
+            speed = 50;
+            jumpSpeed = 40;
+        }
+
         if (physics.isGrounded() && Keyboard.isKeyDown(GLFW.GLFW_KEY_SPACE)) {
-            physics.velocity.y += JUMP_SPEED;
+            physics.velocity.y += jumpSpeed;
         }
 
         float angle = transform.getRotation().y;
-
-        float speed = MOVE_SPEED;
-        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) {
-            speed = 50;
-        }
 
         var forwardVector = new Vector3f(0, 0, -front).rotateY(angle);
         var sidewayVector = new Vector3f(-left,  0, 0).rotateY((float) (angle + 2*Math.PI));

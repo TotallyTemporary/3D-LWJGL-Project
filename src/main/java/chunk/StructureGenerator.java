@@ -1,7 +1,7 @@
 package chunk;
 
 import biome.Biome;
-import biomes.ForestBiome;
+import entity.EntityManager;
 import org.joml.Vector3i;
 
 import java.util.Random;
@@ -20,7 +20,6 @@ public class StructureGenerator {
     private static BlockingQueue<Chunk> loadQueue = new LinkedBlockingQueue<>();
 
     private static long STRUCTURE_SEED = 1349L;
-    private static Biome biome = new ForestBiome();
 
     public static void addChunk(Chunk chunk) {
         loadQueue.add(chunk);
@@ -52,15 +51,28 @@ public class StructureGenerator {
     }
 
     public static void loadChunk(Chunk chunk) {
-        var structures = biome.getStructures();
+        var terrainMapDataComponent = EntityManager.getComponent(chunk, TerrainMapDataComponent.class);
+        Biome[][] biomeMap = terrainMapDataComponent.getBiomeMap();
+        int[][] heightMap = terrainMapDataComponent.getHeightMap();
 
         Random random = new Random();
         for (int x = 0; x < Chunk.SIZE; x++)
-        for (int y = 0; y < Chunk.SIZE; y++)
         for (int z = 0; z < Chunk.SIZE; z++)
         {
+            int height = heightMap[x][z];
+            int y = height & (Chunk.SIZE-1);
+            int minHeight = chunk.getChunkGridPos().y * Chunk.SIZE;
+            int maxHeight = minHeight + Chunk.SIZE - 1;
+
+            if (!(minHeight < height && height < maxHeight)) {
+                continue;
+            }
+
             random.setSeed(STRUCTURE_SEED ^ (x * 10923L + y * 9234L + z * 98259L));
             byte block = chunk.getBlock(x, y, z);
+
+            Biome biome = biomeMap[x][z];
+            var structures = biome.getStructures();
 
             for (Biome.StructureSpawnInfo info : structures) {
                 if (block == info.spawnBlock().getID()
@@ -71,6 +83,7 @@ public class StructureGenerator {
         }
 
         chunk.setStatus(Chunk.Status.BLOCKS_GENERATED);
+        EntityManager.removeComponent(chunk, TerrainMapDataComponent.class);
     }
 
 }

@@ -255,6 +255,7 @@ public class ChunkLoader {
 
         // remove components associated with this chunk
         var modelComp = EntityManager.removeComponent(chunk, ChunkModelComponent.class);
+        EntityManager.removeComponent(chunk, TerrainMapDataComponent.class);
         EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
         EntityManager.removeComponent(chunk, TransformationComponent.class);
 
