@@ -2,11 +2,12 @@ package ui;
 
 import entity.ModelComponent;
 import main.Display;
+import render.ArrayTexture;
 import render.Model;
 import render.Texture;
 import shader.Shader;
 
-public class UIModelComponent extends ModelComponent {
+public class UIArrayModelComponent extends ModelComponent {
 
     public static void createUIModels(Display display) {
         var ratio = (float) display.getWidth() / display.getHeight();
@@ -27,18 +28,34 @@ public class UIModelComponent extends ModelComponent {
                 0f, 1f,
                 0f, 0f,
             })
-            .setShader(uiShader);
+            .setTexture(uiTexture)
+            .setShader(uiShader)
+            .end();
     }
+
+    private static Texture uiTexture = new ArrayTexture(
+            "src/main/resources/ui_array.png",
+            "arrayTexture", 16, 16);
+
     private static Shader uiShader = new Shader(
-            "src/main/resources/shaders/ui_vertex.glsl",
-            "src/main/resources/shaders/ui_fragment.glsl"
+            "src/main/resources/shaders/ui_array_vertex.glsl",
+            "src/main/resources/shaders/ui_array_fragment.glsl"
     )
-            .addUniform("transformationMatrix");
+            .addUniform("transformationMatrix")
+            .addUniform("uiIndex");
 
     private static Model halfHeightSquare = null;
-    public UIModelComponent(Texture texture) {
+
+    // instance vars below
+
+    private int index;
+
+    public UIArrayModelComponent(int index) {
         super(halfHeightSquare);
-        halfHeightSquare.setTexture(texture);
-        halfHeightSquare.end();
+        this.index = index;
+    }
+
+    public int getTextureIndex() {
+        return index;
     }
 }

@@ -20,6 +20,13 @@ public abstract class Texture {
     protected final String name;
     protected int width, height;
     protected ByteBuffer imageData;
+
+    public Texture(int id, int type, String name) {
+        this.id = id;
+        this.type = type;
+        this.name = name;
+        this.path = "builtin";
+    }
     public Texture(String path, String name) {
         this.path = path;
         this.name = name;

@@ -5,6 +5,7 @@ import chunk.*;
 import entity.*;
 import item.ItemComponent;
 import item.ItemModel;
+import item.ItemThumbnailRenderer;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
@@ -16,6 +17,7 @@ import org.lwjgl.system.Configuration;
 import player.*;
 import render.*;
 import shader.Shader;
+import ui.UIArrayModelComponent;
 import ui.UIModelComponent;
 
 public class Main {
@@ -111,7 +113,7 @@ public class Main {
 
         UIModelComponent.createUIModels(display);
         var crosshair = new Entity();
-        EntityManager.addComponent(crosshair, new UIModelComponent(15));
+        EntityManager.addComponent(crosshair, new UIArrayModelComponent(15));
         EntityManager.addComponent(crosshair, new TransformationComponent(new Vector3f(), new Vector3f(), new Vector3f(0.05f, 0.05f, 0.05f)));
 
         var playerStartPosition = new Vector3f(1000f, 120f, 1000f);

@@ -7,6 +7,7 @@ import item.ItemModelComponent;
 import org.lwjgl.opengl.GL30;
 import player.BlockBreakModelComponent;
 import player.BlockSelectionRenderer;
+import ui.UIArrayModelComponent;
 import ui.UIModelComponent;
 
 import java.util.stream.Collectors;
@@ -45,6 +46,7 @@ public class Renderer {
         GL30.glEnable(GL30.GL_BLEND);
         GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
         GL30.glDisable(GL30.GL_DEPTH_TEST);
+        vertexTally += render(player, UIArrayModelComponent.class);
         vertexTally += render(player, UIModelComponent.class);
         GL30.glDisable(GL30.GL_BLEND);
 
@@ -135,7 +137,7 @@ public class Renderer {
         // TODO figure out a way to do this more elegantly
 
         // load possible ui texture index
-        var uiComponent = EntityManager.getComponent(entity, UIModelComponent.class);
+        var uiComponent = EntityManager.getComponent(entity, UIArrayModelComponent.class);
         if (uiComponent != null) {
             model.getShader().setFloat("uiIndex", uiComponent.getTextureIndex());
         }
