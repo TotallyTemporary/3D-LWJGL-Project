@@ -27,6 +27,15 @@ public class TerrainModelGenerator {
             new FloatArrayList(), new FloatArrayList(),
             new FloatArrayList(), new FloatArrayList() });
 
+    private static final float[] fakeBlockSideLights = new float[] {
+        1f,    // up
+        0.95f, // left
+        0.90f, // front
+        0.80f, // back
+        0.80f, // right
+        0.65f  // down
+    };
+
     // adds a chunk to the queue to be loaded in the future
     public static void addChunk(Chunk chunk) {
         executor.submit(() -> loadChunk(chunk));
@@ -94,10 +103,12 @@ public class TerrainModelGenerator {
                     transformedVertices[3*i+2] = (vertices[3*i+2] + z);
                 }
 
+                float fakeLightMultiplier = fakeBlockSideLights[index];
+
                 float[] light = new float[vertices.length / 3 * 2];
                 for (int i = 0; i < light.length / 2; i++) {
-                    light[2*i + 0] = Chunk.getBlock(faceLight) / (float) Chunk.MAX_LIGHT; // block
-                    light[2*i + 1] = Chunk.getSky(faceLight) / (float) Chunk.MAX_LIGHT; // sky
+                    light[2*i + 0] = fakeLightMultiplier * Chunk.getBlock(faceLight) / (float) Chunk.MAX_LIGHT; // block
+                    light[2*i + 1] = fakeLightMultiplier * Chunk.getSky(faceLight) / (float) Chunk.MAX_LIGHT; // sky
                 }
 
                 verticesBuffer[face.direction].addAll(FloatArrayList.wrap(transformedVertices));
