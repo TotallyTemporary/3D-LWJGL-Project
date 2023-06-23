@@ -1,4 +1,7 @@
-package chunk;
+package block;
+
+import block.BlockFace;
+import block.CardinalDirection;
 
 public class DecorBlockFace extends BlockFace {
 

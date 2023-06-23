@@ -1,7 +1,7 @@
 package structures;
 
 import biome.Structure;
-import chunk.Block;
+import block.Block;
 import chunk.Chunk;
 import org.joml.Vector3i;
 

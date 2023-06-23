@@ -1,6 +1,6 @@
 package main;
 
-import chunk.CardinalDirection;
+import block.CardinalDirection;
 import org.joml.Vector3f;
 
 /** Axis Aligned Bounding Box

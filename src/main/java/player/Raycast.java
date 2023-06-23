@@ -1,6 +1,6 @@
 package player;
 
-import chunk.Block;
+import block.Block;
 import chunk.ChunkLoader;
 import org.joml.RoundingMode;
 import org.joml.Vector3f;

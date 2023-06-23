@@ -1,15 +1,12 @@
 package item;
 
-import chunk.Block;
-import chunk.BlockFace;
-import chunk.CardinalDirection;
-import chunk.SquareBlockFace;
+import block.Block;
+import block.BlockFace;
+import block.CardinalDirection;
+import block.SquareBlockFace;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import org.joml.Vector3f;
-import org.lwjgl.opengl.GL30;
 import render.ArrayTexture;
 import render.Model;
-import render.Texture;
 import shader.Shader;
 
 import java.nio.ByteBuffer;

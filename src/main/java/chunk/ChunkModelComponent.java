@@ -1,6 +1,6 @@
 package chunk;
 
-import chunk.CardinalDirection;
+import block.CardinalDirection;
 import entity.ModelComponent;
 import render.Model;
 

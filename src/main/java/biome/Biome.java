@@ -1,7 +1,6 @@
 package biome;
 
-import chunk.Block;
-import structures.Tree;
+import block.Block;
 
 import java.util.function.Supplier;
 

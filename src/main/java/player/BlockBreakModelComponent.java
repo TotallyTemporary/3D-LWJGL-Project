@@ -1,6 +1,6 @@
 package player;
 
-import chunk.Block;
+import block.Block;
 import entity.ModelComponent;
 
 public class BlockBreakModelComponent extends ModelComponent {

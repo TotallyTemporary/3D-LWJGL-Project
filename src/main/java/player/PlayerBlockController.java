@@ -1,7 +1,7 @@
 package player;
 
-import chunk.Block;
-import chunk.CardinalDirection;
+import block.Block;
+import block.CardinalDirection;
 import chunk.ChunkLoader;
 import entity.*;
 import item.ItemType;

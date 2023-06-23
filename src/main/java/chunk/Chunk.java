@@ -1,5 +1,7 @@
 package chunk;
 
+import block.Block;
+import block.DiagonalDirection;
 import entity.Entity;
 import org.joml.*;
 

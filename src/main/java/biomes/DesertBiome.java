@@ -1,7 +1,7 @@
 package biomes;
 
 import biome.Biome;
-import chunk.Block;
+import block.Block;
 import structures.Cactus;
 
 public class DesertBiome extends Biome {

@@ -1,5 +1,7 @@
 package chunk;
 
+import block.Block;
+import block.CardinalDirection;
 import entity.EntityManager;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import org.joml.Vector3i;

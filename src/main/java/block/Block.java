@@ -1,4 +1,4 @@
-package chunk;
+package block;
 
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import item.ItemType;

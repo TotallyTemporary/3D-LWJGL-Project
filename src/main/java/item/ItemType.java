@@ -1,8 +1,6 @@
 package item;
 
-import chunk.Block;
-import chunk.BlockFace;
-import chunk.SquareBlockFace;
+import block.Block;
 import entity.Entity;
 import entity.EntityManager;
 import entity.TransformationComponent;

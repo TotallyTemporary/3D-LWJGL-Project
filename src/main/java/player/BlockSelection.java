@@ -1,7 +1,7 @@
 package player;
 
-import chunk.Block;
-import chunk.CardinalDirection;
+import block.Block;
+import block.CardinalDirection;
 import entity.Entity;
 import entity.EntityManager;
 import entity.TransformationComponent;

@@ -2,6 +2,7 @@ package chunk;
 
 import biome.Biome;
 import biomes.Biomes;
+import block.Block;
 import de.articdive.jnoise.core.api.pipeline.NoiseSource;
 import de.articdive.jnoise.generators.noisegen.opensimplex.FastSimplexNoiseGenerator;
 import de.articdive.jnoise.modules.octavation.OctavationModule;

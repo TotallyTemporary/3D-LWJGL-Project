@@ -1,9 +1,8 @@
 package biomes;
 
 import biome.Biome;
-import chunk.Block;
+import block.Block;
 import structures.Flower;
-import structures.Tree;
 
 public class PlainsBiome extends Biome {
 

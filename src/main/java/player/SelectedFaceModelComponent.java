@@ -1,7 +1,6 @@
 package player;
 
-import chunk.Block;
-import chunk.BlockFace;
+import block.BlockFace;
 import entity.ModelComponent;
 import org.lwjgl.opengl.GL30;
 import render.Model;

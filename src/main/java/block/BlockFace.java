@@ -1,9 +1,9 @@
-package chunk;
+package block;
 
 /** Represents one of the 6 faces of a block. */
 public abstract class BlockFace {
-    protected final int blockID;
-    protected final int direction;
+    public final int blockID;
+    public final int direction;
 
     public BlockFace(Integer blockID, Integer direction) {
         this.blockID = blockID;

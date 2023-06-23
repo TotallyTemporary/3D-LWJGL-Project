@@ -1,5 +1,6 @@
 package main;
 
+import block.Block;
 import chunk.*;
 import entity.*;
 import item.ItemComponent;

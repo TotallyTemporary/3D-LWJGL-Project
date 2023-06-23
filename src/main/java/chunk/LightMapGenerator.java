@@ -1,5 +1,8 @@
 package chunk;
 
+import block.Block;
+import block.CardinalDirection;
+import block.DiagonalDirection;
 import org.joml.Vector3i;
 import org.joml.Vector4i;
 

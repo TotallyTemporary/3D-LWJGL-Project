@@ -1,4 +1,4 @@
-package chunk;
+package block;
 
 import org.joml.Vector3i;
 

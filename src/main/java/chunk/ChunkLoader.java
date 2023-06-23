@@ -1,5 +1,7 @@
 package chunk;
 
+import block.Block;
+import block.DiagonalDirection;
 import entity.EntityManager;
 import entity.TransformationComponent;
 import org.joml.Vector3f;
