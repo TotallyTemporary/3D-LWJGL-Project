@@ -57,8 +57,18 @@ public class LightMapGenerator {
         // 1. take the skylight from chunks surrounding you and propagate them to yourself
         // 2. take the skylight from the 3x3 chunks above you, and propagate them to yourself and chunk surrounding you
         chunk.setColours(new byte[Chunk.SIZE * Chunk.SIZE * Chunk.SIZE]);
-        propagateNeighborLight(chunk);
-        propagateAboveLight(chunk);
+
+        var spoiledChunks = new ArrayList<Chunk>();
+
+        propagateNeighborLight(chunk, spoiledChunks);
+        propagateAboveLight(chunk, spoiledChunks);
+
+        for (Chunk neighbor : spoiledChunks) {
+            if (!neighbor.spoiled) {
+                System.out.println("spoiled");
+                neighbor.spoiled = true;
+            }
+        }
         chunk.setStatus(Chunk.Status.LIGHTS_GENERATED);
     }
 
@@ -67,22 +77,30 @@ public class LightMapGenerator {
         for (int y = 0; y < Chunk.SIZE; y++)
         for (int z = 0; z < Chunk.SIZE; z++)
         {
-            chunk.setColour(x, y, z, (byte) 15);
+            chunk.setColour(x, y, z, (byte) Chunk.MAX_LIGHT);
+        }
+
+        for (int dir = 0; dir < DiagonalDirection.COUNT; dir++) {
+            Chunk neighbor = chunk.getNeighbor(dir);
+            if (!neighbor.getIsAirChunk()
+                && neighbor.getStatus().urgency > Chunk.Status.LIGHTS_GENERATED.urgency) {
+                neighbor.spoiled = true; // TODO might cause deadlock
+            }
         }
     }
 
-    private static void propagateAboveLight(Chunk chunk) {
+    private static void propagateAboveLight(Chunk chunk, ArrayList<Chunk> spoiledChunks) {
         Queue<Vector4i> lightSources = new ArrayDeque<>();
         getAboveLightSources(chunk, lightSources);
 
-        propagateInArea(chunk, lightSources, v -> isPositionIn3x3Grid(v.x, v.y, v.z));
+        propagateInArea(chunk, lightSources, spoiledChunks, v -> isPositionIn3x3Grid(v.x, v.y, v.z));
     }
 
-    private static void propagateNeighborLight(Chunk chunk) {
+    private static void propagateNeighborLight(Chunk chunk, ArrayList<Chunk> spoiledChunks) {
         Queue<Vector4i> lightSources = new ArrayDeque<>();
         getNeighborLightSources(chunk, lightSources);
 
-        propagateInArea(chunk, lightSources, v -> chunk.isInsideChunk(v.x, v.y, v.z));
+        propagateInArea(chunk, lightSources, spoiledChunks, v -> chunk.isInsideChunk(v.x, v.y, v.z));
     }
 
     private static void getAboveLightSources(Chunk chunk, Queue<Vector4i> locs) {
@@ -162,7 +180,10 @@ public class LightMapGenerator {
         }
     }
 
-    private static void propagateInArea(Chunk chunk, Queue<Vector4i> sources, Function<Vector3i, Boolean> areaPredicate) {
+    private static void propagateInArea(Chunk chunk,
+                                        Queue<Vector4i> sources,
+                                        ArrayList<Chunk> spoiledChunks,
+                                        Function<Vector3i, Boolean> areaPredicate) {
         while (!sources.isEmpty()) {
             Vector4i source = sources.poll();
 
@@ -170,14 +191,6 @@ public class LightMapGenerator {
             byte light = chunk.getColourSafe(source.x, source.y, source.z);
             if (light >= source.w) continue;
             chunk.setColourSafe(source.x, source.y, source.z, (byte) source.w);
-
-            // spoil neighboring chunks if their lightmaps are done
-            if (!chunk.isInsideChunk(source.x, source.y, source.z)) {
-                Chunk neighbor = getChunkAtRelativeCoords(chunk, source.x, source.y, source.z);
-                if (neighbor.getStatus().urgency > Chunk.Status.LIGHTS_GENERATED.urgency) {
-                    neighbor.spoiled = true;
-                }
-            }
 
             // propagate
             for (int dir = 0; dir < CardinalDirection.COUNT; dir++) {
@@ -196,12 +209,21 @@ public class LightMapGenerator {
 
                 int existingSkyLight = getSkyAt(chunk, nx, ny, nz);
                 boolean isInArea = areaPredicate.apply(new Vector3i(nx, ny, nz));
-                if (
-                        nl <= 0
-                        || !canLightPassThroughAt(chunk, nx, ny, nz)
-                        || existingSkyLight >= nl
-                        || !isInArea
-                ) {
+
+                if (nl <= 0 || existingSkyLight >= nl) {
+                    continue;
+                }
+
+                // spoil neighboring chunks as we move through them or near their border
+                if (!chunk.isInsideChunk(nx, ny, nz)) {
+                    Chunk neighbor = getChunkAtRelativeCoords(chunk, nx, ny, nz);
+                    if (neighbor.getStatus().urgency > Chunk.Status.LIGHTS_GENERATED.urgency
+                            && !neighbor.spoiled) {
+                        spoiledChunks.add(neighbor);
+                    }
+                }
+
+                if (!canLightPassThroughAt(chunk, nx, ny, nz) || !isInArea) {
                     continue;
                 }
 

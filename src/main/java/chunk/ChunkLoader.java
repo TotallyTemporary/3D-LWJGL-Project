@@ -5,6 +5,7 @@ import entity.TransformationComponent;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /** This class stores and handles the loading of chunks.
@@ -46,6 +47,8 @@ public class ChunkLoader {
             }
         }
 
+        var spoiledFarAway = new ArrayList<Chunk>();
+
         // update existing chunks
         var it = chunks.values().iterator();
         while (it.hasNext()) {
@@ -62,10 +65,11 @@ public class ChunkLoader {
 
                 var dst = playerChunkPos.sub(chunk.getChunkGridPos()).lengthSquared();
                 if (dst < INSTANT_LOAD_DISTANCE_SQR) {
-                    updateNow(chunk); // update on same frame on main thread
+                    updateNow(chunk);
                 } else {
-                    chunk.setStatus(Chunk.Status.BLOCKS_GENERATED); // update multi-threaded on some future frame.
+                    spoiledFarAway.add(chunk);
                 }
+                continue;
             }
 
             if (pos.x < minX || pos.x > maxX ||
@@ -80,6 +84,11 @@ public class ChunkLoader {
                     updatedCount++;
                 }
             }
+        }
+
+        // update far away spoiled after the close spoiled have been updated
+        for (Chunk chunk : spoiledFarAway) {
+            chunk.setStatus(Chunk.Status.BLOCKS_GENERATED); // update multi-threaded on some future frame.
         }
 
         // skip lightmap generation for top chunks

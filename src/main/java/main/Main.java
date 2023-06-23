@@ -32,7 +32,7 @@ public class Main {
                 "A display",   // title
                 1280, 720,     // resolution
                 -1,            // monitor? (-1 gets primary)
-                false,         // vsync
+                true,          // vsync
                 Display.DisplayMode.WINDOWED
         );
         var display = new Display(displaySettings);
@@ -147,6 +147,7 @@ public class Main {
         System.out.println("Starting world preload");
         while (ChunkLoader.update(playerStartPosition) > 0 || ChunkLoader.getQueueSize() > 0) {
             TerrainModelLoader.loadChunks(Integer.MAX_VALUE);
+            display.setTitle(0);
         }
 
         System.out.println("Chunks loaded");
@@ -199,11 +200,7 @@ public class Main {
 
             // render
             int verticesRendered = renderer.render(player);
-            GLFW.glfwSetWindowTitle(display.getWindow(),
-                    verticesRendered/3 + " triangles : " +
-                            Timer.getFps() + " fps : " +
-                    "%.2f".formatted(Timer.getFrametimeMillis()) + " ms : " +
-                    ChunkLoader.getQueueSize() + " chunks queued");
+            display.setTitle(verticesRendered);
 
             // glfw stuff
             GLFW.glfwSwapBuffers(display.getWindow());

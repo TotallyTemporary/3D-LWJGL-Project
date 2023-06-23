@@ -1,5 +1,6 @@
 package main;
 
+import chunk.ChunkLoader;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
@@ -117,6 +118,14 @@ public class Display {
         this.monitor = monitor;
         this.window = window;
         this.mode = mode;
+    }
+
+    public void setTitle(int verticesRendered) {
+        GLFW.glfwSetWindowTitle(getWindow(),
+                verticesRendered/3 + " triangles : " +
+                        Timer.getFps() + " fps : " +
+                        "%.2f".formatted(Timer.getFrametimeMillis()) + " ms : " +
+                        ChunkLoader.getQueueSize() + " chunks queued");
     }
 
     public void close() {
