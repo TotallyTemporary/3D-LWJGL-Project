@@ -112,9 +112,16 @@ public class Main {
         DefaultTexture.init();
 
         UIModelComponent.createUIModels(display);
+        UIArrayModelComponent.createUIModels(display);
+
         var crosshair = new Entity();
         EntityManager.addComponent(crosshair, new UIArrayModelComponent(15));
         EntityManager.addComponent(crosshair, new TransformationComponent(new Vector3f(), new Vector3f(), new Vector3f(0.05f, 0.05f, 0.05f)));
+
+        var loadingScreenIcon = new Entity();
+        Texture grassIcon = ItemThumbnailRenderer.renderItem(2);
+        EntityManager.addComponent(loadingScreenIcon, new UIModelComponent(grassIcon));
+        EntityManager.addComponent(loadingScreenIcon, new TransformationComponent(new Vector3f(), new Vector3f(), new Vector3f(0.25f, 0.25f, 0.25f)));
 
         var playerStartPosition = new Vector3f(1000f, 120f, 1000f);
 
@@ -146,6 +153,9 @@ public class Main {
         // render 1 frame before beginning load, later swap this for loading text
         renderer.render(player);
         GLFW.glfwSwapBuffers(display.getWindow());
+
+        // remove loading screen icon
+        EntityManager.removeEntity(loadingScreenIcon);
 
         System.out.println("Starting world preload");
         while (ChunkLoader.update(playerStartPosition) > 0 || ChunkLoader.getQueueSize() > 0) {

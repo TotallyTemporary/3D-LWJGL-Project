@@ -14,12 +14,14 @@ public class TransformationComponent extends Component {
         this.position = position;
         this.rotation = rotation;
         this.scale = scale;
+        calculateTransformationMatrix();
     }
 
     public TransformationComponent() {
         this.position = new Vector3f();
         this.rotation = new Vector3f();
         this.scale = new Vector3f();
+        calculateTransformationMatrix();
     }
 
     // assume this gets called right before rendering.

@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
 
 public class ItemThumbnailRenderer {
 
-    private static final int SIZE = 1920;
+    private static final int SIZE = 64;
     private static final Matrix4f blockTransform =
         new Matrix4f()
             .identity()
@@ -20,13 +20,6 @@ public class ItemThumbnailRenderer {
             .rotate((float) Math.toRadians(-20), new Vector3f(1, 0, 0))
             .rotate((float) Math.toRadians(45), new Vector3f(0, 1, 0))
             .scale(1.20f);
-
-    public static void renderToScreen(int itemID) {
-        ItemType item = ItemType.getByID(itemID);
-        Model itemModel = item.getModel();
-        Matrix4f transformationMatrix = blockTransform;
-        renderItem(itemModel, transformationMatrix);
-    }
 
     public static ItemThumbnailTexture renderItem(int itemID) {
         int[] viewportBefore = new int[4];
@@ -43,7 +36,7 @@ public class ItemThumbnailRenderer {
         int colourTexture = GL30.glGenTextures();
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, colourTexture);
         GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_RGBA8, SIZE, SIZE, 0, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, (ByteBuffer) null);
-        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_NEAREST);
+        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_LINEAR);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
 
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL30.GL_TEXTURE_2D, colourTexture, 0);
