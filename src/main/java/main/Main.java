@@ -6,6 +6,7 @@ import entity.*;
 import item.ItemComponent;
 import item.ItemModel;
 import item.ItemThumbnailRenderer;
+import item.ItemType;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
@@ -111,7 +112,7 @@ public class Main {
         ItemModel.init(itemsShader, terrainTexture, itemsTexture);
         DefaultTexture.init();
 
-        UIModelComponent.createUIModels(display);
+        UIModelComponent.setUISettings(display);
         UIArrayModelComponent.createUIModels(display);
 
         var crosshair = new Entity();
@@ -119,7 +120,7 @@ public class Main {
         EntityManager.addComponent(crosshair, new TransformationComponent(new Vector3f(), new Vector3f(), new Vector3f(0.05f, 0.05f, 0.05f)));
 
         var loadingScreenIcon = new Entity();
-        Texture grassIcon = ItemThumbnailRenderer.renderItem(2);
+        Texture grassIcon = ItemThumbnailRenderer.renderItem(ItemType.GRASS.getID());
         EntityManager.addComponent(loadingScreenIcon, new UIModelComponent(grassIcon));
         EntityManager.addComponent(loadingScreenIcon, new TransformationComponent(new Vector3f(), new Vector3f(), new Vector3f(0.25f, 0.25f, 0.25f)));
 
@@ -144,6 +145,7 @@ public class Main {
         EntityManager.addComponent(player, new PlayerMovementController());
         EntityManager.addComponent(player, new PlayerBlockController());
         EntityManager.addComponent(player, new PlayerMiscController());
+        EntityManager.addComponent(player, new PlayerInventoryController());
 
         Keyboard.init(display.getWindow());
         Mouse.init(display);

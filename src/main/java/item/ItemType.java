@@ -90,7 +90,7 @@ public enum ItemType {
 
         var itemSpec = ItemType.getByID(itemID);
         EntityManager.addComponent(item, new ItemModelComponent(itemSpec.getModel()));
-        EntityManager.addComponent(item, new ItemComponent());
+        EntityManager.addComponent(item, new ItemComponent(itemID));
         EntityManager.addComponent(item, new PhysicsObjectComponent(new Vector3f(0.05f, 0.05f, 0.05f)));
 
         return item;

@@ -23,13 +23,21 @@ public class PlayerMiscController extends Component {
 
         for (var entry : comps) {
             var item = entry.getKey();
+            var itemID = entry.getValue().getItemID();
             var itemPos = EntityManager.getComponent(item, TransformationComponent.class).getPosition();
             var physics = EntityManager.getComponent(item, PhysicsObjectComponent.class);
 
             itemPos.sub(pos, res);
             if (res.length() < ITEM_PICKUP_RANGE) {
-                // TODO Pickup item to inventory
-                EntityManager.removeEntitySafe(item);
+                var inventory = EntityManager.getComponent(entity, PlayerInventoryController.class);
+                if (inventory == null) {
+                    continue; // player has no inventory
+                }
+
+                boolean couldPickUp = inventory.addItem(itemID);
+                if (couldPickUp) {
+                    EntityManager.removeEntitySafe(item);
+                }
             }
             else if (res.length() < ITEM_ATTRACT_RANGE) {
                 var moveDir = res.normalize().mul(-ATTRACT_ACCELERATION);

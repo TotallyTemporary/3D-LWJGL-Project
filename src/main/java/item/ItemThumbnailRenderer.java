@@ -12,7 +12,8 @@ import java.nio.ByteBuffer;
 
 public class ItemThumbnailRenderer {
 
-    private static final int SIZE = 64;
+    private static final int SIZE = 16;
+    // TODO add item transform
     private static final Matrix4f blockTransform =
         new Matrix4f()
             .identity()
@@ -49,21 +50,17 @@ public class ItemThumbnailRenderer {
         GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_RENDERBUFFER, rbo);
 
         GL30.glEnable(GL30.GL_DEPTH_TEST);
+        GL30.glDisable(GL30.GL_CULL_FACE); // TODO normals are inverted
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
         GL30.glViewport(0, 0, SIZE, SIZE);
 
-
         renderItem(itemModel, transformationMatrix);
-/*
-        ByteBuffer buffer = ByteBuffer.allocate(4*SIZE*SIZE);
-        GL30.glReadPixels(0, 0, SIZE, SIZE, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, buffer);
-        buffer.rewind();
-        while (buffer.hasRemaining()) {
-            System.out.println(buffer.get());
-        }
-*/
+
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+        GL30.glBindTexture(GL30.GL_TEXTURE_2D, 0);
+
         GL30.glDeleteFramebuffers(fbo);
+
         GL30.glViewport(0, 0, viewportBefore[2], viewportBefore[3]);
 
         return new ItemThumbnailTexture(colourTexture);

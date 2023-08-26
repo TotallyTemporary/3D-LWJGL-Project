@@ -26,9 +26,16 @@ public class ItemComponent extends Component {
 
      */
 
-    public ItemComponent(/*Vector3f actualPosition, Vector3f actualRotation*/) {
+    private int itemID;
+
+    public ItemComponent(int itemID /*Vector3f actualPosition, Vector3f actualRotation*/) {
         /*this.actualPosition = actualPosition;
         this.actualRotation = actualRotation;*/
+        this.itemID = itemID;
+    }
+
+    public int getItemID() {
+        return itemID;
     }
 
     @Override
