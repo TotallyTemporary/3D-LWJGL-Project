@@ -12,6 +12,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 /** Loads a block array into model data. */
 public class TerrainModelGenerator {
 
+    private static final float GAMMA = 2.2f;
+    private static final float MIN_LIGHT = 0.01f;
+
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
     static { System.out.println("TerrainModelGenerator running"); }
 
@@ -31,11 +34,11 @@ public class TerrainModelGenerator {
 
     private static final float[] fakeBlockSideLights = new float[] {
         1f,    // up
-        0.95f, // left
-        0.90f, // front
-        0.80f, // back
-        0.80f, // right
-        0.65f  // down
+        0.98f, // left
+        0.95f, // front
+        0.92f, // back
+        0.92f, // right
+        0.88f  // down
     };
 
     // adds a chunk to the queue to be loaded in the future
@@ -107,10 +110,20 @@ public class TerrainModelGenerator {
 
                 float fakeLightMultiplier = fakeBlockSideLights[index];
 
+                float sky =  fakeLightMultiplier * Chunk.getSky(faceLight) / (float) Chunk.MAX_LIGHT;
+
                 float[] light = new float[vertices.length / 3 * 2];
                 for (int i = 0; i < light.length / 2; i++) {
-                    light[2*i + 0] = fakeLightMultiplier * Chunk.getBlock(faceLight) / (float) Chunk.MAX_LIGHT; // block
-                    light[2*i + 1] = fakeLightMultiplier * Chunk.getSky(faceLight) / (float) Chunk.MAX_LIGHT; // sky
+                    float blockLight = Chunk.getBlock(faceLight) / (float) Chunk.MAX_LIGHT;
+                    blockLight *= fakeLightMultiplier;
+                    blockLight = (float) Math.pow(blockLight, GAMMA);
+                    light[2*i + 0] = blockLight; // block
+
+                    float skyLight = Chunk.getSky(faceLight) / (float) Chunk.MAX_LIGHT;
+                    skyLight *= fakeLightMultiplier;
+                    skyLight = (float) Math.pow(skyLight, GAMMA);
+                    skyLight = Math.max(skyLight, MIN_LIGHT); // moonlight
+                    light[2*i + 1] = skyLight; // sky
                 }
 
                 verticesBuffer[face.direction].addAll(FloatArrayList.wrap(transformedVertices));
