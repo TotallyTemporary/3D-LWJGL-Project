@@ -13,14 +13,6 @@ import java.nio.ByteBuffer;
 public class ItemThumbnailRenderer {
 
     private static final int SIZE = 16;
-    // TODO add item transform
-    private static final Matrix4f blockTransform =
-        new Matrix4f()
-            .identity()
-            .translate(0, -0.5f, 0.20f)
-            .rotate((float) Math.toRadians(-20), new Vector3f(1, 0, 0))
-            .rotate((float) Math.toRadians(45), new Vector3f(0, 1, 0))
-            .scale(1.20f);
 
     public static ItemThumbnailTexture renderItem(int itemID) {
         int[] viewportBefore = new int[4];
@@ -28,7 +20,7 @@ public class ItemThumbnailRenderer {
 
         ItemType item = ItemType.getByID(itemID);
         Model itemModel = item.getModel();
-        Matrix4f transformationMatrix = blockTransform;
+        Matrix4f transformationMatrix = item.getThumbnailAlignment().getTransformationMatrix();
 
         int fbo = GL30.glGenFramebuffers();
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);

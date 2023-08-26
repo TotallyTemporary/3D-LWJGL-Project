@@ -11,42 +11,42 @@ import render.Model;
 
 public enum ItemType {
 
-    INVALID  (1, ItemModel.noModel()),
-    AIR      (0, ItemModel.fromBlock(Block.AIR)),
-    GRASS    (2, ItemModel.fromBlock(Block.GRASS)),
-    STONE    (3, ItemModel.fromBlock(Block.STONE)),
-    DIRT     (4, ItemModel.fromBlock(Block.DIRT)),
-    OAK_PLANK(5, ItemModel.fromBlock(Block.OAK_PLANK)),
-    STONE_SLABS           (6, ItemModel.fromBlock(Block.STONE_SLABS)),
-    CHISELLED_STONE_BRICKS(7, ItemModel.fromBlock(Block.CHISELLED_STONE_BRICKS)),
-    BRICKS     (8, ItemModel.fromBlock(Block.BRICKS)),
-    TNT        (9, ItemModel.fromBlock(Block.TNT)),
-    COBWEB     (11, ItemModel.fromBlock(Block.COBWEB)),
-    ROSE       (12, ItemModel.fromItemTexture(Block.ROSE)),
-    DANDELION  (13, ItemModel.fromItemTexture(Block.DANDELION)),
-    OAK_SAPLING(15, ItemModel.fromBlock(Block.OAK_SAPLING)),
+    INVALID  (1, ItemModel.noModel(), ItemThumbnailAlignment.Block),
+    AIR      (0, ItemModel.noModel(), ItemThumbnailAlignment.Block),
+    GRASS    (2, ItemModel.fromBlock(Block.GRASS), ItemThumbnailAlignment.Block),
+    STONE    (3, ItemModel.fromBlock(Block.STONE), ItemThumbnailAlignment.Block),
+    DIRT     (4, ItemModel.fromBlock(Block.DIRT), ItemThumbnailAlignment.Block),
+    OAK_PLANK(5, ItemModel.fromBlock(Block.OAK_PLANK), ItemThumbnailAlignment.Block),
+    STONE_SLABS           (6, ItemModel.fromBlock(Block.STONE_SLABS), ItemThumbnailAlignment.Block),
+    CHISELLED_STONE_BRICKS(7, ItemModel.fromBlock(Block.CHISELLED_STONE_BRICKS), ItemThumbnailAlignment.Block),
+    BRICKS     (8, ItemModel.fromBlock(Block.BRICKS), ItemThumbnailAlignment.Block),
+    TNT        (9, ItemModel.fromBlock(Block.TNT), ItemThumbnailAlignment.Block),
+    COBWEB     (11, ItemModel.fromBlock(Block.COBWEB), ItemThumbnailAlignment.Block),
+    ROSE       (12, ItemModel.fromItemTexture(Block.ROSE), ItemThumbnailAlignment.Item),
+    DANDELION  (13, ItemModel.fromItemTexture(Block.DANDELION), ItemThumbnailAlignment.Item),
+    OAK_SAPLING(15, ItemModel.fromBlock(Block.OAK_SAPLING), ItemThumbnailAlignment.Item),
 
-    COBBLESTONE(16, ItemModel.fromBlock(Block.COBBLESTONE)),
-    BEDROCK    (17, ItemModel.fromBlock(Block.BEDROCK)),
-    SAND       (18, ItemModel.fromBlock(Block.SAND)),
-    GRAVEL     (19, ItemModel.fromBlock(Block.GRAVEL)),
-    OAK_LOG    (20, ItemModel.fromBlock(Block.OAK_LOG)),
-    IRON_BLOCK (21, ItemModel.fromBlock(Block.IRON_BLOCK)),
-    GOLD_BLOCK (22, ItemModel.fromBlock(Block.GOLD_BLOCK)),
+    COBBLESTONE(16, ItemModel.fromBlock(Block.COBBLESTONE), ItemThumbnailAlignment.Block),
+    BEDROCK    (17, ItemModel.fromBlock(Block.BEDROCK), ItemThumbnailAlignment.Block),
+    SAND       (18, ItemModel.fromBlock(Block.SAND), ItemThumbnailAlignment.Block),
+    GRAVEL     (19, ItemModel.fromBlock(Block.GRAVEL), ItemThumbnailAlignment.Block),
+    OAK_LOG    (20, ItemModel.fromBlock(Block.OAK_LOG), ItemThumbnailAlignment.Block),
+    IRON_BLOCK (21, ItemModel.fromBlock(Block.IRON_BLOCK), ItemThumbnailAlignment.Block),
+    GOLD_BLOCK (22, ItemModel.fromBlock(Block.GOLD_BLOCK), ItemThumbnailAlignment.Block),
 
-    GOLD_ORE  (32, ItemModel.fromBlock(Block.GOLD_ORE)),
-    IRON_ORE  (33, ItemModel.fromBlock(Block.IRON_ORE)),
-    COAL_ORE  (34, ItemModel.fromBlock(Block.COAL_ORE)),
-    BOOKSHELF (35, ItemModel.fromBlock(Block.BOOKSHELF)),
-    MOSSY_COBBLESTONE(36, ItemModel.fromBlock(Block.MOSSY_COBBLESTONE)),
-    OBSIDIAN  (37, ItemModel.fromBlock(Block.OBSIDIAN)),
+    GOLD_ORE  (32, ItemModel.fromBlock(Block.GOLD_ORE), ItemThumbnailAlignment.Block),
+    IRON_ORE  (33, ItemModel.fromBlock(Block.IRON_ORE), ItemThumbnailAlignment.Block),
+    COAL_ORE  (34, ItemModel.fromBlock(Block.COAL_ORE), ItemThumbnailAlignment.Block),
+    BOOKSHELF (35, ItemModel.fromBlock(Block.BOOKSHELF), ItemThumbnailAlignment.Block),
+    MOSSY_COBBLESTONE(36, ItemModel.fromBlock(Block.MOSSY_COBBLESTONE), ItemThumbnailAlignment.Block),
+    OBSIDIAN  (37, ItemModel.fromBlock(Block.OBSIDIAN), ItemThumbnailAlignment.Block),
 
-    SPONGE      (48, ItemModel.fromBlock(Block.SPONGE)),
-    GLASS       (49, ItemModel.fromBlock(Block.GLASS)),
-    DIAMOND_ORE (50, ItemModel.fromBlock(Block.DIAMOND_ORE)),
-    REDSTONE_ORE(51, ItemModel.fromBlock(Block.REDSTONE_ORE)),
-    OAK_LEAVES(53, ItemModel.fromBlock(Block.OAK_LEAVES)),
-    STONE_BRICKS (54, ItemModel.fromBlock(Block.STONE_BRICKS));
+    SPONGE      (48, ItemModel.fromBlock(Block.SPONGE), ItemThumbnailAlignment.Block),
+    GLASS       (49, ItemModel.fromBlock(Block.GLASS), ItemThumbnailAlignment.Block),
+    DIAMOND_ORE (50, ItemModel.fromBlock(Block.DIAMOND_ORE), ItemThumbnailAlignment.Block),
+    REDSTONE_ORE(51, ItemModel.fromBlock(Block.REDSTONE_ORE), ItemThumbnailAlignment.Block),
+    OAK_LEAVES(53, ItemModel.fromBlock(Block.OAK_LEAVES), ItemThumbnailAlignment.Block),
+    STONE_BRICKS (54, ItemModel.fromBlock(Block.STONE_BRICKS), ItemThumbnailAlignment.Block);
 
     private static final ItemType[] vals = new ItemType[4096];
     static {
@@ -59,10 +59,12 @@ public enum ItemType {
 
     private int id;
     private Model model;
+    private ItemThumbnailAlignment thumbnailAlignment;
 
-    ItemType(int id, Model model) {
+    ItemType(int id, Model model, ItemThumbnailAlignment thumbnailAlignment) {
         this.id = id;
         this.model = model;
+        this.thumbnailAlignment = thumbnailAlignment;
     }
 
     public int getID() {
@@ -71,6 +73,10 @@ public enum ItemType {
 
     public Model getModel() {
         return model;
+    }
+
+    public ItemThumbnailAlignment getThumbnailAlignment() {
+        return thumbnailAlignment;
     }
 
     public static ItemType getByID(int id) {
