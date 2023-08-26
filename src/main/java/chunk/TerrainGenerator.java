@@ -26,7 +26,7 @@ public class TerrainGenerator {
     private static final float CAVE_CUTOFF = 0.70f;
 
     private static final float BIOME_SMOOTHING = 1.5f; // 1f=biomes "pull" each other really far away, 2f=biome changes too drastic
-    private static final float BIOME_SCALE = 0.001f;
+    private static final float BIOME_SCALE = 0.0005f;
 
     private static final float BIOME_WARP_SCALE = 0.04f;
     private static final float BIOME_WARP_INTENSITY = 0.007f;
@@ -80,6 +80,9 @@ public class TerrainGenerator {
                                                                         warpZ + worldPos.z * BIOME_SCALE);
             humidity = (humidity + 1) / 2f;
             temperature = (temperature + 1) / 2f;
+
+            // humidity *= temperature; // if temperature is really low, the humidity cannot get high
+            humidity = Math.min(humidity, temperature); // doesn't skew our distribution toward (0,0)
 
             float baseline = 0f;
             float amplitude = 0f;

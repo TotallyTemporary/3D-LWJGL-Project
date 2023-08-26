@@ -55,7 +55,18 @@ public enum Block {
     OAK_LEAVES(53, 53, true, cubeFaces(53)),
     STONE_BRICKS (54, 54, true, cubeFaces(54)),
 
-    CACTUS(69, 4, true, makeFaces(SquareBlockFace.class, new int[] { 69, 70, 70, 70, 70, 71 }));
+    SNOWY_GRASS(66, 66, true, makeFaces(SquareBlockFace.class, new int[] { 66, 68, 68, 68, 68, 2 })),
+
+    CACTUS(69, 4, true, makeFaces(SquareBlockFace.class, new int[] { 69, 70, 70, 70, 70, 71 })),
+
+    BIRCH_LOG(117, 117, true, makeFaces(SquareBlockFace.class, new int[] { 21, 117, 117, 117, 117, 21 })),
+    BIRCH_LEAVES(118, 118, true, cubeFaces(53)),
+
+    PINE_LOG(116, 116, true, makeFaces(SquareBlockFace.class, new int[] { 21, 116, 116, 116, 116, 21 })),
+    PINE_LEAVES(187, 187, true, cubeFaces(53)),
+
+    JUNGLE_LOG(153, 153, true, makeFaces(SquareBlockFace.class, new int[] { 21, 153, 153, 153, 153, 21 })),
+    JUNGLE_LEAVES(188, 188, true, cubeFaces(53));
 
     // set the `isTransparent` -flag.
     static {
@@ -115,10 +126,10 @@ public enum Block {
     }
 
     // make array of references for lookup
-    private static final Block[] vals = new Block[Byte.MAX_VALUE];
+    private static final Block[] vals = new Block[256];
     static {
         for (var block : Block.values()) {
-            vals[block.getID()] = block;
+            vals[block.getID() + 128] = block;
         }
     }
 
@@ -144,7 +155,7 @@ public enum Block {
     }
 
     public static Block getBlock(byte id) {
-        return vals[id];
+        return vals[id + 128];
     }
 
     private static BlockFace[] cubeFaces(int indices) {

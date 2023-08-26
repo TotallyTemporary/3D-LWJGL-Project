@@ -46,7 +46,19 @@ public enum ItemType {
     DIAMOND_ORE (50, ItemModel.fromBlock(Block.DIAMOND_ORE), ItemThumbnailAlignment.Block),
     REDSTONE_ORE(51, ItemModel.fromBlock(Block.REDSTONE_ORE), ItemThumbnailAlignment.Block),
     OAK_LEAVES(53, ItemModel.fromBlock(Block.OAK_LEAVES), ItemThumbnailAlignment.Block),
-    STONE_BRICKS (54, ItemModel.fromBlock(Block.STONE_BRICKS), ItemThumbnailAlignment.Block);
+    STONE_BRICKS (54, ItemModel.fromBlock(Block.STONE_BRICKS), ItemThumbnailAlignment.Block),
+
+    SNOWY_GRASS(66, ItemModel.fromBlock(Block.SNOWY_GRASS), ItemThumbnailAlignment.Block),
+
+    BIRCH_LOG(117, ItemModel.fromBlock(Block.BIRCH_LOG), ItemThumbnailAlignment.Block),
+    BIRCH_LEAVES(118, ItemModel.fromBlock(Block.BIRCH_LEAVES), ItemThumbnailAlignment.Block),
+
+    PINE_LOG(116, ItemModel.fromBlock(Block.PINE_LOG), ItemThumbnailAlignment.Block),
+    PINE_LEAVES(187, ItemModel.fromBlock(Block.PINE_LEAVES), ItemThumbnailAlignment.Block),
+
+    JUNGLE_LOG(153, ItemModel.fromBlock(Block.JUNGLE_LOG), ItemThumbnailAlignment.Block),
+    JUNGLE_LEAVES(188, ItemModel.fromBlock(Block.JUNGLE_LEAVES), ItemThumbnailAlignment.Block);
+
 
     private static final ItemType[] vals = new ItemType[4096];
     static {
