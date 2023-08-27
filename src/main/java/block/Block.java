@@ -47,6 +47,10 @@ public enum Block {
     MOSSY_COBBLESTONE(36, 16, true, cubeFaces(36)),
     OBSIDIAN  (37, 37, true, cubeFaces(37)),
 
+    TALL_GRASS(39, 1, false, decorFaces(39)),
+    SHRUB(55, 1, false, decorFaces(55)),
+    FERN(56, 1, false, decorFaces(56)),
+
     SPONGE      (48, 48, true, cubeFaces(48)),
     GLASS       (49, 1, true, cubeFaces(49)),
     DIAMOND_ORE (50, 50, true, cubeFaces(50)),
@@ -59,6 +63,15 @@ public enum Block {
 
     CACTUS(69, 4, true, makeFaces(SquareBlockFace.class, new int[] { 69, 70, 70, 70, 70, 71 })),
 
+    WHEAT(88, 1, false, decorFaces(88)),
+    WHEAT_1(89, 1, false, decorFaces(89)),
+    WHEAT_2(90, 1, false, decorFaces(90)),
+    WHEAT_3(91, 1, false, decorFaces(91)),
+    WHEAT_4(92, 1, false, decorFaces(92)),
+    WHEAT_5(93, 1, false, decorFaces(93)),
+    WHEAT_6(94, 1, false, decorFaces(94)),
+    WHEAT_7(95, 88, false, decorFaces(95)),
+
     BIRCH_LOG(117, 117, true, makeFaces(SquareBlockFace.class, new int[] { 21, 117, 117, 117, 117, 21 })),
     BIRCH_LEAVES(118, 118, true, cubeFaces(53)),
 
@@ -66,7 +79,18 @@ public enum Block {
     PINE_LEAVES(187, 187, true, cubeFaces(53)),
 
     JUNGLE_LOG(153, 153, true, makeFaces(SquareBlockFace.class, new int[] { 21, 153, 153, 153, 153, 21 })),
-    JUNGLE_LEAVES(188, 188, true, cubeFaces(53));
+    JUNGLE_LEAVES(188, 188, true, cubeFaces(53)),
+
+    CARROT(200, 1, false, decorFaces(200)),
+    CARROT_1(201, 1, false, decorFaces(201)),
+    CARROT_2(202, 1, false, decorFaces(202)),
+    CARROT_3(203, 200, false, decorFaces(203)),
+
+    POTATO(217, 1, false, decorFaces(200)),
+    POTATO_1(218, 1, false, decorFaces(201)),
+    POTATO_2(219, 1, false, decorFaces(202)),
+    POTATO_3(220, 217, false, decorFaces(204));
+
 
     // set the `isTransparent` -flag.
     static {

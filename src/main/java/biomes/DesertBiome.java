@@ -3,6 +3,7 @@ package biomes;
 import biome.Biome;
 import block.Block;
 import structures.Cactus;
+import structures.Shrub;
 
 public class DesertBiome extends Biome {
 
@@ -24,6 +25,7 @@ public class DesertBiome extends Biome {
     @Override
     public StructureSpawnInfo[] getStructures() {
         return new StructureSpawnInfo[] {
+            new StructureSpawnInfo(Block.SAND, 0.001f, new Shrub()),
             new StructureSpawnInfo(Block.SAND, 0.0005f, new Cactus())
         };
     }

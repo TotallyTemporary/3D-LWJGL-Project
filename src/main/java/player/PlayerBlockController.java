@@ -122,7 +122,11 @@ public class PlayerBlockController extends Component {
 
         var blockID = ChunkLoader.getBlockAt(hitLocation);
         ChunkLoader.setBlockAt(hitLocation, Block.AIR.getID());
-        ItemType.makeItem(hitLocation, Block.getBlock(blockID).getItemID());
+
+        var itemID = Block.getBlock(blockID).getItemID();
+        if (itemID != ItemType.INVALID.getID()) {
+            ItemType.makeItem(hitLocation, itemID);
+        }
     }
 
     private boolean isInsideBlock(Entity entity) {

@@ -2,10 +2,7 @@ package biomes;
 
 import biome.Biome;
 import block.Block;
-import structures.Flower;
-import structures.JungleTree;
-import structures.SmallJungleTree;
-import structures.Tree;
+import structures.*;
 
 public class JungleBiome extends Biome {
 
@@ -21,6 +18,9 @@ public class JungleBiome extends Biome {
     @Override
     public StructureSpawnInfo[] getStructures() {
         return new StructureSpawnInfo[] {
+            new StructureSpawnInfo(Block.GRASS, 0.047f, new TallGrass()),
+            new StructureSpawnInfo(Block.GRASS, 0.012f, new Fern()),
+            new StructureSpawnInfo(Block.GRASS, 0.008f, new WildWheat()),
             new StructureSpawnInfo(Block.GRASS, 0.008f, new JungleTree()),
             new StructureSpawnInfo(Block.GRASS, 0.005f, new SmallJungleTree())
         };

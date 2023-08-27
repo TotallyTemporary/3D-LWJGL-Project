@@ -3,6 +3,8 @@ package biomes;
 import biome.Biome;
 import block.Block;
 import structures.Flower;
+import structures.TallGrass;
+import structures.WildCarrot;
 
 public class PlainsBiome extends Biome {
 
@@ -18,7 +20,9 @@ public class PlainsBiome extends Biome {
     @Override
     public StructureSpawnInfo[] getStructures() {
         return new StructureSpawnInfo[] {
-            new StructureSpawnInfo(Block.GRASS, 0.01f, new Flower())
+            new StructureSpawnInfo(Block.GRASS, 0.001f, new WildCarrot()),
+            new StructureSpawnInfo(Block.GRASS, 0.01f, new Flower()),
+            new StructureSpawnInfo(Block.GRASS, 0.02f, new TallGrass())
         };
     }
 

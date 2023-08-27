@@ -4,6 +4,7 @@ import biome.Biome;
 import block.Block;
 import structures.Flower;
 import structures.Tree;
+import structures.WildPotato;
 
 public class ForestHillsBiome extends Biome {
 
@@ -20,6 +21,7 @@ public class ForestHillsBiome extends Biome {
     public StructureSpawnInfo[] getStructures() {
         return new StructureSpawnInfo[] {
             new StructureSpawnInfo(Block.GRASS, 0.01f, new Tree()),
+            new StructureSpawnInfo(Block.GRASS, 0.003f, new WildPotato()),
             new StructureSpawnInfo(Block.GRASS, 0.01f, new Flower())
         };
     }

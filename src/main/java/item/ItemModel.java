@@ -31,7 +31,7 @@ public class ItemModel {
             .end();
     }
 
-    public static Model fromBlock(Block block) {
+    public static Model from3DBlock(Block block) {
         var vertices = new FloatArrayList();
         var texCoords = new FloatArrayList();
 
@@ -58,48 +58,54 @@ public class ItemModel {
             .end();
     }
 
+    public static Model from2DBlock(Block block) {
+        return from2D(block.getID(), blockTexture);
+    }
+
+    public static Model from2DItem(int itemID) {
+        return from2D(itemID, itemTexture);
+    }
+
     // takes the texture of a element in the block texture
-    public static Model fromItemTexture(Block block) {
-        var spriteData = getSpriteDataFromTexture(block.getID(), blockTexture);
-        var pixels = bufferTo2DArray(spriteData, blockTexture.getTileWidth(), blockTexture.getTileHeight());
+    private static Model from2D(int blockID, ArrayTexture texture) {
+        var spriteData = getSpriteDataFromTexture(blockID, texture);
+        var pixels = bufferTo2DArray(spriteData, texture.getTileWidth(), texture.getTileHeight());
 
         var vertices = new FloatArrayList();
         var texCoords = new FloatArrayList();
 
-        int blockID = block.getID();
-
-        for (int y = 0; y < blockTexture.getTileHeight(); y++) {
-            for (int x = 0; x < blockTexture.getTileWidth(); x++) {
+        for (int y = 0; y < texture.getTileHeight(); y++) {
+            for (int x = 0; x < texture.getTileWidth(); x++) {
                 if (!isOpaque(getPixel(pixels, x, y))) continue;
 
-                var front = makeSmallBlockFaceAt(x, y, CardinalDirection.FRONT, blockID, blockTexture);
+                var front = makeSmallBlockFaceAt(x, y, CardinalDirection.FRONT, blockID, texture);
                 vertices.addElements(vertices.size(), front.getVertices());
                 texCoords.addElements(texCoords.size(), front.getTextureCoords());
 
-                var back = makeSmallBlockFaceAt(x, y, CardinalDirection.BACK, blockID, blockTexture);
+                var back = makeSmallBlockFaceAt(x, y, CardinalDirection.BACK, blockID, texture);
                 vertices.addElements(vertices.size(), back.getVertices());
                 texCoords.addElements(texCoords.size(), back.getTextureCoords());
 
                 if (!isOpaque(getPixel(pixels, x-1, y))) {
-                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.LEFT, blockID, blockTexture);
+                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.LEFT, blockID, texture);
                     vertices.addElements(vertices.size(), face.getVertices());
                     texCoords.addElements(texCoords.size(), face.getTextureCoords());
                 }
 
                 if (!isOpaque(getPixel(pixels, x+1, y))) {
-                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.RIGHT, blockID, blockTexture);
+                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.RIGHT, blockID, texture);
                     vertices.addElements(vertices.size(), face.getVertices());
                     texCoords.addElements(texCoords.size(), face.getTextureCoords());
                 }
 
                 if (!isOpaque(getPixel(pixels, x, y+1))) {
-                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.UP, blockID, blockTexture);
+                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.UP, blockID, texture);
                     vertices.addElements(vertices.size(), face.getVertices());
                     texCoords.addElements(texCoords.size(), face.getTextureCoords());
                 }
 
                 if (!isOpaque(getPixel(pixels, x, y-1))) {
-                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.DOWN, blockID, blockTexture);
+                    var face = makeSmallBlockFaceAt(x, y, CardinalDirection.DOWN, blockID, texture);
                     vertices.addElements(vertices.size(), face.getVertices());
                     texCoords.addElements(texCoords.size(), face.getTextureCoords());
                 }
@@ -110,7 +116,7 @@ public class ItemModel {
             .addPosition3D(vertices.elements())
             .addTextureCoords3D(texCoords.elements())
             .setShader(itemShader)
-            .setTexture(blockTexture)
+            .setTexture(texture)
             .end();
     }
 
