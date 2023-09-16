@@ -26,6 +26,10 @@ public class Main {
     public static final boolean DEBUG = false;
     public static Callback debugMessageCallback = null;
 
+    // TODO separate into GraphicsSettings object
+    private static final int ANISOTROPIC_FILTERING = 8;
+
+
     public static void main(String[] args) {
         if (DEBUG) {
             Configuration.DEBUG_STACK.set(true);
@@ -36,7 +40,7 @@ public class Main {
                 "A display",   // title
                 1280, 720,     // resolution
                 -1,            // monitor? (-1 gets primary)
-                true,          // vsync
+                false,          // vsync
                 Display.DisplayMode.WINDOWED
         );
         var display = new Display(displaySettings);
@@ -70,7 +74,7 @@ public class Main {
 
         var terrainTexture = new ArrayTexture(
                 "src/main/resources/blocks_array.png",
-                "arrayTexture", 16, 16);
+                "arrayTexture", 16, 16, ANISOTROPIC_FILTERING);
 
         TerrainModelLoader.setChunkTexture(terrainTexture);
         TerrainModelLoader.setShader(terrainShader);
@@ -107,7 +111,7 @@ public class Main {
 
         var itemsTexture = new ArrayTexture(
             "src/main/resources/items_array.png",
-            "arrayTexture", 16, 16);
+            "arrayTexture", 16, 16, ANISOTROPIC_FILTERING);
 
         ItemModel.init(itemsShader, terrainTexture, itemsTexture);
         DefaultTexture.init();

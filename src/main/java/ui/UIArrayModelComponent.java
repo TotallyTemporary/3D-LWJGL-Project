@@ -35,7 +35,7 @@ public class UIArrayModelComponent extends ModelComponent {
 
     private static Texture uiTexture = new ArrayTexture(
             "src/main/resources/ui_array.png",
-            "arrayTexture", 16, 16);
+            "arrayTexture", 16, 16, -1);
 
     private static Shader uiShader = new Shader(
             "src/main/resources/shaders/ui_array_vertex.glsl",

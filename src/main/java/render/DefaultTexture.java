@@ -8,7 +8,7 @@ public class DefaultTexture {
         texture = new ArrayTexture(
             "src/main/resources/cat_array.png",
             "arrayTexture",
-            64, 64
+            64, 64, -1
         );
     }
 

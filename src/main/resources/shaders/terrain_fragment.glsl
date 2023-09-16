@@ -13,7 +13,7 @@ const float dayTime = 1.0;
 void main()
 {
     vec4 tex = texture(arrayTexture, vec3(pass_textureCoords.xy, pass_textureIndex));
-    if (tex.a < 0.5f) {
+    if (tex.a < 0.95f) {
       discard;
     }
 

@@ -1,6 +1,7 @@
 package render;
 
 import main.Capabilities;
+import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL43;
 
@@ -10,7 +11,7 @@ public class ArrayTexture extends Texture {
     private int depth;
 
     /* Thank you: http://gaarlicbread.com/post/gl_2d_array */
-    public ArrayTexture(String path, String name, int tileWidth, int tileHeight) {
+    public ArrayTexture(String path, String name, int tileWidth, int tileHeight, int anisotropicFiltering) {
         super(path, name);
         super.type = GL30.GL_TEXTURE_2D_ARRAY;
 
@@ -32,6 +33,12 @@ public class ArrayTexture extends Texture {
                         + " but maximum size is " + Capabilities.MAX_TEXTURE_SIZE);
         }
 
+        if (anisotropicFiltering != -1 && anisotropicFiltering > Capabilities.MAX_AS_DEGREE) {
+            System.err.println("Trying to make texture of AS degree "
+                    + anisotropicFiltering + " but maximum degree is "
+                    + Capabilities.MAX_AS_DEGREE);
+        }
+
         super.id = GL30.glGenTextures();
         GL30.glBindTexture(type, id);
 
@@ -43,6 +50,15 @@ public class ArrayTexture extends Texture {
         // when close up, pixels should be pixelated :D
         GL30.glTexParameteri(type,
                 GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
+
+        // use anisotropic filtering if possible
+        if (anisotropicFiltering != -1) {
+            GL30.glTexParameteri(
+                type,
+                EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                anisotropicFiltering
+            );
+        }
 
         // repeat so we don't get block corners being black or something.
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_S, GL30.GL_REPEAT);

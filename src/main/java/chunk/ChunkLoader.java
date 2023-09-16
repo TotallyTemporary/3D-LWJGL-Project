@@ -19,7 +19,7 @@ public class ChunkLoader {
     private static final int VERTICAL_LOAD_RADIUS = 6;
 
     // a chunk within this grid distance of the player's chunk will instantly get updated
-    private static final int INSTANT_LOAD_DISTANCE = 0;
+    private static final int INSTANT_LOAD_DISTANCE = 2;
     private static final int INSTANT_LOAD_DISTANCE_SQR = INSTANT_LOAD_DISTANCE*INSTANT_LOAD_DISTANCE;
 
     private static final HashMap<Vector3i, Chunk> chunks = new HashMap<>();
