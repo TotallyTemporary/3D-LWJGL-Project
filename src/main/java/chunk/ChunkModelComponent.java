@@ -19,4 +19,8 @@ public class ChunkModelComponent extends ModelComponent {
         if (face >= CardinalDirection.COUNT) return model.getVertexCount();
         return positionsIndices[face];
     }
+
+    public boolean hasAlphaBlendFaces() {
+        return positionsIndices[0] != 0;
+    }
 }

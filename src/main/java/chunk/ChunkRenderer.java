@@ -69,6 +69,11 @@ public class ChunkRenderer {
             var modelComp = entry.getValue();
             var entity = entry.getKey();
 
+            if (renderAlphaBlendFaces && !modelComp.hasAlphaBlendFaces()) {
+                // if we want to render the alpha blend faces, but this model doesn't have any, skip it!
+                continue;
+            }
+
             // bind model and enable attribute arrays TODO: EnableVertexAttribArray actually modifies VAO, set these when calling .end() on model.
             GL30.glBindVertexArray(modelComp.getModel().getVAO());
             for (int i = 0; i < modelComp.getModel().getNumberOfVBOs(); i++)
