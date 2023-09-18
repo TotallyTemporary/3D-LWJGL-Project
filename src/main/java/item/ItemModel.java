@@ -160,7 +160,7 @@ public class ItemModel {
     private static BlockFace makeSmallBlockFaceAt(int xPixel, int yPixel, int direction, int index, ArrayTexture texture) {
         var pixelSize = 1f / texture.getTileWidth();
 
-        var templateBlockFace = new SquareBlockFace(index, direction);
+        var templateBlockFace = new SquareBlockFace(index, direction, BlockFace.NO_FLAG);
 
         var verts = templateBlockFace.getVertices();
         var vertices = new float[verts.length];
@@ -179,7 +179,7 @@ public class ItemModel {
             texCoords[3*i + 2] = index;
         }
 
-        return new BlockFace(index, direction) {
+        return new BlockFace(index, direction, BlockFace.NO_FLAG) {
             public float[] getVertices() { return vertices; }
             public float[] getTextureCoords() { return texCoords; }
             public boolean isTransparent() { return false; }

@@ -19,18 +19,22 @@ public class TerrainModelGenerator {
     static { System.out.println("TerrainModelGenerator running"); }
 
     // 6 lists, one for every cardinal direction.
-    private static final ThreadLocal<FloatArrayList[]> verticesBufferLocal = ThreadLocal.withInitial(() -> new FloatArrayList[] {
-            new FloatArrayList(), new FloatArrayList(),
-            new FloatArrayList(), new FloatArrayList(),
-            new FloatArrayList(), new FloatArrayList() });
-    private static final ThreadLocal<FloatArrayList[]> textureCoordsBufferLocal = ThreadLocal.withInitial(() -> new FloatArrayList[] {
-            new FloatArrayList(), new FloatArrayList(),
-            new FloatArrayList(), new FloatArrayList(),
-            new FloatArrayList(), new FloatArrayList() });
-    private static final ThreadLocal<FloatArrayList[]> coloursBufferLocal = ThreadLocal.withInitial(() -> new FloatArrayList[] {
-            new FloatArrayList(), new FloatArrayList(),
-            new FloatArrayList(), new FloatArrayList(),
-            new FloatArrayList(), new FloatArrayList() });
+    private static final ThreadLocal<FloatArrayList[]> verticesBufferLocal = ThreadLocal.withInitial(() -> createBufferArray(CardinalDirection.COUNT));
+    private static final ThreadLocal<FloatArrayList[]> textureCoordsBufferLocal = ThreadLocal.withInitial(() -> createBufferArray(CardinalDirection.COUNT));
+    private static final ThreadLocal<FloatArrayList[]> coloursBufferLocal = ThreadLocal.withInitial(() -> createBufferArray(CardinalDirection.COUNT));
+
+    // alpha blended vertices are separated
+    private static final ThreadLocal<FloatArrayList> alphaBlendVerticesBufferLocal = ThreadLocal.withInitial(() -> new FloatArrayList());
+    private static final ThreadLocal<FloatArrayList> alphaBlendTextureCoordsBufferLocal = ThreadLocal.withInitial(() -> new FloatArrayList());
+    private static final ThreadLocal<FloatArrayList> alphaBlendColoursBufferLocal = ThreadLocal.withInitial(() -> new FloatArrayList());
+
+    private static final FloatArrayList[] createBufferArray(int count) {
+        FloatArrayList[] array = new FloatArrayList[count];
+        for (int i = 0; i < count; i++) {
+            array[i] = new FloatArrayList();
+        }
+        return array;
+    }
 
     private static final float[] fakeBlockSideLights = new float[] {
         1f,    // up
@@ -71,12 +75,18 @@ public class TerrainModelGenerator {
         var verticesBuffer = verticesBufferLocal.get();
         var textureCoordsBuffer = textureCoordsBufferLocal.get();
         var lightBuffer = coloursBufferLocal.get();
+        var alphaBlendVerticesBuffer = alphaBlendVerticesBufferLocal.get();
+        var alphaBlendTextureCoordsBuffer = alphaBlendTextureCoordsBufferLocal.get();
+        var alphaBlendLightBuffer = alphaBlendColoursBufferLocal.get();
 
         for (int i = 0; i < CardinalDirection.COUNT; i++) {
             verticesBuffer[i].clear();
             textureCoordsBuffer[i].clear();
             lightBuffer[i].clear();
         }
+        alphaBlendVerticesBuffer.clear();
+        alphaBlendTextureCoordsBuffer.clear();
+        alphaBlendLightBuffer.clear();
 
         // go through every block and every face
         for (int x = 0; x < Chunk.SIZE; x++)
@@ -88,6 +98,9 @@ public class TerrainModelGenerator {
                 var face = block.getFace(index);
                 if (face == null) continue;
                 if (!face.isTransparent() && !isFaceVisible(chunk, index, x, y, z)) continue;
+
+                // cull faces that face another block of the same type
+                if (face.isTransparent() && isFacingSameBlockType(chunk, index, x, y, z, block.getID())) continue;
 
                 byte faceLight;
 
@@ -110,8 +123,6 @@ public class TerrainModelGenerator {
 
                 float fakeLightMultiplier = fakeBlockSideLights[index];
 
-                float sky =  fakeLightMultiplier * Chunk.getSky(faceLight) / (float) Chunk.MAX_LIGHT;
-
                 float[] light = new float[vertices.length / 3 * 2];
                 for (int i = 0; i < light.length / 2; i++) {
                     float blockLight = Chunk.getBlock(faceLight) / (float) Chunk.MAX_LIGHT;
@@ -126,16 +137,32 @@ public class TerrainModelGenerator {
                     light[2*i + 1] = skyLight; // sky
                 }
 
-                verticesBuffer[face.direction].addAll(FloatArrayList.wrap(transformedVertices));
-                textureCoordsBuffer[face.direction].addAll(FloatArrayList.wrap(face.getTextureCoords()));
-                lightBuffer[face.direction].addAll(FloatArrayList.wrap(light));
+                if (!face.isAlphaBlended()) {
+                    // add normal vertices to the face direction bufferQ
+                    verticesBuffer[face.direction].addAll(FloatArrayList.wrap(transformedVertices));
+                    textureCoordsBuffer[face.direction].addAll(FloatArrayList.wrap(face.getTextureCoords()));
+                    lightBuffer[face.direction].addAll(FloatArrayList.wrap(light));
+                } else {
+                    // face is alpha blended, we need to put this in the other buffer.
+                    alphaBlendVerticesBuffer.addAll(FloatArrayList.wrap(transformedVertices));
+                    alphaBlendTextureCoordsBuffer.addAll(FloatArrayList.wrap(face.getTextureCoords()));
+                    alphaBlendLightBuffer.addAll(FloatArrayList.wrap(light));
+                }
             }
         }
 
-        return wrapIntoModel(verticesBuffer, textureCoordsBuffer, lightBuffer);
+        return wrapIntoModel(verticesBuffer, textureCoordsBuffer, lightBuffer,
+                            alphaBlendVerticesBuffer, alphaBlendTextureCoordsBuffer, alphaBlendLightBuffer);
     }
 
-    private static ChunkModelDataComponent wrapIntoModel(FloatArrayList[] verticesBuffer, FloatArrayList[] textureCoordsBuffer, FloatArrayList[] colourBuffer) {
+    private static ChunkModelDataComponent wrapIntoModel(
+            FloatArrayList[] verticesBuffer,
+            FloatArrayList[] textureCoordsBuffer,
+            FloatArrayList[] colourBuffer,
+            FloatArrayList alphaBlendVerticesBuffer,
+            FloatArrayList alphaBlendTextureCoordsBuffer,
+            FloatArrayList alphaBlendColourBuffer
+    ) {
         // calculate total number of vertices and texture coordinates of each face
         int verticesSize = 0;
         int textureCoordsSize = 0;
@@ -145,6 +172,9 @@ public class TerrainModelGenerator {
             textureCoordsSize += textureCoordsBuffer[i].size();
             coloursSize += colourBuffer[i].size();
         }
+        verticesSize += alphaBlendVerticesBuffer.size();
+        textureCoordsSize += alphaBlendTextureCoordsBuffer.size();
+        coloursSize += alphaBlendColourBuffer.size();
 
         // generate empty floatarraylists of that size
         var vertices = FloatArrayList.wrap(new float[verticesSize]);
@@ -156,6 +186,13 @@ public class TerrainModelGenerator {
 
         // put all the vertices and texture coordinates into the combined lists
         // addElements is a fast arraycopy because fastutil devs are geniuses
+
+        // alpha blended faces are put first
+        vertices.addElements(vertices.size(), alphaBlendVerticesBuffer.elements(), 0, alphaBlendVerticesBuffer.size());
+        textureCoords.addElements(textureCoords.size(), alphaBlendTextureCoordsBuffer.elements(), 0, alphaBlendTextureCoordsBuffer.size());
+        colours.addElements(colours.size(), alphaBlendColourBuffer.elements(), 0, alphaBlendColourBuffer.size());
+
+        // next add normal opaque faces, face by face
         for (int i = 0; i < CardinalDirection.COUNT; i++) {
             vertices.addElements(vertices.size(), verticesBuffer[i].elements(), 0, verticesBuffer[i].size());
             textureCoords.addElements(textureCoords.size(), textureCoordsBuffer[i].elements(), 0, textureCoordsBuffer[i].size());
@@ -165,8 +202,8 @@ public class TerrainModelGenerator {
         // calculate indices (working with arrays is difficult ok?)
         // index refers to the start position of any face list.
         int[] indices = new int[CardinalDirection.COUNT];
-        indices[0] = 0;
-        indices[1] = verticesBuffer[0].size() / 3;
+        indices[0] = alphaBlendVerticesBuffer.size() / 3; // first segment is reserved for alpha blended faces
+        indices[1] = verticesBuffer[0].size() / 3 + indices[0];
         indices[2] = verticesBuffer[1].size() / 3 + indices[1];
         indices[3] = verticesBuffer[2].size() / 3 + indices[2];
         indices[4] = verticesBuffer[3].size() / 3 + indices[3];
@@ -179,6 +216,13 @@ public class TerrainModelGenerator {
             colours.elements(),
             indices
         );
+    }
+
+    private static boolean isFacingSameBlockType(Chunk chunk, int faceIndex, int x, int y, int z, byte block) {
+        var obsBlockPos = new Vector3i(x, y, z).add(CardinalDirection.offsets[faceIndex]);
+        var obscuringBlock = chunk.getBlockSafe(obsBlockPos);
+
+        return obscuringBlock == block;
     }
 
     private static boolean isFaceVisible(Chunk chunk, int faceIndex, int x, int y, int z) {

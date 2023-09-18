@@ -5,8 +5,8 @@ import block.CardinalDirection;
 
 public class DecorBlockFace extends BlockFace {
 
-    public DecorBlockFace(Integer blockID, Integer direction) {
-        super(blockID, direction);
+    public DecorBlockFace(Integer blockID, Integer direction, Integer flags) {
+        super(blockID, direction, flags);
     }
 
     // left/right form one cross (no backface culling)
@@ -82,8 +82,6 @@ public class DecorBlockFace extends BlockFace {
         1f, 1f,
         0f, 1f
     };
-
-    public boolean isTransparent() { return true; }
 
     public float[] getVertices() {
         return switch (this.direction) {

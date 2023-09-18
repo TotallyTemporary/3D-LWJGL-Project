@@ -16,6 +16,9 @@ public class ChunkModelDataComponent extends Component {
     // the arrays above are "subdivided", so that they're ordered by face direction, going UP,LEFT,FRONT,BACK,RIGHT,DOWN. (CardinalDirection.java)
     // the array below contains the start of each such subdivision
     // Example: to render only UP faces, vertices start at positionIndices[0] and end at positionIndices[1].
+
+    // NOTE!!! vertices from 0 to positionsIndices[0] is reserved for alpha blended faces.
+    // TODO figure out storage for any number of these subdivisions
     public final int[]   positionsIndices;
 
     public ChunkModelDataComponent(float[] positions, float[] textureCoordinates, float[] light, int[] positionsIndices) {

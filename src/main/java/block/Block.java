@@ -19,14 +19,14 @@ public enum Block {
 
     INVALID  (1, 1, true, new BlockFace[]{ null, null, null, null, null, null }),
     AIR      (0, 0, false, new BlockFace[]{ null, null, null, null, null, null }),
-    GRASS    (2, 4, true, makeFaces(SquareBlockFace.class, new int[] { 0, 3, 3, 3, 3, 2 })),
+    GRASS    (2, 4, true, makeFaces(SquareBlockFace.class, new int[] { 0, 3, 3, 3, 3, 2 }, BlockFace.NO_FLAG)),
     STONE    (3, 16, true, cubeFaces(1)),
     DIRT     (4, 4, true, cubeFaces(2)),
     OAK_PLANK(5, 5, true, cubeFaces(4)),
     STONE_SLABS           (6, 6, true, cubeFaces(5)),
     CHISELLED_STONE_BRICKS(7, 7, true, cubeFaces(6)),
     BRICKS     (8, 8, true, cubeFaces(7)),
-    TNT        (9, 9, true, makeFaces(SquareBlockFace.class, new int[] { 10, 9, 9, 9, 9, 11 })),
+    TNT        (9, 9, true, makeFaces(SquareBlockFace.class, new int[] { 10, 9, 9, 9, 9, 11 }, BlockFace.NO_FLAG)),
     COBWEB     (11, 1, false, decorFaces(11)),
     ROSE       (12, 12, false, decorFaces(12)),
     DANDELION  (13, 13, false, decorFaces(13)),
@@ -36,7 +36,7 @@ public enum Block {
     BEDROCK    (17, 1, true, cubeFaces(17)),
     SAND       (18, 18, true, cubeFaces(18)),
     GRAVEL     (19, 19, true, cubeFaces(19)),
-    OAK_LOG    (20, 20, true, makeFaces(SquareBlockFace.class, new int[] { 21, 20, 20, 20, 20, 21 })),
+    OAK_LOG    (20, 20, true, makeFaces(SquareBlockFace.class, new int[] { 21, 20, 20, 20, 20, 21 }, BlockFace.NO_FLAG)),
     IRON_BLOCK (21, 21, true, cubeFaces(21)),
     GOLD_BLOCK (22, 22, true, cubeFaces(22)),
 
@@ -52,16 +52,16 @@ public enum Block {
     FERN(56, 1, false, decorFaces(56)),
 
     SPONGE      (48, 48, true, cubeFaces(48)),
-    GLASS       (49, 1, true, cubeFaces(49)),
+    GLASS       (49, 1, true, cubeFaces(49, BlockFace.TRANSPARENT)),
     DIAMOND_ORE (50, 50, true, cubeFaces(50)),
     REDSTONE_ORE(51, 51, true, cubeFaces(51)),
     // OAK_LEAVES_HQ(52, cubeFaces(52)), // texture pack png didn't have alpha anyway.
     OAK_LEAVES(53, 53, true, cubeFaces(53)),
     STONE_BRICKS (54, 54, true, cubeFaces(54)),
 
-    SNOWY_GRASS(66, 66, true, makeFaces(SquareBlockFace.class, new int[] { 66, 68, 68, 68, 68, 2 })),
+    SNOWY_GRASS(66, 66, true, makeFaces(SquareBlockFace.class, new int[] { 66, 68, 68, 68, 68, 2 }, BlockFace.NO_FLAG)),
 
-    CACTUS(69, 4, true, makeFaces(SquareBlockFace.class, new int[] { 69, 70, 70, 70, 70, 71 })),
+    CACTUS(69, 4, true, makeFaces(SquareBlockFace.class, new int[] { 69, 70, 70, 70, 70, 71 }, BlockFace.NO_FLAG)),
 
     WHEAT(88, 1, false, decorFaces(88)),
     WHEAT_1(89, 1, false, decorFaces(89)),
@@ -72,13 +72,13 @@ public enum Block {
     WHEAT_6(94, 1, false, decorFaces(94)),
     WHEAT_7(95, 88, false, decorFaces(95)),
 
-    BIRCH_LOG(117, 117, true, makeFaces(SquareBlockFace.class, new int[] { 21, 117, 117, 117, 117, 21 })),
+    BIRCH_LOG(117, 117, true, makeFaces(SquareBlockFace.class, new int[] { 21, 117, 117, 117, 117, 21 }, BlockFace.NO_FLAG)),
     BIRCH_LEAVES(118, 118, true, cubeFaces(53)),
 
-    PINE_LOG(116, 116, true, makeFaces(SquareBlockFace.class, new int[] { 21, 116, 116, 116, 116, 21 })),
+    PINE_LOG(116, 116, true, makeFaces(SquareBlockFace.class, new int[] { 21, 116, 116, 116, 116, 21 }, BlockFace.NO_FLAG)),
     PINE_LEAVES(187, 187, true, cubeFaces(53)),
 
-    JUNGLE_LOG(153, 153, true, makeFaces(SquareBlockFace.class, new int[] { 21, 153, 153, 153, 153, 21 })),
+    JUNGLE_LOG(153, 153, true, makeFaces(SquareBlockFace.class, new int[] { 21, 153, 153, 153, 153, 21 }, BlockFace.NO_FLAG)),
     JUNGLE_LEAVES(188, 188, true, cubeFaces(53)),
 
     CARROT(200, 1, false, decorFaces(200)),
@@ -89,8 +89,9 @@ public enum Block {
     POTATO(217, 1, false, decorFaces(200)),
     POTATO_1(218, 1, false, decorFaces(201)),
     POTATO_2(219, 1, false, decorFaces(202)),
-    POTATO_3(220, 217, false, decorFaces(204));
+    POTATO_3(220, 217, false, decorFaces(204)),
 
+    WATER(205, 1, false, cubeFaces(205, BlockFace.TRANSPARENT | BlockFace.ALPHA_BLEND));
 
     // set the `isTransparent` -flag.
     static {
@@ -183,11 +184,27 @@ public enum Block {
     }
 
     private static BlockFace[] cubeFaces(int indices) {
-        return makeFaces(SquareBlockFace.class, new int[] { indices, indices, indices, indices, indices, indices });
+        return cubeFaces(indices, BlockFace.NO_FLAG);
+    }
+
+    private static BlockFace[] cubeFaces(int indices, int flags) {
+        return makeFaces(
+            SquareBlockFace.class,
+            new int[] { indices, indices, indices, indices, indices, indices },
+            flags
+        );
     }
 
     private static BlockFace[] decorFaces(int indices) {
-        return makeFaces(DecorBlockFace.class, new int[] { indices, indices, indices, indices, indices, indices });
+        return decorFaces(indices, BlockFace.TRANSPARENT);
+    }
+
+    private static BlockFace[] decorFaces(int indices, int flags) {
+        return makeFaces(
+            DecorBlockFace.class,
+            new int[] { indices, indices, indices, indices, indices, indices },
+            flags
+        );
     }
 
     /* Given a block face class and the face indices, returns an array of instantiated block faces.
@@ -199,12 +216,12 @@ public enum Block {
     * with
     * makeFaces(DefaultBlockFace.class, new int[]{1, 1, ...});
     * */
-    private static BlockFace[] makeFaces(Class<? extends BlockFace> clazz, int[] indices) {
+    private static BlockFace[] makeFaces(Class<? extends BlockFace> clazz, int[] indices, int[] flags) {
         try {
-            var constructor = clazz.getDeclaredConstructor(Integer.class, Integer.class);
+            var constructor = clazz.getDeclaredConstructor(Integer.class, Integer.class, Integer.class);
             var faces = new BlockFace[6];
             for (int i = 0; i < 6; i++) {
-                faces[i] = constructor.newInstance(indices[i], i);
+                faces[i] = constructor.newInstance(indices[i], i, flags[i]);
             }
             return faces;
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -212,6 +229,10 @@ public enum Block {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static BlockFace[] makeFaces(Class<? extends BlockFace> clazz, int[] indices, int flags) {
+        return makeFaces(clazz, indices, new int[] { flags, flags, flags, flags, flags, flags });
     }
 
 }

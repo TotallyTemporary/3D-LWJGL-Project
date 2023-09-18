@@ -6,8 +6,8 @@ import block.CardinalDirection;
 public class SquareBlockFace extends BlockFace {
 
     /* This class represents a cubic block. It has flat rectangles for faces in all directions. */
-    public SquareBlockFace(Integer blockID, Integer direction) {
-        super(blockID, direction);
+    public SquareBlockFace(Integer blockID, Integer direction, Integer flags) {
+        super(blockID, direction, flags);
     }
 
     /* thank you Jack Mott.
@@ -120,8 +120,6 @@ public class SquareBlockFace extends BlockFace {
         0f, 0f,
         0f, 1f
     };
-
-    public boolean isTransparent() { return false; }
 
     public float[] getVertices() {
         return switch (this.direction) {

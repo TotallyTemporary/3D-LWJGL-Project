@@ -44,6 +44,10 @@ public class Shader {
         GL30.glUniform1f(id, value);
     }
 
+    public void setBoolean(String name, boolean value) {
+        setInt(name, value ? 1 : 0);
+    }
+
     public Shader addUniform(String name) {
         int id = GL30.glGetUniformLocation(program, name);
         uniforms.put(name, id);

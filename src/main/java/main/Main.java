@@ -70,7 +70,8 @@ public class Main {
         )
         .addUniform("transformationMatrix")
         .addUniform("projectionMatrix")
-        .addUniform("viewMatrix");
+        .addUniform("viewMatrix")
+        .addUniform("doCullTransparent");
 
         var terrainTexture = new ArrayTexture(
                 "src/main/resources/blocks_array.png",
