@@ -13,18 +13,14 @@ public class JungleTree extends Structure {
     private static final int LEAVES_HEIGHT = 3;
 
     public void make(Chunk chunk, Vector3i position, Supplier<Float> roll) {
+        int treeTrunkLength = (int) (12 + roll.get() * 4); // 12-15 blocks
+
         if (chunk.getBlockSafe(position.x, position.y + 1, position.z) != Block.AIR.getID()) {
             return;
         }
 
-        int x = position.x;
-        int y = position.y;
-        int z = position.z;
-
-        int treeTrunkLength = (int) (12 + roll.get() * 4); // 12-15 blocks
-
-        makeLeaves(chunk, x, y+1, z, treeTrunkLength);
-        makeTrunk(chunk, x, y+1, z, treeTrunkLength);
+        makeLeaves(chunk, position.x, position.y+1, position.z, treeTrunkLength);
+        makeTrunk(chunk, position.x, position.y+1, position.z, treeTrunkLength);
     }
 
     private void makeTrunk(Chunk chunk, int x, int y, int z, int trunkLength) {
