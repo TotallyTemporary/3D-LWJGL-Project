@@ -68,7 +68,6 @@ public class LightMapGenerator {
 
         for (Chunk neighbor : spoiledChunks) {
             if (!neighbor.spoiled) {
-                System.out.println("spoiled");
                 neighbor.spoiled = true;
             }
         }

@@ -34,7 +34,7 @@ public class TerrainGenerator {
     private static final float LOWEST_OCTAVE_SCALE = 0.008f;
     private static final int OCTAVES = 3;
 
-    private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+    private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
     static { System.out.println("TerrainGenerator running"); }
 
     public static void addChunks(Chunk chunk) {
