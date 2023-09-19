@@ -12,6 +12,10 @@ public class PineTree extends Structure {
     private static final float STEEPNESS = 1.7f;
 
     public void make(Chunk chunk, Vector3i position, Supplier<Float> roll) {
+        if (chunk.getBlockSafe(position.x, position.y + 1, position.z) != Block.AIR.getID()) {
+            return;
+        }
+
         int x = position.x;
         int y = position.y;
         int z = position.z;

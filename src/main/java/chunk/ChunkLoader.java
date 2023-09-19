@@ -15,8 +15,8 @@ import java.util.HashMap;
 public class ChunkLoader {
 
     // if these variables are to be user controlled, they should have 2-3 chunks added to them, to enable the player to always be in a fully loaded chunk.
-    private static final int HORIZONTAL_LOAD_RADIUS = 12;
-    private static final int VERTICAL_LOAD_RADIUS = 6;
+    private static final int HORIZONTAL_LOAD_RADIUS = 8;
+    private static final int VERTICAL_LOAD_RADIUS = 4;
 
     // a chunk within this grid distance of the player's chunk will instantly get updated
     private static final int INSTANT_LOAD_DISTANCE = 2;

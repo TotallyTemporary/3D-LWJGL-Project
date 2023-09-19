@@ -20,10 +20,29 @@ public class TerrainGenerator {
 
     private static final int TERRAIN_SEED = 1235;
 
+    private static final int WATER_LEVEL = 75;
+
     private static final Object noiseLock = new Object();
 
     private static final Vector3f CAVE_SCALE = new Vector3f(0.025f, 0.035f, 0.025f);
     private static final float CAVE_CUTOFF = 0.70f;
+
+    private static final float RIVER_SCALE = 1f / 3_000;
+    private static final float RIVER_WARP_SCALE = 0.005f;
+    private static final float RIVER_WARP_INTENSITY = 0.009f;
+    private static final float RIVER_SCALE_SCALE = 1f / 5_000; // scale for the noise that determines river scale (between smallest and largest river)
+
+    // smallest river
+    private static final float SMALL_RIVER_BOTTOM_SIZE = 0.20f, // what percentage of the graph should be full river bottom
+                               SMALL_RIVER_STEEPNESS = 0.90f,
+                               SMALL_RIVER_LEVEL = WATER_LEVEL - 3,
+                               SMALL_RIVER_CUTOFF = 0.02f;
+
+    // largest river
+    private static final float LARGE_RIVER_BOTTOM_SIZE = 0.10f,
+                               LARGE_RIVER_STEEPNESS = 0.80f,
+                               LARGE_RIVER_LEVEL = WATER_LEVEL - 10,
+                               LARGE_RIVER_CUTOFF = 0.05f;
 
     private static final float BIOME_SMOOTHING = 1.5f; // 1f=biomes "pull" each other really far away, 2f=biome changes too drastic
     private static final float BIOME_SCALE = 0.0005f;
@@ -57,9 +76,16 @@ public class TerrainGenerator {
 
     private static void generateHeightAndBiomemap(Chunk chunk, int[][] heightMap, Biome[][] biomeMap) {
         // calculate biomemap and heightmap
-        NoiseSource heightMapRandom, humidityRandom, temperatureRandom, biomeWarpX, biomeWarpZ;
+        NoiseSource
+                heightMapRandom,
+                riverRandom, riverWarpXRandom, riverWarpZRandom, riverScaleRandom,
+                humidityRandom, temperatureRandom, biomeWarpX, biomeWarpZ;
         synchronized (noiseLock) {
             heightMapRandom = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 90485924).build();
+            riverRandom = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 189234).build();
+            riverWarpXRandom = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 92838059).build();
+            riverWarpZRandom = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 918340).build();
+            riverScaleRandom = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 1928387).build();
             humidityRandom = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 4909054).build();
             temperatureRandom = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 1345090).build();
             biomeWarpX = FastSimplexNoiseGenerator.newBuilder().setSeed(TERRAIN_SEED ^ 49115345).build();
@@ -133,6 +159,28 @@ public class TerrainGenerator {
 
             float height = baseline + sumHeight;
 
+            // get river scale here
+            float riverScale = (float) riverScaleRandom.evaluateNoise(worldPos.x * RIVER_SCALE_SCALE, worldPos.z * RIVER_SCALE_SCALE);
+            riverScale = (riverScale + 1) / 2f; // between 0 and 1
+
+            // interpolate between small and large river
+            float riverBottomSize = (1 - riverScale) * SMALL_RIVER_BOTTOM_SIZE + riverScale * LARGE_RIVER_BOTTOM_SIZE;
+            float riverSteepness  = (1 - riverScale) * SMALL_RIVER_STEEPNESS + riverScale * LARGE_RIVER_STEEPNESS;
+            float riverLevel = (1 - riverScale) * SMALL_RIVER_LEVEL + riverScale * LARGE_RIVER_LEVEL;
+            float riverCutoff = (1 - riverScale) * SMALL_RIVER_CUTOFF + riverScale * LARGE_RIVER_CUTOFF;
+
+            float riverWarpX = RIVER_WARP_INTENSITY * (float) riverWarpXRandom.evaluateNoise(worldPos.x * RIVER_WARP_SCALE, worldPos.z * RIVER_WARP_SCALE);
+            float riverWarpZ = RIVER_WARP_INTENSITY * (float) riverWarpZRandom.evaluateNoise(worldPos.x * RIVER_WARP_SCALE, worldPos.z * RIVER_WARP_SCALE);
+            float riverNoise = (float) riverRandom.evaluateNoise(
+                    riverWarpX + worldPos.x * RIVER_SCALE,
+                    riverWarpZ + worldPos.z * RIVER_SCALE);
+            riverNoise = Math.abs(riverNoise); // ridge noise
+            riverNoise = Math.min(riverNoise, riverCutoff) / riverCutoff; // only take peaks
+            riverNoise = 1 - riverNoise; // invert
+            riverNoise = Math.min(riverNoise * (1 + riverBottomSize), 1); // give river a smooth bottom
+            riverNoise = (float) Math.pow(riverNoise, riverSteepness); // make river cut less linear
+            height = height * (1 - riverNoise) + riverLevel * riverNoise; // mix between river level and normal height
+
             heightMap[chunkX][chunkZ] = (int) height;
         }
     }
@@ -187,7 +235,11 @@ public class TerrainGenerator {
             biomeRandom.setSeed(TERRAIN_SEED ^ (worldPos.x * 132904L + worldPos.y * 12205L * worldPos.z * 390408L));
 
             if (depth < 0) {
-                block = Block.AIR.getID();
+                if (worldPos.y < WATER_LEVEL) {
+                    block = Block.WATER.getID();
+                } else {
+                    block = Block.AIR.getID();
+                }
             } else {
                 if (isCave(worldPos, caveGenerator)) {
                     block = Block.AIR.getID();

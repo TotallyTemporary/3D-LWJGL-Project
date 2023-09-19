@@ -13,6 +13,10 @@ public class JungleTree extends Structure {
     private static final int LEAVES_HEIGHT = 3;
 
     public void make(Chunk chunk, Vector3i position, Supplier<Float> roll) {
+        if (chunk.getBlockSafe(position.x, position.y + 1, position.z) != Block.AIR.getID()) {
+            return;
+        }
+
         int x = position.x;
         int y = position.y;
         int z = position.z;
