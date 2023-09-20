@@ -27,7 +27,7 @@ public class TerrainGenerator {
     private static final Vector3f CAVE_SCALE = new Vector3f(0.025f, 0.035f, 0.025f);
     private static final float CAVE_CUTOFF = 0.70f;
 
-    private static final float RIVER_SCALE = 1f / 3_000;
+    private static final float RIVER_SCALE = 1f / 1_000;
     private static final float RIVER_WARP_SCALE = 0.005f;
     private static final float RIVER_WARP_INTENSITY = 0.009f;
     private static final float RIVER_SCALE_SCALE = 1f / 5_000; // scale for the noise that determines river scale (between smallest and largest river)
@@ -36,13 +36,13 @@ public class TerrainGenerator {
     private static final float SMALL_RIVER_BOTTOM_SIZE = 0.20f, // what percentage of the graph should be full river bottom
                                SMALL_RIVER_STEEPNESS = 0.90f,
                                SMALL_RIVER_LEVEL = WATER_LEVEL - 3,
-                               SMALL_RIVER_CUTOFF = 0.02f;
+                               SMALL_RIVER_CUTOFF = 0.04f;
 
     // largest river
     private static final float LARGE_RIVER_BOTTOM_SIZE = 0.10f,
                                LARGE_RIVER_STEEPNESS = 0.80f,
                                LARGE_RIVER_LEVEL = WATER_LEVEL - 10,
-                               LARGE_RIVER_CUTOFF = 0.05f;
+                               LARGE_RIVER_CUTOFF = 0.08f;
 
     private static final float BIOME_SMOOTHING = 1.5f; // 1f=biomes "pull" each other really far away, 2f=biome changes too drastic
     private static final float BIOME_SCALE = 0.0005f;
