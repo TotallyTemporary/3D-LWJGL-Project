@@ -16,7 +16,7 @@ public class PhysicsObjectComponent extends Component {
     public static final float GRAVITY = -25f,
                               DAMPING = 0.98f,
 
-                              SMALL_OFFSET = 0.001f,
+                              SMALL_OFFSET = 1f / 2_000,
                               MAX_TOTAL_DISTANCE = 100f;
 
     public Vector3f
@@ -110,9 +110,13 @@ public class PhysicsObjectComponent extends Component {
         var box = new AABB(new Vector3f(pos.x, pos.y+deltaPos.y, pos.z),
                                         width, height, depth);
 
+        grounded = false;
+
         // get the 4 bottom points of our bounding box
         for (var point : box.getTestPoints(CardinalDirection.DOWN)) {
             if (Block.getBlock(ChunkLoader.getBlockAt(point)).isSolid()) {
+                grounded = true; // TODO this sometimes fails even if we're on the ground :/
+
                 // if y is 2.75 and we're inside the block, we want delta to be 0.25 + small offset.
                 var delta = 1 - frac(point.y) + SMALL_OFFSET;
                 // we get the max of these deltas, since if 3 of our corners have no obstruction but 1 does, we obey the 1 that does.
@@ -131,7 +135,6 @@ public class PhysicsObjectComponent extends Component {
 
         pos.y += (deltaPos.y + max + min);
 
-        grounded = (max != 0); // if we have to be moved up due to hitting something on the bottom, we're grounded.
         if (min != 0 || max != 0) {
             velocity.y = 0;
         }

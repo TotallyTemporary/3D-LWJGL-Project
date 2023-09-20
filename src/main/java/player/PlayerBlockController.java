@@ -110,7 +110,7 @@ public class PlayerBlockController extends Component {
 
         if (beforeHitLocation == null) return;
         // TODO this still spoils the chunk
-        ChunkLoader.setBlockAt(beforeHitLocation, Block.WATER.getID());
+        ChunkLoader.setBlockAt(beforeHitLocation, Block.COBBLESTONE.getID());
         if (isInsideBlock(entity)) {
             ChunkLoader.setBlockAt(beforeHitLocation, Block.AIR.getID());
         }

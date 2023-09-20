@@ -1,5 +1,7 @@
 package main;
 
+import ai.BasicAIComponent;
+import ai.SpinComponent;
 import block.Block;
 import chunk.*;
 import entity.*;
@@ -173,9 +175,12 @@ public class Main {
         Entity maxwell = new Entity();
         EntityManager.addComponent(maxwell, maxwellModel);
         EntityManager.addComponent(maxwell, new TransformationComponent(
-                new Vector3f(playerStartPosition),
+                playerStartPosition.add(new Vector3f(0, 5, 0), new Vector3f()),
                 new Vector3f(0, 0, 0),
                 new Vector3f(1f / 16, 1f / 16, 1f / 16)));
+        EntityManager.addComponent(maxwell, new BasicAIComponent());
+        EntityManager.addComponent(maxwell, new PhysicsObjectComponent(new Vector3f(1.25f, 1.25f, 1.25f)));
+        EntityManager.addComponent(maxwell, new SpinComponent());
 
         var renderer = new Renderer();
 
@@ -232,11 +237,14 @@ public class Main {
             EntityManager.updateComponents(PlayerMovementController.class);
             EntityManager.updateComponents(PlayerBlockController.class);
             EntityManager.updateComponents(PlayerMiscController.class);
+            EntityManager.updateComponents(BasicAIComponent.class);
 
             EntityManager.updateComponents(ItemComponent.class);
 
             EntityManager.updateComponents(PhysicsObjectComponent.class);
             EntityManager.updateComponents(TransformationComponent.class);
+
+            EntityManager.updateComponents(SpinComponent.class);
 
             // end comp update
 
