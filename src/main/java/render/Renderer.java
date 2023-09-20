@@ -3,6 +3,7 @@ package render;
 import chunk.ChunkModelComponent;
 import chunk.ChunkRenderer;
 import entity.*;
+import io.MultitextureModelComponent;
 import item.ItemModelComponent;
 import org.lwjgl.opengl.GL30;
 import player.BlockBreakModelComponent;
@@ -38,6 +39,7 @@ public class Renderer {
         // first render terrain and items
         vertexTally += renderChunks(player);
         vertexTally += render(player, ItemModelComponent.class);
+        vertexTally += renderMultitexture(player);
 
         vertexTally += renderSelections(player);
         vertexTally += render(player, BlockBreakModelComponent.class);
@@ -59,6 +61,21 @@ public class Renderer {
 
         var chunks = EntityManager.getComponents(ChunkModelComponent.class);
         return ChunkRenderer.render(chunks, viewMatrix, projectionMatrix, player.getEyePosition());
+    }
+
+    private int renderMultitexture(Player player) {
+        var viewMatrix = player.getViewMatrix();
+        var projectionMatrix = player.getProjectionMatrix();
+
+        GL30.glEnable(GL30.GL_BLEND);
+        GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+
+        var multitexturedModels = EntityManager.getComponents(MultitextureModelComponent.class);
+        int vertexTally = MultitextureModelRenderer.render(multitexturedModels, viewMatrix, projectionMatrix);
+
+        GL30.glDisable(GL30.GL_BLEND);
+
+        return vertexTally;
     }
 
     private int renderSelections(Player player) {

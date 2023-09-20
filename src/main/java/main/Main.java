@@ -3,6 +3,7 @@ package main;
 import block.Block;
 import chunk.*;
 import entity.*;
+import io.OBJFileParser;
 import item.ItemComponent;
 import item.ItemModel;
 import item.ItemThumbnailRenderer;
@@ -20,6 +21,8 @@ import render.*;
 import shader.Shader;
 import ui.UIArrayModelComponent;
 import ui.UIModelComponent;
+
+import java.nio.file.Path;
 
 public class Main {
 
@@ -120,6 +123,16 @@ public class Main {
         UIModelComponent.setUISettings(display);
         UIArrayModelComponent.createUIModels(display);
 
+        var mobShader = new Shader(
+                "src/main/resources/shaders/mobile_vertex.glsl",
+                "src/main/resources/shaders/mobile_fragment.glsl"
+        )
+        .addUniform("transformationMatrix")
+        .addUniform("projectionMatrix")
+        .addUniform("viewMatrix");
+
+        OBJFileParser.setShader(mobShader);
+
         var crosshair = new Entity();
         EntityManager.addComponent(crosshair, new UIArrayModelComponent(15));
         EntityManager.addComponent(crosshair, new TransformationComponent(new Vector3f(), new Vector3f(), new Vector3f(0.05f, 0.05f, 0.05f)));
@@ -129,7 +142,7 @@ public class Main {
         EntityManager.addComponent(loadingScreenIcon, new UIModelComponent(grassIcon));
         EntityManager.addComponent(loadingScreenIcon, new TransformationComponent(new Vector3f(), new Vector3f(), new Vector3f(0.25f, 0.25f, 0.25f)));
 
-        var playerStartPosition = new Vector3f(1000f, 120f, 1000f);
+        var playerStartPosition = new Vector3f(1000f, 105f, 1000f);
 
         var player = new Player(
                 (float) Math.toRadians(60f),
@@ -154,6 +167,15 @@ public class Main {
 
         Keyboard.init(display.getWindow());
         Mouse.init(display);
+
+        // create maxwell
+        var maxwellModel = OBJFileParser.loadModel(Path.of("src/main/resources/mobs/maxwell/maxwell.obj"));
+        Entity maxwell = new Entity();
+        EntityManager.addComponent(maxwell, maxwellModel);
+        EntityManager.addComponent(maxwell, new TransformationComponent(
+                new Vector3f(playerStartPosition),
+                new Vector3f(0, 0, 0),
+                new Vector3f(1f / 16, 1f / 16, 1f / 16)));
 
         var renderer = new Renderer();
 
