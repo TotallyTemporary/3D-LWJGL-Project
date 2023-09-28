@@ -17,12 +17,33 @@ public class CardinalDirection {
             DOWN = 5;
 
     public static final Vector3i[] offsets = {
-            new Vector3i(0,  +1,   0),
-            new Vector3i(-1,  0,   0),
-            new Vector3i(0,   0,  -1),
-            new Vector3i(0,   0,   1),
-            new Vector3i(+1,  0,   0),
-            new Vector3i(0,  -1,   0),
+        new Vector3i(0,  +1,   0),
+        new Vector3i(-1,  0,   0),
+        new Vector3i(0,   0,  -1),
+        new Vector3i(0,   0,  +1),
+        new Vector3i(+1,  0,   0),
+        new Vector3i(0,  -1,   0),
+    };
+
+    // TODO NOTE the tangents and bitangents are only used for world generation. They were hand-chosen until it looked fine.
+    // please don't read further into these values.
+
+    public static final Vector3i[] tangents = {
+        new Vector3i(0,   0,  +1),
+        null,
+        null,
+        new Vector3i(+1,  0,   0),
+        new Vector3i(0,   0,   +1),
+        null,
+    };
+
+    public static final Vector3i[] biTangents = {
+        new Vector3i(+1,  0,   0),
+        null,
+        null,
+        new Vector3i(0,  +1,   0),
+        new Vector3i(0,  +1,   0),
+        null,
     };
 
     public static int opposite(int dir) {
