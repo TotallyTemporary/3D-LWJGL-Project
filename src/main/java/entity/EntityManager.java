@@ -1,11 +1,10 @@
 package entity;
 
-import item.ItemComponent;
-
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * This class should be used statically. It handles relationships between entities and components.
@@ -13,26 +12,40 @@ import java.util.Map;
  */
 public class EntityManager {
     private static HashMap<Class<? extends Component>, HashMap<Entity, Component>> map = new HashMap<>();
-    private static ArrayList<Map.Entry<Entity, Class<? extends Component>>> toBeRemoved = new ArrayList<>();
+    private static ConcurrentLinkedQueue<Map.Entry<Entity, Class<? extends Component>>> toBeRemovedComponents = new ConcurrentLinkedQueue<>();
+    private static ConcurrentLinkedQueue<Entity> toBeRemovedEntities = new ConcurrentLinkedQueue<>();
 
     /** This updates the state of the EntityManager.
      * it removes components that have been marked as toBeRemoved. */
     public static synchronized void update() {
-        // remove components that must be removed.
-        var it = toBeRemoved.iterator();
+        // remove components that should get removed
+        var it = toBeRemovedComponents.iterator();
         while (it.hasNext()) {
             var entry = it.next();
-            var comp = entry.getValue();
             Entity entity = entry.getKey();
-            var classMap = map.get(comp);
+            var classMap = map.get(entry.getValue());
             if (classMap != null) {
                 if (classMap.containsKey(entity)) {
                     classMap.get(entity).destroy(entity);
                     classMap.remove(entity);
                 }
             }
-            it.remove();
         }
+        toBeRemovedComponents.clear();
+
+        // remove entities that should get removed
+        var jt = toBeRemovedEntities.iterator();
+        while (jt.hasNext()) {
+            Entity entity = jt.next();
+
+            var kt = map.values().iterator();
+            while (kt.hasNext()) {
+                var classMap = kt.next();
+                classMap.remove(entity);
+            }
+        }
+
+        toBeRemovedEntities.clear();
     }
 
     public static synchronized void addComponent(Entity entity, Component component) {
@@ -46,8 +59,8 @@ public class EntityManager {
         classMap.put(entity, component);
     }
 
-    public static synchronized void removeComponentSafe(Entity entity, Class<? extends Component> clazz) {
-        toBeRemoved.add(new AbstractMap.SimpleEntry(entity, clazz));
+    public static void removeComponentSafe(Entity entity, Class<? extends Component> clazz) {
+        toBeRemovedComponents.add(new AbstractMap.SimpleEntry(entity, clazz));
     }
 
     /** Attempts to remove a component from an entity. NOTE: Do not call from entity update. */
@@ -71,8 +84,8 @@ public class EntityManager {
         });
     }
 
-    public static synchronized void removeEntitySafe(Entity entity) {
-        map.keySet().forEach(clazz -> removeComponentSafe(entity, clazz));
+    public static void removeEntitySafe(Entity entity) {
+        toBeRemovedEntities.add(entity);
     }
 
     public static synchronized boolean hasComponent(Entity entity, Class<? extends Component> clazz) {

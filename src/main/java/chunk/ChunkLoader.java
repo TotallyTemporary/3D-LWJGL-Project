@@ -266,7 +266,7 @@ public class ChunkLoader {
 
     private static void unloadChunk(Chunk chunk) {
         if (chunk.getStatus().working) return; // don't want to unload a chunk that is queued somewhere.
-        EntityManager.removeEntity(chunk);
+        EntityManager.removeEntitySafe(chunk);
         chunk.setStatus(Chunk.Status.NONE);
     }
 }
