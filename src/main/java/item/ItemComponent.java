@@ -67,4 +67,6 @@ public class ItemComponent extends Component {
         return actualRotation;
     }
      */
+
+    @Override public void destroy(Entity entity) {}
 }

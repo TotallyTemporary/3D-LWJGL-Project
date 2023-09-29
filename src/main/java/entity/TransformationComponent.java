@@ -68,4 +68,7 @@ public class TransformationComponent extends Component {
     public Matrix4f getTransformationMatrix() {
         return transformationMatrix;
     }
+
+    @Override
+    public void destroy(Entity entity) {}
 }

@@ -24,4 +24,7 @@ public class TerrainMapDataComponent extends Component {
 
     @Override
     public void apply(Entity entity) {}
+
+    @Override
+    public void destroy(Entity entity) {}
 }

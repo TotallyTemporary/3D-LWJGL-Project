@@ -217,5 +217,6 @@ public class PhysicsObjectComponent extends Component {
         return grounded;
     }
 
-
+    @Override
+    public void destroy(Entity entity) {}
 }

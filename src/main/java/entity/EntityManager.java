@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class EntityManager {
     private static HashMap<Class<? extends Component>, HashMap<Entity, Component>> map = new HashMap<>();
-    private static ArrayList<Map.Entry<Entity, Component>> toBeRemoved = new ArrayList<>();
+    private static ArrayList<Map.Entry<Entity, Class<? extends Component>>> toBeRemoved = new ArrayList<>();
 
     /** This updates the state of the EntityManager.
      * it removes components that have been marked as toBeRemoved. */
@@ -22,9 +22,14 @@ public class EntityManager {
         var it = toBeRemoved.iterator();
         while (it.hasNext()) {
             var entry = it.next();
-            var classMap = map.get(entry.getValue());
+            var comp = entry.getValue();
+            Entity entity = entry.getKey();
+            var classMap = map.get(comp);
             if (classMap != null) {
-                classMap.remove(entry.getKey());
+                if (classMap.containsKey(entity)) {
+                    classMap.get(entity).destroy(entity);
+                    classMap.remove(entity);
+                }
             }
             it.remove();
         }
@@ -49,12 +54,21 @@ public class EntityManager {
     public static synchronized <T extends Component> T removeComponent(Entity entity, Class<T> clazz) {
         var classMap = map.get(clazz);
         if (classMap == null) return null;
+        if (classMap.containsKey(entity)) {
+            classMap.get(entity).destroy(entity);
+        }
+
         return (T) classMap.remove(entity);
     }
 
     /** Attemps to remove all components associated with an entity. NOTE: Do not call from entity update. */
     public static synchronized void removeEntity(Entity entity) {
-        map.forEach((_x, value) -> value.remove(entity));
+        map.forEach((component, classMap) -> {
+            if (classMap.containsKey(entity)) {
+                classMap.get(entity).destroy(entity);
+                classMap.remove(entity);
+            }
+        });
     }
 
     public static synchronized void removeEntitySafe(Entity entity) {

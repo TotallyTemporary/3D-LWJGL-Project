@@ -74,6 +74,9 @@ public class BasicAIComponent extends Component {
 
     }
 
+    @Override
+    public void destroy(Entity entity) {}
+
     private void jump(PhysicsObjectComponent physics) {
         if (physics.isGrounded()) {
             physics.velocity.y += jumpSpeed;

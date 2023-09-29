@@ -26,4 +26,7 @@ public class SpinComponent extends Component {
         Vector3f delta = speed.mul(Timer.getFrametimeSeconds(), new Vector3f());
         transform.setRotation(delta.add(rotation));
     }
+
+    @Override
+    public void destroy(Entity entity) {}
 }

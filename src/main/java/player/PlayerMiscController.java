@@ -45,4 +45,7 @@ public class PlayerMiscController extends Component {
             }
         }
     }
+
+    @Override
+    public void destroy(Entity entity) {}
 }

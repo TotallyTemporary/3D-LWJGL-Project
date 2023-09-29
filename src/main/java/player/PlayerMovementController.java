@@ -67,4 +67,8 @@ public class PlayerMovementController extends Component {
         if (comb.equals(0, 0, 0)) return comb;
         return comb.normalize().mul(speed);
     }
+
+    @Override
+    public void destroy(Entity entity) {}
+
 }

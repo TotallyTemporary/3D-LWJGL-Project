@@ -148,4 +148,7 @@ public class PlayerBlockController extends Component {
 
         return false;
     }
+
+    @Override
+    public void destroy(Entity entity) {}
 }

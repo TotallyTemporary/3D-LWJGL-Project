@@ -15,6 +15,10 @@ public class ModelComponent extends Component {
 
     @Override public void apply(Entity entity) {}
 
+    @Override public void destroy(Entity entity) {
+        model.destroy();
+    }
+
     public Model getModel() {
         return model;
     }

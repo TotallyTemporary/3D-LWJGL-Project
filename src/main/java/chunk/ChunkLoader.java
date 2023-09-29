@@ -15,8 +15,8 @@ import java.util.HashMap;
 public class ChunkLoader {
 
     // if these variables are to be user controlled, they should have 2-3 chunks added to them, to enable the player to always be in a fully loaded chunk.
-    private static final int HORIZONTAL_LOAD_RADIUS = 8;
-    private static final int VERTICAL_LOAD_RADIUS = 4;
+    private static final int HORIZONTAL_LOAD_RADIUS = 14;
+    private static final int VERTICAL_LOAD_RADIUS = 8;
 
     // a chunk within this grid distance of the player's chunk will instantly get updated
     private static final int INSTANT_LOAD_DISTANCE = 2;
@@ -263,21 +263,7 @@ public class ChunkLoader {
 
     private static void unloadChunk(Chunk chunk) {
         if (chunk.getStatus().working) return; // don't want to unload a chunk that is queued somewhere.
-
-        // remove components associated with this chunk
-        var modelComp = EntityManager.removeComponent(chunk, ChunkModelComponent.class);
-        EntityManager.removeComponent(chunk, TerrainMapDataComponent.class);
-        EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
-        EntityManager.removeComponent(chunk, TransformationComponent.class);
-
-        // unload the model of the chunk
-        if (modelComp != null) {
-            modelComp.getModel().destroy();
-        }
-
-        // this just prevents log spam
-        if (chunk.getStatus() != Chunk.Status.NONE) {
-            chunk.setStatus(Chunk.Status.NONE);
-        }
+        EntityManager.removeEntity(chunk);
+        chunk.setStatus(Chunk.Status.NONE);
     }
 }

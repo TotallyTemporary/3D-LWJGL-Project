@@ -27,6 +27,9 @@ public class PlayerInventoryController extends Component {
 
     }
 
+    @Override
+    public void destroy(Entity entity) {}
+
     public boolean addItem(int itemID) {
         /** Tries to add an item to our hotbar. Returns true if successful, false if no space. */
         for (int i = 0; i < STACKS_COUNT; i++) {
