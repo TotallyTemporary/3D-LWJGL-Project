@@ -107,6 +107,9 @@ public class ChunkLoader {
     }
 
     public static void updateNow(Chunk chunk) {
+        // unload current model
+        unloadChunk(chunk);
+
         // update lightmap
         chunk.setStatus(Chunk.Status.LIGHTS_GENERATING);
         LightMapGenerator.loadChunk(chunk);

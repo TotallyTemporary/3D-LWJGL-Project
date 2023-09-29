@@ -24,10 +24,14 @@ public class Chunk extends Entity {
     }
 
     public static Vector3i worldPosToChunkPos(Vector3i pos) {
+        return worldPosToChunkPos(pos.x, pos.y, pos.z);
+    }
+
+    public static Vector3i worldPosToChunkPos(int x, int y, int z) {
         return new Vector3i(
-            pos.x >> SIZE_BITS,
-            pos.y >> SIZE_BITS,
-            pos.z >> SIZE_BITS
+            x >> SIZE_BITS,
+            y >> SIZE_BITS,
+            z >> SIZE_BITS
         );
     }
 
@@ -36,18 +40,26 @@ public class Chunk extends Entity {
     }
 
     public static Vector3i worldPosToBlockPos(Vector3i pos) {
+        return worldPosToBlockPos(pos.x, pos.y, pos.z);
+    }
+
+    public static Vector3i worldPosToBlockPos(int x, int y, int z) {
         return new Vector3i(
-                pos.x & (SIZE-1),
-                pos.y & (SIZE-1),
-                pos.z & (SIZE-1)
+            x & (SIZE-1),
+            y & (SIZE-1),
+            z & (SIZE-1)
         );
     }
 
     public static Vector3i blockPosToWorldPos(Vector3i pos, Chunk chunk) {
+        return blockPosToWorldPos(pos.x, pos.y, pos.z, chunk);
+    }
+
+    public static Vector3i blockPosToWorldPos(int x, int y, int z, Chunk chunk) {
         return new Vector3i(
-            pos.x + chunk.getChunkGridPos().x * SIZE,
-            pos.y + chunk.getChunkGridPos().y * SIZE,
-            pos.z + chunk.getChunkGridPos().z * SIZE
+            x + chunk.getChunkGridPos().x * SIZE,
+            y + chunk.getChunkGridPos().y * SIZE,
+            z + chunk.getChunkGridPos().z * SIZE
         );
     }
 
@@ -141,7 +153,7 @@ public class Chunk extends Entity {
             return this.getColour(x, y, z);
         }
 
-        var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
+        var worldPos = Chunk.blockPosToWorldPos(x, y, z, this);
         var chunkPos = Chunk.worldPosToChunkPos(worldPos);
         try {
             int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkGridPos));
@@ -204,7 +216,7 @@ public class Chunk extends Entity {
             return this.getBlock(x, y, z);
         }
 
-        var worldPos = Chunk.blockPosToWorldPos(new Vector3i(x, y, z), this);
+        var worldPos = Chunk.blockPosToWorldPos(x, y, z, this);
         var chunkPos = Chunk.worldPosToChunkPos(worldPos);
         try {
             int dirIndex = DiagonalDirection.indexOf(chunkPos.sub(this.chunkGridPos));

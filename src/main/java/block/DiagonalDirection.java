@@ -16,7 +16,7 @@ public class DiagonalDirection {
         BACK  = 13;
 
     public static final Vector3i[] offsets = {
-           new Vector3i(-1, -1, -1),
+           new Vector3i(-1, -1, -1), // 0
            new Vector3i(-1, -1,  0),
            new Vector3i(-1, -1,  1),
            new Vector3i(-1,  0, -1),
@@ -44,14 +44,12 @@ public class DiagonalDirection {
            new Vector3i( 1,  1,  1),
     };
 
-    /** Given an offset, this method returns the index, or -1 if it wasn't found. */
+    /** Given an offset, this method returns the index. */
     public static int indexOf(Vector3i vec) {
-        int count = 0;
-        for (var offset : offsets) {
-            if (vec.equals(offset)) return count;
-            count++;
-        }
-        return -1;
+        int index = (vec.z + 1) + (vec.y + 1) * 3 + (vec.x + 1) * 9;
+        if (index > 13) index -= 1; // midpoint (0, 0, 0) is not included
+
+        return index;
     }
 
     public static int opposite(int dir) {
