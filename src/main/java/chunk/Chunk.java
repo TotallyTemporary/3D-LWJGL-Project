@@ -105,7 +105,7 @@ public class Chunk extends Entity {
     private Status status;
     private byte[] blocks; // if isAllAir = true, then blocks = null.
     private byte[] lightMap;
-    private final List<WeakReference<Chunk>> neighbors = new ArrayList<>(Collections.nCopies(DiagonalDirection.COUNT, null)); // 26 chunk neighbors
+    private final WeakReference<Chunk>[] neighbors = new WeakReference[DiagonalDirection.COUNT]; // 26 chunk neighbors
 
     public boolean spoiled = false;
     private boolean isAirChunk = false; // use this to fill chunk with skylight
@@ -278,13 +278,13 @@ public class Chunk extends Entity {
     }
 
     public Chunk getNeighbor(int index) {
-        var ref = neighbors.get(index);
+        var ref = neighbors[index];
         if (ref == null) return null;
         else return ref.get();
     }
 
     public void setNeighbor(Chunk chunk, int index) {
-        neighbors.set(index, new WeakReference<>(chunk));
+        neighbors[index] = new WeakReference<>(chunk);
     }
 
     public boolean getIsAirChunk() {

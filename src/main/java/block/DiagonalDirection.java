@@ -16,7 +16,7 @@ public class DiagonalDirection {
         BACK  = 13;
 
     public static final Vector3i[] offsets = {
-           new Vector3i(-1, -1, -1), // 0
+           new Vector3i(-1, -1, -1),
            new Vector3i(-1, -1,  0),
            new Vector3i(-1, -1,  1),
            new Vector3i(-1,  0, -1),
@@ -43,6 +43,8 @@ public class DiagonalDirection {
            new Vector3i( 1,  1,  0),
            new Vector3i( 1,  1,  1),
     };
+
+    public static final int[] ABOVE = new int[] { 6, 7, 8, 14, 15, 16, 23, 24, 25 };
 
     /** Given an offset, this method returns the index. */
     public static int indexOf(Vector3i vec) {

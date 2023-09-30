@@ -4,6 +4,7 @@ import ai.BasicAIComponent;
 import ai.SpinComponent;
 import block.Block;
 import chunk.*;
+import debug.DebugTimer;
 import entity.*;
 import io.OBJFileParser;
 import item.ItemComponent;
@@ -192,6 +193,7 @@ public class Main {
         EntityManager.removeEntity(loadingScreenIcon);
 
         System.out.println("Starting world preload");
+        ChunkLoader.start(playerStartPosition);
         while (ChunkLoader.update(playerStartPosition) > 0 || ChunkLoader.getQueueSize() > 0) {
             TerrainModelLoader.loadChunks(Integer.MAX_VALUE);
             display.setTitle(0);
@@ -222,6 +224,7 @@ public class Main {
 
             // update
             Timer.tick();
+            DebugTimer.clear();
             Mouse.update();
             {
                 var transform = EntityManager.getComponent(player, TransformationComponent.class);
