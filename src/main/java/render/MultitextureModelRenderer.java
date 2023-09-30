@@ -20,11 +20,10 @@ public class MultitextureModelRenderer {
         int vertexTally = 0;
 
         // 1 model for multiple entities
-        var modelMap = modelComponents
-                .keySet().stream()
-                .collect(Collectors.groupingBy(
-                    entity -> EntityManager.getComponent(entity, MultitextureModelComponent.class)
-                ));
+        var modelMap = EntityManager.getComponents(MultitextureModelComponent.class)
+                .entrySet().stream()
+                .collect(Collectors.groupingBy(entry -> entry.getValue(),
+                        Collectors.mapping(entry->entry.getKey(), Collectors.toList())));
 
         // 1 shader for multiple models
         var shaderMap = modelMap.keySet().stream()

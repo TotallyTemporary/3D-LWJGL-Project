@@ -90,11 +90,9 @@ public class Renderer {
 
         // 1 model for multiple entities
         var modelMap = EntityManager.getComponents(modelClass)
-                .keySet().stream()
-                .collect(Collectors.groupingBy(
-                    entity -> EntityManager.getComponent(entity, modelClass).getModel()
-                ));
-
+                .entrySet().stream()
+                .collect(Collectors.groupingBy(entry -> entry.getValue().getModel(),
+                        Collectors.mapping(entry->entry.getKey(), Collectors.toList())));
         // 1 shader for multiple models
         var shaderMap = modelMap.keySet().stream()
             .collect(Collectors.groupingBy(Model::getShader));
