@@ -9,6 +9,7 @@ import org.joml.Vector3i;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /** This class stores and handles the loading of chunks.
  * It loads chunks by sending the chunks to various workers to be processed. */
@@ -24,7 +25,7 @@ public class ChunkLoader {
 
     private static final int CHUNK_UPDATE_SLICE = 700; // only even try to update this many chunks in a frame
 
-    private static final HashMap<Vector3i, Chunk> chunks = new HashMap<>();
+    private static final HashMap<Vector3i, Chunk> chunks = new LinkedHashMap<>();
 
     private static Vector3i lastPlayerChunkPos = null;
     private static int lastUpdateSlice = 0;
@@ -69,7 +70,6 @@ public class ChunkLoader {
             loadNewChunks(lastPlayerChunkPos, playerDelta);
             unloadChunks(lastPlayerChunkPos, playerDelta);
         }
-
         lastPlayerChunkPos = playerChunkPos;
 
         int updatedCount = 0;
@@ -84,7 +84,7 @@ public class ChunkLoader {
         var it = chunks.values().iterator();
 
         // we only want to update a slice of our whole chunks list on this frame
-        int slice = (lastUpdateSlice + CHUNK_UPDATE_SLICE) % chunks.size();
+        int slice = (lastUpdateSlice + CHUNK_UPDATE_SLICE - 1) % chunks.size();
         lastUpdateSlice = slice;
 
         // skip forward to our slice
@@ -321,7 +321,7 @@ public class ChunkLoader {
             for (int y = player.y - vert; y <= player.y + vert; y++)
             for (int z = player.z - horiz; z <= player.z + horiz; z++)
             {
-                unloadChunkAt(player.x - horiz - 1, y, z);
+                unloadChunkAt(player.x - horiz, y, z);
             }
             playerDelta.x -= 1;
             player.x += 1;
@@ -332,7 +332,7 @@ public class ChunkLoader {
             for (int y = player.y - vert; y <= player.y + vert; y++)
             for (int z = player.z - horiz; z <= player.z + horiz; z++)
             {
-                unloadChunkAt(player.x + horiz + 1, y, z);
+                unloadChunkAt(player.x + horiz, y, z);
             }
             playerDelta.x += 1;
             player.x -= 1;
@@ -343,7 +343,7 @@ public class ChunkLoader {
             for (int x = player.x - horiz; x <= player.x + horiz; x++)
             for (int z = player.z - horiz; z <= player.z + horiz; z++)
             {
-                unloadChunkAt(x, player.y - vert - 1, z);
+                unloadChunkAt(x, player.y - vert, z);
             }
             playerDelta.y -= 1;
             player.y += 1;
@@ -354,7 +354,7 @@ public class ChunkLoader {
             for (int x = player.x - horiz; x <= player.x + horiz; x++)
             for (int z = player.z - horiz; z <= player.z + horiz; z++)
             {
-                unloadChunkAt(x, player.y + vert + 1, z);
+                unloadChunkAt(x, player.y + vert, z);
             }
             playerDelta.y += 1;
             player.y -= 1;
@@ -365,7 +365,7 @@ public class ChunkLoader {
             for (int y = player.y - vert; y <= player.y + vert; y++)
             for (int x = player.x - horiz; x <= player.x + horiz; x++)
             {
-                unloadChunkAt(x, y, player.z - horiz - 1);
+                unloadChunkAt(x, y, player.z - horiz);
             }
             playerDelta.z -= 1;
             player.z += 1;
@@ -376,7 +376,7 @@ public class ChunkLoader {
             for (int y = player.y - vert; y <= player.y + vert; y++)
             for (int x = player.x - horiz; x <= player.x + horiz; x++)
             {
-                unloadChunkAt(x, y, player.z + horiz + 1);
+                unloadChunkAt(x, y, player.z + horiz);
             }
             playerDelta.z += 1;
             player.z -= 1;
