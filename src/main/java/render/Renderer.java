@@ -120,23 +120,13 @@ public class Renderer {
                     unit++;
                 }
 
-                GL30.glBindVertexArray(model.getVAO()); // bind model, activate vbos
-                for (int i = 0; i < model.getNumberOfVBOs(); i++)
-                    GL30.glEnableVertexAttribArray(i);
-
+                GL30.glBindVertexArray(model.getVAO()); // bind model
 
                 for (var entity : entities) {
                     vertexTally += render(entity, model);
                 }
 
-
-                // disable everything
-                for (int i = 0; i < model.getNumberOfVBOs(); i++)
-                    GL30.glDisableVertexAttribArray(i);
-                GL30.glBindVertexArray(0);
             }
-            // disable shader
-            GL30.glUseProgram(0);
         }
         return vertexTally;
     }

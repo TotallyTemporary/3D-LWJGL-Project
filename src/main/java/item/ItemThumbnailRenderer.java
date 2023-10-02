@@ -78,21 +78,8 @@ public class ItemThumbnailRenderer {
             unit++;
         }
 
-        // enable vertex attrib arrays
-        for (int i = 0; i < item.getNumberOfVBOs(); i++) {
-            GL30.glEnableVertexAttribArray(i);
-        }
-
         // render
         GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, item.getVertexCount());
-
-        // disable vertex attrib arrays
-        for (int i = 0; i < item.getNumberOfVBOs(); i++) {
-            GL30.glDisableVertexAttribArray(i);
-        }
-
-        GL30.glBindVertexArray(0);
-        GL30.glUseProgram(0);
     }
 
 

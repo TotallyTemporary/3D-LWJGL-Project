@@ -162,6 +162,12 @@ public class Model {
             shader.addUniform(texture.name);
         }
 
+        // enable all vertex attrib arrays
+        GL30.glBindVertexArray(getVAO());
+        for (int i = 0; i < getNumberOfVBOs(); i++) {
+            GL30.glEnableVertexAttribArray(i);
+        }
+
         return this;
     }
 

@@ -42,9 +42,7 @@ public class MultitextureModelRenderer {
             for (var modelComp : models) {
                 var entities = modelMap.get(modelComp);
 
-                GL30.glBindVertexArray(modelComp.getModel().getVAO()); // bind model, activate vbos
-                for (int i = 0; i < modelComp.getModel().getNumberOfVBOs(); i++)
-                    GL30.glEnableVertexAttribArray(i);
+                GL30.glBindVertexArray(modelComp.getModel().getVAO()); // bind model
 
                 // render multiple times, once per texture
                 for (int partIndex = 0; partIndex < modelComp.getPartCount(); partIndex++) {
@@ -60,14 +58,7 @@ public class MultitextureModelRenderer {
                         vertexTally += render(entity, modelComp.getModel(), part.getStartVertex(), part.getVertexCount());
                     }
                 }
-
-                // disable everything
-                for (int i = 0; i < modelComp.getModel().getNumberOfVBOs(); i++)
-                    GL30.glDisableVertexAttribArray(i);
-                GL30.glBindVertexArray(0);
             }
-            // disable shader
-            GL30.glUseProgram(0);
         }
         return vertexTally;
     }

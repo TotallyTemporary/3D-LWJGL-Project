@@ -53,8 +53,6 @@ public class ChunkRenderer {
         vertexTally += renderChunks(chunks, shader, cameraPos, true);
 
         GL30.glDisable(GL30.GL_BLEND);
-
-        GL30.glUseProgram(0);
         return vertexTally;
     }
 
@@ -74,10 +72,8 @@ public class ChunkRenderer {
                 continue;
             }
 
-            // bind model and enable attribute arrays TODO: EnableVertexAttribArray actually modifies VAO, set these when calling .end() on model.
+            // bind model
             GL30.glBindVertexArray(modelComp.getModel().getVAO());
-            for (int i = 0; i < modelComp.getModel().getNumberOfVBOs(); i++)
-                GL30.glEnableVertexAttribArray(i);
 
             var transform = EntityManager.getComponent(entity, TransformationComponent.class);
             var transMatrix = transform.getTransformationMatrix();
@@ -98,11 +94,6 @@ public class ChunkRenderer {
             } else {
                 vertexTally += renderTransparentFace(modelComp);
             }
-
-            // disable everything
-            for (int i = 0; i < modelComp.getModel().getNumberOfVBOs(); i++)
-                GL30.glDisableVertexAttribArray(i);
-            GL30.glBindVertexArray(0);
         }
 
         return vertexTally;

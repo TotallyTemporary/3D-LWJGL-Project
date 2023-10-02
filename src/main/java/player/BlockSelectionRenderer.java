@@ -15,18 +15,10 @@ public class BlockSelectionRenderer {
         var model = modelComponent.getModel();
 
         GL30.glBindVertexArray(model.getVAO());
-        for (int i = 0; i < model.getNumberOfVBOs(); i++) {
-            GL30.glEnableVertexAttribArray(i);
-        }
 
         model.getShader().setMatrix4f("transformationMatrix", transform.getTransformationMatrix());
 
         GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, model.getVertexCount());
-
-        for (int i = 0; i < model.getNumberOfVBOs(); i++) {
-            GL30.glDisableVertexAttribArray(i);
-        }
-        GL30.glBindVertexArray(0);
 
         return model.getVertexCount();
     }
