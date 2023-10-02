@@ -301,4 +301,9 @@ public class Chunk extends Entity {
 
        this.isAirChunk = isAirChunk;
     }
+
+    public void spoil() {
+        this.spoiled = true;
+        ChunkLoader.hintChunkUpdateRequired(this);
+    }
 }

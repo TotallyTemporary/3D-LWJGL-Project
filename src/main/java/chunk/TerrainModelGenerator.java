@@ -21,16 +21,8 @@ public class TerrainModelGenerator {
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
     static { System.out.println("TerrainModelGenerator running"); }
 
-    // 6 lists, one for every cardinal direction.
+    // lists for each cardinal direction + alpha blended faces (not culled based on direction)
     private static final ThreadLocal<GeneratorThreadLocals> localVariables = ThreadLocal.withInitial(() -> new GeneratorThreadLocals());
-
-    private static final FloatArrayList[] createBufferArray(int count) {
-        FloatArrayList[] array = new FloatArrayList[count];
-        for (int i = 0; i < count; i++) {
-            array[i] = new FloatArrayList();
-        }
-        return array;
-    }
 
     private static final float[] fakeBlockSideLights = new float[] {
         1f,    // up

@@ -7,9 +7,8 @@ import entity.TransformationComponent;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /** This class stores and handles the loading of chunks.
  * It loads chunks by sending the chunks to various workers to be processed. */
@@ -20,19 +19,20 @@ public class ChunkLoader {
     private static final int VERTICAL_LOAD_RADIUS = 8;
 
     // a chunk within this grid distance of the player's chunk will instantly get updated
-    private static final int INSTANT_LOAD_DISTANCE = 2;
-    private static final int INSTANT_LOAD_DISTANCE_SQR = INSTANT_LOAD_DISTANCE*INSTANT_LOAD_DISTANCE;
+    private static final float INSTANT_LOAD_DISTANCE = 2.5f;
+    private static final float INSTANT_LOAD_DISTANCE_SQR = INSTANT_LOAD_DISTANCE*INSTANT_LOAD_DISTANCE;
 
     private static final int CHUNK_UPDATE_SLICE = 700; // only even try to update this many chunks in a frame
 
     private static final HashMap<Vector3i, Chunk> chunks = new LinkedHashMap<>();
+    private static final Queue<Chunk> spoiledCloseQueue = new ConcurrentLinkedQueue<>();
+    private static final Queue<Chunk> updateHintQueue = new ConcurrentLinkedQueue<>();
 
     private static Vector3i lastPlayerChunkPos = null;
-    private static int lastUpdateSlice = 0;
+    private static int slice = 0;
 
     // working buffers
     private static final ArrayList<Chunk> spoiledFarAway = new ArrayList<Chunk>();
-    private static final ArrayList<Chunk> spoiledClose = new ArrayList<Chunk>();
 
     public static void start(Vector3f playerPos) {
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
@@ -55,12 +55,22 @@ public class ChunkLoader {
         lastPlayerChunkPos = playerChunkPos;
     }
 
+    public static void updatePriorityChunks() {
+        while (!spoiledCloseQueue.isEmpty()) {
+            Chunk chunk = spoiledCloseQueue.poll();
+            updateNow(chunk);
+        }
+    }
+
+    public static void hintChunkUpdateRequired(Chunk chunk) {
+        updateHintQueue.add(chunk);
+    }
+
     /** Updates chunks based on the player's position in the world.
      * @return number of chunks whose status was changed this frame. */
     public static int update(Vector3f playerPos) {
         // clear working arrays
         spoiledFarAway.clear();
-        spoiledClose.clear();
 
         Vector3i playerChunkPos = Chunk.worldPosToChunkPos(playerPos);
         Vector3i playerDelta = playerChunkPos.sub(lastPlayerChunkPos, new Vector3i());
@@ -83,17 +93,19 @@ public class ChunkLoader {
 
         var it = chunks.values().iterator();
 
-        // we only want to update a slice of our whole chunks list on this frame
-        int slice = (lastUpdateSlice + CHUNK_UPDATE_SLICE - 1) % chunks.size();
-        lastUpdateSlice = slice;
-
         // skip forward to our slice
         int i = 0;
         while (i++ < slice && it.hasNext()) it.next();
 
         int chunkUpdated = 0;
-        while (it.hasNext() && chunkUpdated++ < CHUNK_UPDATE_SLICE) {
-            var chunk = it.next();
+        while ((!updateHintQueue.isEmpty() || it.hasNext()) && chunkUpdated++ < CHUNK_UPDATE_SLICE) {
+            var chunk = updateHintQueue.isEmpty() ? it.next() : updateHintQueue.poll();
+
+            if (spoiledCloseQueue.contains(chunk)) {
+                // don't update a chunk that will be updated on main thread later
+                continue;
+            }
+
             Vector3i chunkPos = chunk.getChunkGridPos();
 
             // update any spoiled chunks that need updating
@@ -109,7 +121,7 @@ public class ChunkLoader {
                 float dz = playerChunkPos.z - chunkPos.z;
                 float dstSquared = dx*dx + dy*dy + dz*dz;
                 if (dstSquared < INSTANT_LOAD_DISTANCE_SQR) {
-                    spoiledClose.add(chunk);
+                    spoiledCloseQueue.add(chunk);
                 } else {
                     spoiledFarAway.add(chunk);
                 }
@@ -130,13 +142,13 @@ public class ChunkLoader {
             }
         }
 
+        // update slice variable
+        slice += chunkUpdated;
+        slice %= chunks.size();
+
         // update far away spoiled after the close spoiled have been updated
         for (Chunk chunk : spoiledFarAway) {
             chunk.setStatus(Chunk.Status.BLOCKS_GENERATED); // update multi-threaded on some future frame.
-        }
-
-        for (Chunk chunk : spoiledClose) {
-            chunk.setStatus(Chunk.Status.BLOCKS_GENERATED);
         }
 
         // skip lightmap generation for top chunks
@@ -152,10 +164,11 @@ public class ChunkLoader {
         return updatedCount;
     }
 
-    /* TODO reintroduce once dealt with thread safety
     public static void updateNow(Chunk chunk) {
+        if (chunk.getStatus().working) return;
+
         // unload current model
-        unloadChunk(chunk);
+        unloadChunkNow(chunk);
 
         // update lightmap
         chunk.setStatus(Chunk.Status.LIGHTS_GENERATING);
@@ -177,7 +190,6 @@ public class ChunkLoader {
 
         assert chunk.getStatus() == Chunk.Status.FINAL;
     }
-     */
 
     /** Returns the size of the queue of all the chunk workers combined. */
     public static int getQueueSize() {
@@ -194,16 +206,16 @@ public class ChunkLoader {
         var chunk = chunks.get(chunkPos);
         if (chunk == null || chunk.getStatus().urgency < Chunk.Status.BLOCKS_GENERATED.urgency) return;
         chunk.setBlockSafe(blockPos, block);
-        chunk.spoiled = true;
+        chunk.spoil();
 
         // setting a block at a chunk border requires the neighbor to update their mesh as well
         // TODO this might only apply with transparent blocks, maybe add a check for that?
-        if (blockPos.x == 0)            chunk.getNeighbor(DiagonalDirection.LEFT).spoiled = true;
-        if (blockPos.x == Chunk.SIZE-1) chunk.getNeighbor(DiagonalDirection.RIGHT).spoiled = true;
-        if (blockPos.y == 0)            chunk.getNeighbor(DiagonalDirection.DOWN).spoiled = true;
-        if (blockPos.y == Chunk.SIZE-1) chunk.getNeighbor(DiagonalDirection.UP).spoiled = true;
-        if (blockPos.z == 0)            chunk.getNeighbor(DiagonalDirection.FRONT).spoiled = true;
-        if (blockPos.z == Chunk.SIZE-1) chunk.getNeighbor(DiagonalDirection.BACK).spoiled = true;
+        if (blockPos.x == 0)            chunk.getNeighbor(DiagonalDirection.LEFT).spoil();
+        if (blockPos.x == Chunk.SIZE-1) chunk.getNeighbor(DiagonalDirection.RIGHT).spoil();
+        if (blockPos.y == 0)            chunk.getNeighbor(DiagonalDirection.DOWN).spoil();
+        if (blockPos.y == Chunk.SIZE-1) chunk.getNeighbor(DiagonalDirection.UP).spoil();
+        if (blockPos.z == 0)            chunk.getNeighbor(DiagonalDirection.FRONT).spoil();
+        if (blockPos.z == Chunk.SIZE-1) chunk.getNeighbor(DiagonalDirection.BACK).spoil();
     }
 
     public static byte getBlockAt(Vector3f pos) {
@@ -486,6 +498,12 @@ public class ChunkLoader {
     private static void unloadChunk(Chunk chunk) {
         if (chunk.getStatus().working) return; // don't want to unload a chunk that is queued somewhere.
         EntityManager.removeEntitySafe(chunk);
+        chunk.setStatus(Chunk.Status.NONE);
+    }
+
+    private static void unloadChunkNow(Chunk chunk) {
+        if (chunk.getStatus().working) return;
+        EntityManager.removeEntity(chunk);
         chunk.setStatus(Chunk.Status.NONE);
     }
 }

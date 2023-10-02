@@ -68,7 +68,7 @@ public class LightMapGenerator {
 
         for (Chunk neighbor : spoiledChunks) {
             if (!neighbor.spoiled) {
-                neighbor.spoiled = true;
+                neighbor.spoil();
             }
         }
         chunk.setStatus(Chunk.Status.LIGHTS_GENERATED);
@@ -86,7 +86,7 @@ public class LightMapGenerator {
             Chunk neighbor = chunk.getNeighbor(dir);
             if (!neighbor.getIsAirChunk()
                 && neighbor.getStatus().urgency > Chunk.Status.LIGHTS_GENERATED.urgency) {
-                neighbor.spoiled = true; // TODO might cause deadlock
+                neighbor.spoil(); // TODO might cause deadlock
             }
         }
     }

@@ -226,15 +226,17 @@ public class Main {
             Timer.tick();
             DebugTimer.clear();
             Mouse.update();
+            EntityManager.update();
+
+            // these are less risky after chunk loading is done and entitymanager is updated
+            // so component changes are less likely to muck us up
+            ChunkLoader.updatePriorityChunks();
+            TerrainModelLoader.loadChunks();
+
             {
                 var transform = EntityManager.getComponent(player, TransformationComponent.class);
                 ChunkLoader.update(transform.getPosition());
             }
-
-            TerrainModelLoader.loadChunks();
-
-            // start comp update
-            EntityManager.update(); // remove toBeRemoved components.
 
             // this is our component update order
             EntityManager.updateComponents(PlayerMovementController.class);
