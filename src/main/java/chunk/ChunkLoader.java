@@ -123,10 +123,10 @@ public class ChunkLoader {
 
         int chunkUpdated = 0;
         boolean hintQueueEmpty = false;
-        while ((
+        while (
                 (!hintQueueEmpty && !(hintQueueEmpty = updateHintQueue.isEmpty()))
-                    || it.hasNext())
-                && chunkUpdated++ < CHUNK_UPDATE_SLICE) {
+                || (it.hasNext() && ++chunkUpdated < CHUNK_UPDATE_SLICE)
+        ) {
             var chunk = hintQueueEmpty ? it.next() : updateHintQueue.poll();
 
             if (spoiledCloseQueue.contains(chunk)) {
@@ -172,7 +172,9 @@ public class ChunkLoader {
 
         // update slice variable
         slice += chunkUpdated;
-        slice %= chunks.size();
+        if (slice >= chunks.size()) {
+            slice = 0;
+        }
 
         // update far away spoiled after the close spoiled have been updated
         for (Chunk chunk : spoiledFarAway) {
