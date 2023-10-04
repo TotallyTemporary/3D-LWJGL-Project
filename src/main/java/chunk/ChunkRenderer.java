@@ -79,34 +79,52 @@ public class ChunkRenderer {
             var transMatrix = transform.getTransformationMatrix();
             shader.setMatrix4f("transformationMatrix", transMatrix);
 
+            // 150 fps
+
             if (!renderAlphaBlendFaces) {
                 // render normal opaque faces
 
+                var chunkPos = transform.getPosition();
+
                 // the model data is partitioned to different direction faces, so we can selectively render.
                 // Example: if player is clearly above a chunk, we don't need to render the BOTTOM faces.
-                var chunkPos = transform.getPosition();
-                if (cameraPos.y >= chunkPos.y)               vertexTally += renderFace(modelComp, CardinalDirection.UP);
-                if (cameraPos.y <  chunkPos.y + Chunk.SIZE)  vertexTally += renderFace(modelComp, CardinalDirection.DOWN);
-                if (cameraPos.x >= chunkPos.x)               vertexTally += renderFace(modelComp, CardinalDirection.RIGHT);
-                if (cameraPos.x <  chunkPos.x + Chunk.SIZE)  vertexTally += renderFace(modelComp, CardinalDirection.LEFT);
-                if (cameraPos.z >= chunkPos.z)               vertexTally += renderFace(modelComp, CardinalDirection.BACK);
-                if (cameraPos.z <  chunkPos.z + Chunk.SIZE)  vertexTally += renderFace(modelComp, CardinalDirection.FRONT);
+                boolean[] doRenderDirection = new boolean[] {
+                    (cameraPos.y >= chunkPos.y), // UP
+                    (cameraPos.x <  chunkPos.x + Chunk.SIZE), // LEFT
+                    (cameraPos.z <  chunkPos.z + Chunk.SIZE), // FRONT
+                    (cameraPos.z >= chunkPos.z), // BACK
+                    (cameraPos.x >= chunkPos.x), // RIGHT
+                    (cameraPos.y <  chunkPos.y + Chunk.SIZE) // DOWN
+                };
+
+                for (int dir = 0; dir < CardinalDirection.COUNT; dir++) {
+                    // find starting direction
+                    if (!doRenderDirection[dir]) {
+                        continue;
+                    };
+
+                    // get all sequential directions
+                    // for example, to render both up and left faces, we only need 1 draw call since they're sequential
+                    int startDirection = dir;
+                    while (dir + 1 < CardinalDirection.COUNT && doRenderDirection[dir + 1]) dir++;
+                    int endDirection = dir;
+
+                    // render from startDirection to endDirection
+                    int start = modelComp.getPositionIndex(startDirection);
+                    int end = modelComp.getPositionIndex(endDirection+1);
+                    int count = end-start;
+
+                    if (count != 0) {
+                        GL30.glDrawArrays(GL30.GL_TRIANGLES, start, count);
+                    }
+                    vertexTally += count;
+                }
             } else {
                 vertexTally += renderTransparentFace(modelComp);
             }
         }
 
         return vertexTally;
-    }
-
-    private static int renderFace(ChunkModelComponent modelComp, int face) {
-        int start = modelComp.getPositionIndex(face);
-        int end = modelComp.getPositionIndex(face+1);
-        int count = end-start;
-
-        if (count == 0) return 0;
-        GL30.glDrawArrays(GL30.GL_TRIANGLES, start, count);
-        return count;
     }
 
     private static int renderTransparentFace(ChunkModelComponent modelComp) {

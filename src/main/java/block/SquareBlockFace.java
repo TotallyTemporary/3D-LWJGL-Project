@@ -113,12 +113,12 @@ public class SquareBlockFace extends BlockFace {
     };
 
     private static final float[] BOTTOM_TEX = {
-        0f, 1f,
+        1f, 0f,
         1f, 1f,
-        1f, 0f,
-        1f, 0f,
+        0f, 1f,
+        0f, 1f,
         0f, 0f,
-        0f, 1f
+        1f, 0f
     };
 
     public float[] getVertices() {
