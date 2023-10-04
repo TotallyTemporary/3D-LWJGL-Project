@@ -117,8 +117,11 @@ public class Chunk extends Entity {
 
         // get all surrounding neighbors, add them as neighbor and add us as their neighbor.
         var index = 0;
+        Vector3i neighborPos = new Vector3i();
         for (var offset : DiagonalDirection.offsets) {
-            var neighborPos = offset.add(chunkGridPos, new Vector3i());
+            neighborPos.x = chunkGridPos.x + offset.x;
+            neighborPos.y = chunkGridPos.y + offset.y;
+            neighborPos.z = chunkGridPos.z + offset.z;
             var neighbor = ChunkLoader.getChunkAt(neighborPos);
             if (neighbor != null) {
                 setNeighbor(neighbor, index);

@@ -8,28 +8,33 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.*;
 
 /** This class stores and handles the loading of chunks.
  * It loads chunks by sending the chunks to various workers to be processed. */
 public class ChunkLoader {
 
     // if these variables are to be user controlled, they should have 2-3 chunks added to them, to enable the player to always be in a fully loaded chunk.
-    private static final int HORIZONTAL_LOAD_RADIUS = 14;
-    private static final int VERTICAL_LOAD_RADIUS = 8;
+    private static final int HORIZONTAL_LOAD_RADIUS = 12;
+    private static final int VERTICAL_LOAD_RADIUS = 6;
+    private static final int CHUNKS_COUNT = (2*HORIZONTAL_LOAD_RADIUS+1) * (2*VERTICAL_LOAD_RADIUS) * (2*HORIZONTAL_LOAD_RADIUS+1);
 
     // a chunk within this grid distance of the player's chunk will instantly get updated
     private static final float INSTANT_LOAD_DISTANCE = 2.5f;
     private static final float INSTANT_LOAD_DISTANCE_SQR = INSTANT_LOAD_DISTANCE*INSTANT_LOAD_DISTANCE;
 
-    private static final int CHUNK_UPDATE_SLICE = 700; // only even try to update this many chunks in a frame
+    private static final int CHUNK_UPDATE_SLICE = 400; // only even try to update this many chunks in a frame
 
-    private static final HashMap<Vector3i, Chunk> chunks = new LinkedHashMap<>();
+    private static final HashMap<Vector3i, Chunk> chunks = new LinkedHashMap<>(CHUNKS_COUNT);
     private static final Queue<Chunk> spoiledCloseQueue = new ConcurrentLinkedQueue<>();
     private static final Queue<Chunk> updateHintQueue = new ConcurrentLinkedQueue<>();
 
     private static Vector3i lastPlayerChunkPos = null;
     private static int slice = 0;
+
+    // threading
+    private static ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static CountDownLatch readyLatch = new CountDownLatch(0);
 
     // working buffers
     private static final ArrayList<Chunk> spoiledFarAway = new ArrayList<Chunk>();
@@ -66,6 +71,25 @@ public class ChunkLoader {
         updateHintQueue.add(chunk);
     }
 
+    public static void startUpdate(Vector3f playerPos) {
+        readyLatch = new CountDownLatch(1);
+        executor.submit(() -> {
+            try {
+                update(playerPos);
+            } finally {
+                readyLatch.countDown();
+            }
+        });
+    }
+
+    public static void endUpdate() {
+        try {
+            readyLatch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /** Updates chunks based on the player's position in the world.
      * @return number of chunks whose status was changed this frame. */
     public static int update(Vector3f playerPos) {
@@ -98,8 +122,12 @@ public class ChunkLoader {
         while (i++ < slice && it.hasNext()) it.next();
 
         int chunkUpdated = 0;
-        while ((!updateHintQueue.isEmpty() || it.hasNext()) && chunkUpdated++ < CHUNK_UPDATE_SLICE) {
-            var chunk = updateHintQueue.isEmpty() ? it.next() : updateHintQueue.poll();
+        boolean hintQueueEmpty = false;
+        while ((
+                (!hintQueueEmpty && !(hintQueueEmpty = updateHintQueue.isEmpty()))
+                    || it.hasNext())
+                && chunkUpdated++ < CHUNK_UPDATE_SLICE) {
+            var chunk = hintQueueEmpty ? it.next() : updateHintQueue.poll();
 
             if (spoiledCloseQueue.contains(chunk)) {
                 // don't update a chunk that will be updated on main thread later
@@ -132,7 +160,7 @@ public class ChunkLoader {
              || chunkPos.y < minY || chunkPos.y > maxY
              || chunkPos.z < minZ || chunkPos.z > maxZ) {
                 unloadChunk(chunk);
-                if (hasAllUnloadedNeighbors(chunk)) {
+                if (chunk.getStatus() == Chunk.Status.NONE && hasAllUnloadedNeighbors(chunk)) {
                     it.remove();
                 }
             } else {

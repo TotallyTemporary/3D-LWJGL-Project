@@ -233,11 +233,6 @@ public class Main {
             ChunkLoader.updatePriorityChunks();
             TerrainModelLoader.loadChunks();
 
-            {
-                var transform = EntityManager.getComponent(player, TransformationComponent.class);
-                ChunkLoader.update(transform.getPosition());
-            }
-
             // this is our component update order
             EntityManager.updateComponents(PlayerMovementController.class);
             EntityManager.updateComponents(PlayerBlockController.class);
@@ -253,6 +248,12 @@ public class Main {
 
             // end comp update
 
+            // start chunk loader
+            {
+                var transform = EntityManager.getComponent(player, TransformationComponent.class);
+                ChunkLoader.startUpdate(transform.getPosition());
+            }
+
             // render
             int verticesRendered = renderer.render(player);
             display.setTitle(verticesRendered);
@@ -260,6 +261,8 @@ public class Main {
             // glfw stuff
             GLFW.glfwSwapBuffers(display.getWindow());
             GLFW.glfwPollEvents();
+
+            ChunkLoader.endUpdate();
         }
 
         TerrainGenerator.stop();
