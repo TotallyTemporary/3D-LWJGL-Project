@@ -234,8 +234,10 @@ public class Main {
             TerrainModelLoader.loadChunks();
 
             // this is our component update order
+            EntityManager.updateComponents(PhysicsObjectComponent.class);
             EntityManager.updateComponents(PlayerMovementController.class);
             EntityManager.updateComponents(PlayerBlockController.class);
+            EntityManager.updateComponents(PlayerInventoryController.class);
             EntityManager.updateComponents(PlayerMiscController.class);
             EntityManager.updateComponents(BasicAIComponent.class);
 
