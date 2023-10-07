@@ -108,12 +108,23 @@ public class PlayerBlockController extends Component {
     private void buildAction(Entity entity) {
         lastActionTime = System.currentTimeMillis();
 
+        var inventory = EntityManager.getComponent(entity, PlayerInventoryController.class);
+        byte blockID = inventory.getSelectedItem().getPlaceBlock().getID();
+
+        if (blockID == Block.INVALID.getID()) {
+            // can't place this item (maybe it's like a potato or something)
+            return;
+        }
+
         if (beforeHitLocation == null) return;
         // TODO this still spoils the chunk
-        ChunkLoader.setBlockAt(beforeHitLocation, Block.COBBLESTONE.getID());
+        ChunkLoader.setBlockAt(beforeHitLocation, blockID);
         if (isInsideBlock(entity)) {
             ChunkLoader.setBlockAt(beforeHitLocation, Block.AIR.getID());
+            return;
         }
+
+        inventory.removeItem();
     }
 
     private void breakAction(Entity entity) {

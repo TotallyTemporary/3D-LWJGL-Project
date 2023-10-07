@@ -22,4 +22,8 @@ public class ItemStack {
         itemCount += 1;
     }
 
+    public void decrementCount() {
+        itemCount -= 1;
+    }
+
 }
