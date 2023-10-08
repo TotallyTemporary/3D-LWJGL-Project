@@ -5,6 +5,7 @@ import block.CardinalDirection;
 import chunk.ChunkLoader;
 import entity.*;
 import item.ItemType;
+import item.ToolType;
 import main.AABB;
 import main.Timer;
 import org.joml.Vector3f;
@@ -80,7 +81,27 @@ public class PlayerBlockController extends Component {
             breakage = 0;
         }
 
-        var breakTime = 0.5f; // TODO will be set on a per-block basis.
+        // find hand item
+        var inventory = EntityManager.getComponent(entity, PlayerInventoryController.class);
+        ItemType heldItem = inventory.getSelectedItem();
+
+        ToolType selectedTool;
+        float selectedToolSpeed;
+
+        if (heldItem != null) {
+            selectedTool = heldItem.getToolType();
+            selectedToolSpeed = heldItem.getCorrectToolMultiplier();
+        } else {
+            selectedTool = ToolType.NONE;
+            selectedToolSpeed = 1f;
+        }
+
+        if (selectedTool != selectedBlock.getCorrectBreakTool()) {
+            selectedToolSpeed = 1f;
+        }
+
+        var breakTime = selectedBlock.getBreakTimeSeconds();
+        breakTime /= selectedToolSpeed;
         Block breakBlock = selectedBlock;
         if ((System.currentTimeMillis() - lastActionTime) > TIME_BETWEEN_ACTIONS) {
             if (Mouse.isLeftClickDown()) {

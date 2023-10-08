@@ -64,11 +64,11 @@ public enum ItemType {
     JUNGLE_LEAVES(188, ItemModel.from3DBlock(Block.JUNGLE_LEAVES), ItemThumbnailAlignment.Block, 188),
 
     // items
-    IRON_SWORD(322, ItemModel.from2DItem(66), ItemThumbnailAlignment.Item, 1),
-    IRON_SHOVEL(338, ItemModel.from2DItem(82), ItemThumbnailAlignment.Item, 1),
-    IRON_PICKAXE(354, ItemModel.from2DItem(98), ItemThumbnailAlignment.Item, 1),
-    IRON_AXE(370, ItemModel.from2DItem(114), ItemThumbnailAlignment.Item, 1),
-    IRON_HOE(386, ItemModel.from2DItem(130), ItemThumbnailAlignment.Item, 1);
+    IRON_SWORD(322, ItemModel.from2DItem(66), ItemThumbnailAlignment.Item, 1, ToolType.SWORD, 2f),
+    IRON_SHOVEL(338, ItemModel.from2DItem(82), ItemThumbnailAlignment.Item, 1, ToolType.SHOVEL, 2f),
+    IRON_PICKAXE(354, ItemModel.from2DItem(98), ItemThumbnailAlignment.Item, 1, ToolType.PICKAXE, 2f),
+    IRON_AXE(370, ItemModel.from2DItem(114), ItemThumbnailAlignment.Item, 1, ToolType.AXE, 2f),
+    IRON_HOE(386, ItemModel.from2DItem(130), ItemThumbnailAlignment.Item, 1, ToolType.HOE, 2f);
 
 
     private static final ItemType[] vals = new ItemType[4096];
@@ -86,12 +86,22 @@ public enum ItemType {
 
     private int placeBlockId;
 
+    private ToolType toolType;
+    private float toolTypeMultiplier;
 
-    ItemType(int id, Model model, ItemThumbnailAlignment thumbnailAlignment, int placeBlockId) {
+
+    ItemType(int id, Model model, ItemThumbnailAlignment thumbnailAlignment, int placeBlockId,
+             ToolType toolType, float toolbreakMultiplier) {
         this.id = id;
         this.model = model;
         this.thumbnailAlignment = thumbnailAlignment;
         this.placeBlockId = placeBlockId;
+        this.toolType = toolType;
+        this.toolTypeMultiplier = toolbreakMultiplier;
+    }
+
+    ItemType(int id, Model model, ItemThumbnailAlignment thumbnailAlignment, int placeBlockId) {
+        this(id, model, thumbnailAlignment, placeBlockId, ToolType.NONE, 1f);
     }
 
     public int getID() {
@@ -108,6 +118,14 @@ public enum ItemType {
 
     public Block getPlaceBlock() {
         return Block.getBlock((byte) placeBlockId);
+    }
+
+    public ToolType getToolType() {
+        return toolType;
+    }
+
+    public float getCorrectToolMultiplier() {
+        return toolTypeMultiplier;
     }
 
     public static ItemType getByID(int id) {
