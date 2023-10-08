@@ -8,6 +8,7 @@ import item.ItemModelComponent;
 import org.lwjgl.opengl.GL30;
 import player.BlockBreakModelComponent;
 import player.BlockSelectionRenderer;
+import player.PlayerHandItemModelComponent;
 import ui.UIArrayModelComponent;
 import ui.UIModelComponent;
 
@@ -50,6 +51,7 @@ public class Renderer {
         GL30.glDisable(GL30.GL_DEPTH_TEST);
         vertexTally += render(player, UIArrayModelComponent.class);
         vertexTally += render(player, UIModelComponent.class);
+        vertexTally += render(player, PlayerHandItemModelComponent.class);
         GL30.glDisable(GL30.GL_BLEND);
 
         return vertexTally;

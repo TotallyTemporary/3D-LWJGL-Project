@@ -2,6 +2,7 @@ package main;
 
 import ai.BasicAIComponent;
 import ai.SpinComponent;
+import animation.AnimatorComponent;
 import block.Block;
 import chunk.*;
 import debug.DebugTimer;
@@ -243,8 +244,8 @@ public class Main {
 
             EntityManager.updateComponents(ItemComponent.class);
 
-            EntityManager.updateComponents(PhysicsObjectComponent.class);
             EntityManager.updateComponents(TransformationComponent.class);
+            EntityManager.updateComponents(AnimatorComponent.class);
 
             EntityManager.updateComponents(SpinComponent.class);
 

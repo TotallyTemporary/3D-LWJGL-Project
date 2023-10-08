@@ -1,5 +1,8 @@
 package player;
 
+import animation.Animation;
+import animation.AnimatorComponent;
+import animation.KeyFrame;
 import block.Block;
 import entity.Component;
 import entity.Entity;
@@ -13,6 +16,7 @@ import render.Texture;
 import ui.UIModelComponent;
 
 import java.lang.Math;
+import java.util.ArrayList;
 
 public class PlayerInventoryController extends Component {
 
@@ -28,6 +32,22 @@ public class PlayerInventoryController extends Component {
             new Quaternionf().identity()
                     .rotateY((float) Math.toRadians(102))
                     .rotateX((float) Math.toRadians(0));
+
+    // create block place hand animation
+    private static final Animation handPlaceAnimation;
+    static {
+        var keyFrames = new ArrayList<KeyFrame>();
+        keyFrames.add(new KeyFrame(0f, new Matrix4f().identity()));
+        keyFrames.add(new KeyFrame(0.5f,
+            new Matrix4f().translation(1.75f, 0f, 0f)
+                    .rotateZ(-45f)
+        ));
+        keyFrames.add(new KeyFrame(1f, new Matrix4f().identity()));
+
+        handPlaceAnimation = new Animation(keyFrames, Animation.PlaybackMode.PLAY_ONCE);
+    }
+
+    private static final long HAND_PLACE_ANIMATION_LENGTH = 200; // millis
     private static int selectedHotbarSlot = 0;
     private static Entity selectedHotbarItem = null;
 
@@ -95,6 +115,10 @@ public class PlayerInventoryController extends Component {
             Entity hotbarItem = stackEntities[selectedHotbarSlot];
             EntityManager.removeEntitySafe(hotbarItem);
             stackEntities[selectedHotbarSlot] = null;
+        } else {
+            // if this wasnt our last item, we animate the place hand animation
+            var animator = EntityManager.getComponent(selectedHotbarItem, AnimatorComponent.class);
+            animator.getAnimation().start(HAND_PLACE_ANIMATION_LENGTH);
         }
     }
 
@@ -158,7 +182,8 @@ public class PlayerInventoryController extends Component {
         ));
 
         var itemSpec = ItemType.getByID(itemID);
-        EntityManager.addComponent(item, new ItemModelComponent(itemSpec.getModel()));
+        EntityManager.addComponent(item, new PlayerHandItemModelComponent(itemSpec.getModel()));
+        EntityManager.addComponent(item, new AnimatorComponent(handPlaceAnimation));
 
         selectedHotbarItem = item;
     }

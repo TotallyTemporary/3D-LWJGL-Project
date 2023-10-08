@@ -65,6 +65,13 @@ public class TransformationComponent extends Component {
         this.scale = scale;
     }
 
+    /* This is a bit of hack,
+    * it doesn't persist onto next frame so update has to be done before transform comp update
+    * this is used by AnimatorComponent now. */
+    public void doTransformation(Matrix4f transform) {
+        transformationMatrix.mul(transform);
+    }
+
     public Matrix4f getTransformationMatrix() {
         return transformationMatrix;
     }
