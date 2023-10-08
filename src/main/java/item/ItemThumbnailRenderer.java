@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
 
 public class ItemThumbnailRenderer {
 
-    private static final int SIZE = 16;
+    private static final int SIZE = 24;
 
     public static ItemThumbnailTexture renderItem(int itemID) {
         int[] viewportBefore = new int[4];

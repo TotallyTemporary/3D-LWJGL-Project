@@ -167,7 +167,14 @@ public class Main {
         EntityManager.addComponent(player, new PlayerMovementController());
         EntityManager.addComponent(player, new PlayerBlockController());
         EntityManager.addComponent(player, new PlayerMiscController());
-        EntityManager.addComponent(player, new PlayerInventoryController());
+
+        var inventory = new PlayerInventoryController();
+        EntityManager.addComponent(player, inventory);
+        inventory.addItem(ItemType.IRON_PICKAXE.getID());
+        inventory.addItem(ItemType.IRON_SHOVEL.getID());
+        inventory.addItem(ItemType.IRON_SWORD.getID());
+        inventory.addItem(ItemType.IRON_AXE.getID());
+        inventory.addItem(ItemType.IRON_HOE.getID());
 
         Keyboard.init(display.getWindow());
         Mouse.init(display);

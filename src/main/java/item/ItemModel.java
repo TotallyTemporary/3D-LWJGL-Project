@@ -167,7 +167,7 @@ public class ItemModel {
         for (int i = 0; i < verts.length / 3; i++) {
             vertices[3*i + 0] = verts[3*i + 0]*pixelSize + xPixel*pixelSize;
             vertices[3*i + 1] = verts[3*i + 1]*pixelSize + yPixel*pixelSize; // flip y
-            vertices[3*i + 2] = verts[3*i + 2]*pixelSize;
+            vertices[3*i + 2] = verts[3*i + 2]*pixelSize + 0.5f; // this model will be in the middle of a block
         }
 
         var tex = templateBlockFace.getTextureCoords();

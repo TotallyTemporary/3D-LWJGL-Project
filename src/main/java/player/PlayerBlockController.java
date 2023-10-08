@@ -34,6 +34,10 @@ public class PlayerBlockController extends Component {
         blockSelection = new BlockSelection();
     }
 
+    public boolean isBreakingBlock() {
+        return breakage > 0f;
+    }
+
     @Override
     public void apply(Entity entity) {
         var transform = EntityManager.getComponent(entity, TransformationComponent.class);

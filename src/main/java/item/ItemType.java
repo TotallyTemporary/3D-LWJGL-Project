@@ -61,7 +61,14 @@ public enum ItemType {
     PINE_LEAVES(187, ItemModel.from3DBlock(Block.PINE_LEAVES), ItemThumbnailAlignment.Block, 187),
 
     JUNGLE_LOG(153, ItemModel.from3DBlock(Block.JUNGLE_LOG), ItemThumbnailAlignment.Block, 153),
-    JUNGLE_LEAVES(188, ItemModel.from3DBlock(Block.JUNGLE_LEAVES), ItemThumbnailAlignment.Block, 188);
+    JUNGLE_LEAVES(188, ItemModel.from3DBlock(Block.JUNGLE_LEAVES), ItemThumbnailAlignment.Block, 188),
+
+    // items
+    IRON_SWORD(322, ItemModel.from2DItem(66), ItemThumbnailAlignment.Item, 1),
+    IRON_SHOVEL(338, ItemModel.from2DItem(82), ItemThumbnailAlignment.Item, 1),
+    IRON_PICKAXE(354, ItemModel.from2DItem(98), ItemThumbnailAlignment.Item, 1),
+    IRON_AXE(370, ItemModel.from2DItem(114), ItemThumbnailAlignment.Item, 1),
+    IRON_HOE(386, ItemModel.from2DItem(130), ItemThumbnailAlignment.Item, 1);
 
 
     private static final ItemType[] vals = new ItemType[4096];

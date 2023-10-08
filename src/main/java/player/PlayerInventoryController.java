@@ -28,17 +28,15 @@ public class PlayerInventoryController extends Component {
 
     private static Quaternionf HAND_ROTATION_OFFSET =
             new Quaternionf().identity()
-                    .rotateY((float) Math.toRadians(102))
-                    .rotateX((float) Math.toRadians(0));
-
+                    .rotateY((float) Math.toRadians(180 + 102));
     // create block place hand animation
     private static final Animation handPlaceAnimation;
     static {
         var keyFrames = new ArrayList<KeyFrame>();
         keyFrames.add(new KeyFrame(0f, new Matrix4f().identity()));
         keyFrames.add(new KeyFrame(0.5f,
-            new Matrix4f().translation(1.75f, 0f, 0f)
-                    .rotateZ(-45f)
+            new Matrix4f().translation(-1.75f, 0f, 0f)
+                    .rotateZ(45f)
         ));
         keyFrames.add(new KeyFrame(1f, new Matrix4f().identity()));
 
@@ -52,11 +50,23 @@ public class PlayerInventoryController extends Component {
     static {
         var keyFrames = new ArrayList<KeyFrame>();
         keyFrames.add(new KeyFrame(0f, new Matrix4f().identity()));
-        keyFrames.add(new KeyFrame(0.5f, new Matrix4f().translation(0.05f, 0.15f, 0)));
+        keyFrames.add(new KeyFrame(0.5f, new Matrix4f().translation(-0.05f, 0.15f, 0)));
         keyFrames.add(new KeyFrame(1f, new Matrix4f().identity()));
 
         handBobAnimation = new Animation(keyFrames, Animation.PlaybackMode.LOOP_FOREVER);
         handBobAnimation.start(HAND_BOB_ANIMATION_LENGTH);
+    }
+
+    private static final long HAND_BREAK_ANIMATION_LENGTH = 250;
+    private static final Animation handBreakAnimation;
+    static {
+        var keyFrames = new ArrayList<KeyFrame>();
+        keyFrames.add(new KeyFrame(0f, new Matrix4f().identity()));
+        keyFrames.add(new KeyFrame(0.5f, new Matrix4f()
+                .rotateZ(45f)));
+        keyFrames.add(new KeyFrame(1f, new Matrix4f().identity()));
+
+        handBreakAnimation = new Animation(keyFrames, Animation.PlaybackMode.LOOP_FOREVER);
     }
     private static int selectedHotbarSlot = 0;
     private static Entity selectedHotbarItem = null;
@@ -94,6 +104,18 @@ public class PlayerInventoryController extends Component {
 
             if (!movementController.isPlayerMoving() && !handBobAnimation.hasBeenPaused()) {
                 handBobAnimation.pause();
+            }
+        }
+
+        // update hand break animation
+        {
+            var breakController = EntityManager.getComponent(entity, PlayerBlockController.class);
+            if (breakController.isBreakingBlock() && handBreakAnimation.hasEnded()) {
+                handBreakAnimation.start(HAND_BREAK_ANIMATION_LENGTH);
+            }
+
+            if (!breakController.isBreakingBlock() && !handBreakAnimation.hasEnded()) {
+                handBreakAnimation.stop();
             }
         }
     }
@@ -209,6 +231,7 @@ public class PlayerInventoryController extends Component {
         var animator = new AnimatorComponent();
         animator.attachAnimation(handPlaceAnimation);
         animator.attachAnimation(handBobAnimation);
+        animator.attachAnimation(handBreakAnimation);
         EntityManager.addComponent(item, animator);
 
         selectedHotbarItem = item;
