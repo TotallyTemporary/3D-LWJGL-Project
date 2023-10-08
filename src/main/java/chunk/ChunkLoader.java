@@ -125,9 +125,17 @@ public class ChunkLoader {
         boolean hintQueueEmpty = false;
         while (
                 (!hintQueueEmpty && !(hintQueueEmpty = updateHintQueue.isEmpty()))
-                || (it.hasNext() && ++chunkUpdated < CHUNK_UPDATE_SLICE)
+                || it.hasNext()
         ) {
-            var chunk = hintQueueEmpty ? it.next() : updateHintQueue.poll();
+            Chunk chunk;
+            // if the hint queue is empty, increment the count and update from iterator
+            if (hintQueueEmpty) {
+                if (chunkUpdated > CHUNK_UPDATE_SLICE) break;
+                chunkUpdated += 1;
+                chunk = it.next();
+            } else {
+                chunk = updateHintQueue.poll();
+            }
 
             if (spoiledCloseQueue.contains(chunk)) {
                 // don't update a chunk that will be updated on main thread later
