@@ -6,28 +6,28 @@ import entity.EntityManager;
 import entity.TransformationComponent;
 import org.joml.Matrix4f;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AnimatorComponent extends Component {
 
-    private Animation animation;
+    private List<Animation> animations = new ArrayList<>();
 
-    public AnimatorComponent(Animation animation) {
-        this.animation = animation;
+    public void attachAnimation(Animation animation) {
+        animations.add(animation);
     }
 
     @Override
     public void apply(Entity entity) {
         var transform = EntityManager.getComponent(entity, TransformationComponent.class);
-        Matrix4f animationTransform = animation.getTransformation();
-        transform.doTransformation(animationTransform);
+        for (Animation animation : animations) {
+            Matrix4f animationTransform = animation.getTransformation();
+            transform.doTransformation(animationTransform);
+        }
     }
 
     @Override
     public void destroy(Entity entity) {
-        // TODO maybe call animation.stop() here
-        // although we didnt call .start() it might be convenient
     }
 
-    public Animation getAnimation() {
-        return animation;
-    }
 }

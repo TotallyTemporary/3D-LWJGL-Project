@@ -1,6 +1,5 @@
 package animation;
 
-import entity.TransformationComponent;
 import org.joml.Matrix4f;
 
 import java.util.List;
@@ -18,8 +17,11 @@ public class Animation {
     private float lengthMillis;
     private long timeStarted;
 
+    private long pauseDelta = -1; // used to continue after pause
+
     private boolean started = false;
     private boolean ended = false;
+    private boolean paused = false;
 
     private Matrix4f workingMatrix = new Matrix4f().identity();
 
@@ -39,9 +41,37 @@ public class Animation {
         this.ended = false;
     }
 
+    public void stop() {
+        this.started = false;
+        this.ended = true;
+    }
+
+    public void pause() {
+        this.paused = true;
+        this.pauseDelta = System.currentTimeMillis() - timeStarted;
+    }
+
+    public void unpause() {
+        this.paused = false;
+        this.timeStarted = System.currentTimeMillis() - this.pauseDelta;
+    }
+
+    public boolean hasEnded() {
+        return !started || ended;
+    }
+
+    public boolean hasBeenPaused() {
+        return paused;
+    }
+
     public Matrix4f getTransformation() {
         if (!started) {
+            workingMatrix.identity();
             return workingMatrix;
+        }
+
+        if (paused) {
+            return workingMatrix; // still has last result
         }
 
         float time = getScalarTime();

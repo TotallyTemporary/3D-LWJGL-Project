@@ -20,6 +20,12 @@ public class PlayerMovementController extends Component {
         JUMP_SPEED = 9f, // blocks/second
         SENSITIVITY = 1/500f; // radians per pixel
 
+    private boolean hasPlayerMoved = false;
+
+    public boolean isPlayerMoving() {
+        return hasPlayerMoved;
+    }
+
     @Override public void apply(Entity entity) {
         // get player position
         var transComp = EntityManager.getComponent(entity, TransformationComponent.class);
@@ -28,6 +34,12 @@ public class PlayerMovementController extends Component {
         // get player input (desired change in position)
         Vector3f deltaPos = getInput(transComp, physComp);
         physComp.altVelocity.add(deltaPos); // TODO make this acceleration and thus less shit.
+
+        if (deltaPos.x != 0 || deltaPos.y != 0 || deltaPos.z != 0) {
+            hasPlayerMoved = true;
+        } else {
+            hasPlayerMoved = false;
+        }
     }
 
     // returns position change, also updates rotation directly to the component.

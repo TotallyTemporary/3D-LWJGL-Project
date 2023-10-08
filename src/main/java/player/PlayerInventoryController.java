@@ -3,7 +3,6 @@ package player;
 import animation.Animation;
 import animation.AnimatorComponent;
 import animation.KeyFrame;
-import block.Block;
 import entity.Component;
 import entity.Entity;
 import entity.EntityManager;
@@ -12,7 +11,6 @@ import item.*;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
 import render.Player;
-import render.Texture;
 import ui.UIModelComponent;
 
 import java.lang.Math;
@@ -48,6 +46,18 @@ public class PlayerInventoryController extends Component {
     }
 
     private static final long HAND_PLACE_ANIMATION_LENGTH = 200; // millis
+
+    private static final long HAND_BOB_ANIMATION_LENGTH = 500;
+    private static final Animation handBobAnimation;
+    static {
+        var keyFrames = new ArrayList<KeyFrame>();
+        keyFrames.add(new KeyFrame(0f, new Matrix4f().identity()));
+        keyFrames.add(new KeyFrame(0.5f, new Matrix4f().translation(0.05f, 0.15f, 0)));
+        keyFrames.add(new KeyFrame(1f, new Matrix4f().identity()));
+
+        handBobAnimation = new Animation(keyFrames, Animation.PlaybackMode.LOOP_FOREVER);
+        handBobAnimation.start(HAND_BOB_ANIMATION_LENGTH);
+    }
     private static int selectedHotbarSlot = 0;
     private static Entity selectedHotbarItem = null;
 
@@ -71,6 +81,20 @@ public class PlayerInventoryController extends Component {
         if (selectedHotbarItem != null) {
             Player camera = (Player) entity;
             setHandItemPosition(selectedHotbarItem, camera);
+        }
+
+        // update the hand bob animation
+        // TODO all this hand and animation crap is not related to the inventory at all
+        // TODO separate into own PlayerHandComponent or something
+        {
+            var movementController = EntityManager.getComponent(entity, PlayerMovementController.class);
+            if (movementController.isPlayerMoving() && handBobAnimation.hasBeenPaused()) {
+                handBobAnimation.unpause();
+            }
+
+            if (!movementController.isPlayerMoving() && !handBobAnimation.hasBeenPaused()) {
+                handBobAnimation.pause();
+            }
         }
     }
 
@@ -117,8 +141,7 @@ public class PlayerInventoryController extends Component {
             stackEntities[selectedHotbarSlot] = null;
         } else {
             // if this wasnt our last item, we animate the place hand animation
-            var animator = EntityManager.getComponent(selectedHotbarItem, AnimatorComponent.class);
-            animator.getAnimation().start(HAND_PLACE_ANIMATION_LENGTH);
+            handPlaceAnimation.start(HAND_PLACE_ANIMATION_LENGTH);
         }
     }
 
@@ -183,7 +206,10 @@ public class PlayerInventoryController extends Component {
 
         var itemSpec = ItemType.getByID(itemID);
         EntityManager.addComponent(item, new PlayerHandItemModelComponent(itemSpec.getModel()));
-        EntityManager.addComponent(item, new AnimatorComponent(handPlaceAnimation));
+        var animator = new AnimatorComponent();
+        animator.attachAnimation(handPlaceAnimation);
+        animator.attachAnimation(handBobAnimation);
+        EntityManager.addComponent(item, animator);
 
         selectedHotbarItem = item;
     }
