@@ -44,7 +44,7 @@ public enum ItemType {
     BOOKSHELF (35, ItemModel.from3DBlock(Block.BOOKSHELF), ItemThumbnailAlignment.Block, 35),
     MOSSY_COBBLESTONE(36, ItemModel.from3DBlock(Block.MOSSY_COBBLESTONE), ItemThumbnailAlignment.Block, 36),
     OBSIDIAN  (37, ItemModel.from3DBlock(Block.OBSIDIAN), ItemThumbnailAlignment.Block, 37),
-
+    CRAFTING_TABLE(43, ItemModel.from3DBlock(Block.CRAFTING_TABLE), ItemThumbnailAlignment.Block, 43),
     SPONGE      (48, ItemModel.from3DBlock(Block.SPONGE), ItemThumbnailAlignment.Block, 48),
     GLASS       (49, ItemModel.from3DBlock(Block.GLASS), ItemThumbnailAlignment.Block, 49),
     DIAMOND_ORE (50, ItemModel.from3DBlock(Block.DIAMOND_ORE), ItemThumbnailAlignment.Block, 50),

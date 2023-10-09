@@ -9,6 +9,8 @@ import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -41,8 +43,12 @@ public class TerrainModelGenerator {
     // loads a chunk immediately
     public static void loadChunk(Chunk chunk) {
         try {
-            var comp = generateModelData(chunk);
-            EntityManager.addComponent(chunk, comp);
+            var modelInfoComp = generateModelData(chunk);
+            EntityManager.addComponent(chunk, modelInfoComp);
+
+            var blockEntityInfoComp = new ChunkBlockEntityDataComponent(getBlockEntityLocations(chunk));
+            EntityManager.addComponent(chunk, blockEntityInfoComp);
+
             chunk.setStatus(Chunk.Status.MESH_GENERATED);
         } catch (Exception e) {
             e.printStackTrace();
@@ -324,6 +330,22 @@ public class TerrainModelGenerator {
             alphaBlendTextureCoordsBuffer.addAll(FloatArrayList.wrap(transformedTextureCoords));
             alphaBlendColourBuffer.addAll(FloatArrayList.wrap(light));
         }
+    }
+
+    private static List<Vector3i> getBlockEntityLocations(Chunk chunk) {
+        List<Vector3i> blockEntities = new ArrayList<>();
+        for (int x = 0; x < Chunk.SIZE; x++)
+        for (int y = 0; y < Chunk.SIZE; y++)
+        for (int z = 0; z < Chunk.SIZE; z++)
+        {
+            byte blockID = chunk.getBlock(x, y, z);
+            Block block = Block.getBlock(blockID);
+            if (block.hasAttachedBlockEntity()) {
+                blockEntities.add(new Vector3i(x, y, z));
+            }
+        }
+
+        return blockEntities;
     }
 
     private static boolean shouldAddFace(Chunk chunk, int x, int y, int z, byte blockID, int faceIndex, BlockFace face) {

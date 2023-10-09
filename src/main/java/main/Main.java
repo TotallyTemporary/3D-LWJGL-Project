@@ -170,11 +170,7 @@ public class Main {
 
         var inventory = new PlayerInventoryController();
         EntityManager.addComponent(player, inventory);
-        inventory.addItem(ItemType.IRON_PICKAXE.getID());
-        inventory.addItem(ItemType.IRON_SHOVEL.getID());
-        inventory.addItem(ItemType.IRON_SWORD.getID());
-        inventory.addItem(ItemType.IRON_AXE.getID());
-        inventory.addItem(ItemType.IRON_HOE.getID());
+        inventory.addItem(ItemType.CRAFTING_TABLE.getID());
 
         Keyboard.init(display.getWindow());
         Mouse.init(display);
@@ -231,6 +227,7 @@ public class Main {
             }
 
             // update
+            GLFW.glfwPollEvents();
             Timer.tick();
             DebugTimer.clear();
             Mouse.update();
@@ -268,11 +265,10 @@ public class Main {
             int verticesRendered = renderer.render(player);
             display.setTitle(verticesRendered);
 
+            ChunkLoader.endUpdate();
+
             // glfw stuff
             GLFW.glfwSwapBuffers(display.getWindow());
-            GLFW.glfwPollEvents();
-
-            ChunkLoader.endUpdate();
         }
 
         TerrainGenerator.stop();

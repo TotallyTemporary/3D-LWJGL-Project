@@ -3,11 +3,13 @@ package block;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import item.ItemType;
 import item.ToolType;
+import org.joml.Vector3i;
 import render.Model;
 import render.Texture;
 import shader.Shader;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.BiConsumer;
 
 /** Represents data about a particular block.
  * In chunks, blocks are represented by a single byte, which is used to look up the block data from the Block enum.
@@ -51,6 +53,8 @@ public enum Block {
     TALL_GRASS(39, 1, false, decorFaces(39), 0),
     SHRUB(55, 1, false, decorFaces(55), 0),
     FERN(56, 1, false, decorFaces(56), 0),
+
+    CRAFTING_TABLE(43, 43, true, makeFaces(SquareBlockFace.class, new int[] { 43, 59, 60, 60, 59, 43 }, BlockFace.NO_FLAG), 2f, ToolType.AXE, CraftingTableBlockEntity::new),
 
     SPONGE      (48, 48, true, cubeFaces(48), 0.5f),
     GLASS       (49, 1, true, cubeFaces(49, BlockFace.TRANSPARENT), 0.5f),
@@ -117,7 +121,11 @@ public enum Block {
 
     private Model blockBreakModel = null;
 
-    Block(int id, int item, boolean isSolid, BlockFace[] faces, float breakTime, ToolType correctBreakTool) {
+    private BiConsumer<Vector3i, Block> blockEntityFactory;
+
+    Block(int id, int item, boolean isSolid, BlockFace[] faces,
+          float breakTime, ToolType correctBreakTool,
+          BiConsumer<Vector3i, Block> blockEntityFactory) {
         this.id = (byte) id;
         this.item = item;
         this.faces = faces;
@@ -125,10 +133,15 @@ public enum Block {
         this.breakTimeSeconds = breakTime;
         this.correctBreakTool = correctBreakTool;
         this.hasTransparentFace = true;
+        this.blockEntityFactory = blockEntityFactory;
+    }
+
+    Block(int id, int item, boolean isSolid, BlockFace[] faces, float breakTime, ToolType toolType) {
+        this(id, item, isSolid, faces, breakTime, toolType, null);
     }
 
     Block(int id, int item, boolean isSolid, BlockFace[] faces, float breakTime) {
-        this(id, item, isSolid, faces, breakTime, ToolType.NONE);
+        this(id, item, isSolid, faces, breakTime, ToolType.NONE, null);
     }
 
     public boolean getHasTransparentFace() {
@@ -164,6 +177,16 @@ public enum Block {
     }
     public ToolType getCorrectBreakTool() {
         return correctBreakTool;
+    }
+
+    public boolean hasAttachedBlockEntity() {
+        return blockEntityFactory != null;
+    }
+
+    public void createBlockEntity(Vector3i position) {
+        if (BlockEntity.getBlockEntityAt(position) == null) {
+            blockEntityFactory.accept(position, this);
+        }
     }
 
     // make array of references for lookup

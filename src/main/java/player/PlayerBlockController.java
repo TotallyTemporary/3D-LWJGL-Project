@@ -1,6 +1,7 @@
 package player;
 
 import block.Block;
+import block.BlockEntity;
 import block.CardinalDirection;
 import chunk.ChunkLoader;
 import entity.*;
@@ -133,8 +134,19 @@ public class PlayerBlockController extends Component {
     private void buildAction(Entity entity) {
         lastActionTime = System.currentTimeMillis();
 
+        // if the block we're right-clicking on is interactible, we try to interact with it.
+        if (hitLocation != null) {
+            var hitBlockID = ChunkLoader.getBlockAt(hitLocation);
+            Block hitBlock = Block.getBlock(hitBlockID);
+            if (hitBlock.hasAttachedBlockEntity()) {
+                BlockEntity.onInteractBlock((Player) entity, hitLocation, hitBlock);
+                return; // TODO only do this if interact succeeded
+            }
+        }
+
         var inventory = EntityManager.getComponent(entity, PlayerInventoryController.class);
-        byte blockID = inventory.getSelectedItem().getPlaceBlock().getID();
+        Block block = inventory.getSelectedItem().getPlaceBlock();
+        byte blockID = block.getID();
 
         if (blockID == Block.INVALID.getID()) {
             // can't place this item (maybe it's like a potato or something)
@@ -149,6 +161,7 @@ public class PlayerBlockController extends Component {
             return;
         }
 
+        BlockEntity.onPlaceBlock(beforeHitLocation, block);
         inventory.removeItem();
     }
 
@@ -157,9 +170,11 @@ public class PlayerBlockController extends Component {
         lastActionTime = System.currentTimeMillis();
 
         var blockID = ChunkLoader.getBlockAt(hitLocation);
+        Block block = Block.getBlock(blockID);
         ChunkLoader.setBlockAt(hitLocation, Block.AIR.getID());
+        BlockEntity.onBreakBlock(hitLocation, block);
 
-        var itemID = Block.getBlock(blockID).getItemID();
+        var itemID = block.getItemID();
         if (itemID != ItemType.INVALID.getID()) {
             ItemType.makeItem(hitLocation, itemID);
         }

@@ -1,8 +1,10 @@
 package chunk;
 
+import block.Block;
 import entity.EntityManager;
 import entity.TransformationComponent;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import render.Model;
 import render.Texture;
 import shader.Shader;
@@ -49,15 +51,11 @@ public class TerrainModelLoader {
     public static void loadChunk(Chunk chunk) {
         // previous step should have given the chunk its model data as a component
         assert EntityManager.hasComponent(chunk, ChunkModelDataComponent.class);
+        assert EntityManager.hasComponent(chunk, ChunkBlockEntityDataComponent.class);
 
         // set get this component and remove it
         var chunkModelData = EntityManager.removeComponent(chunk, ChunkModelDataComponent.class);
-
-        // if the chunk already has a loaded model, we unload it. This might fix a memory leak.
-        var chunkModelComponent = EntityManager.removeComponent(chunk, ChunkModelComponent.class);
-        if (chunkModelComponent != null) {
-            chunkModelComponent.getModel().destroy();
-        }
+        var chunkBlockEntityData = EntityManager.removeComponent(chunk, ChunkBlockEntityDataComponent.class);
 
         if (chunkModelData.positions.length != 0) {
             var pos = chunk.getChunkGridPos();
@@ -75,6 +73,17 @@ public class TerrainModelLoader {
                 .setShader(chunkShader)
                 .end();
             EntityManager.addComponent(chunk, new ChunkModelComponent(model, chunkModelData.positionsIndices));
+        }
+
+        // add all chunk block entities
+        var grid = chunk.getChunkGridPos();
+        for (Vector3i pos : chunkBlockEntityData.getBlockEntityLocations()) {
+            byte blockID = chunk.getBlock(pos);
+            Block block = Block.getBlock(blockID);
+            pos.x += grid.x * Chunk.SIZE;
+            pos.y += grid.y * Chunk.SIZE;
+            pos.z += grid.z * Chunk.SIZE;
+            block.createBlockEntity(pos);
         }
 
         chunk.setStatus(Chunk.Status.FINAL);
