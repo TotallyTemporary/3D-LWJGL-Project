@@ -6,6 +6,7 @@ import animation.AnimatorComponent;
 import block.Block;
 import chunk.*;
 import debug.DebugTimer;
+import entities.MaxwellEntity;
 import entity.*;
 import io.OBJFileParser;
 import item.ItemComponent;
@@ -175,17 +176,7 @@ public class Main {
         Keyboard.init(display.getWindow());
         Mouse.init(display);
 
-        // create maxwell
-        var maxwellModel = OBJFileParser.loadModel(Path.of("src/main/resources/mobs/maxwell/maxwell.obj"));
-        Entity maxwell = new Entity();
-        EntityManager.addComponent(maxwell, maxwellModel);
-        EntityManager.addComponent(maxwell, new TransformationComponent(
-                playerStartPosition.add(new Vector3f(0, 5, 0), new Vector3f()),
-                new Vector3f(0, 0, 0),
-                new Vector3f(1f / 16, 1f / 16, 1f / 16)));
-        EntityManager.addComponent(maxwell, new BasicAIComponent());
-        EntityManager.addComponent(maxwell, new PhysicsObjectComponent(new Vector3f(1.25f, 1.25f, 1.25f)));
-        EntityManager.addComponent(maxwell, new SpinComponent());
+        new MaxwellEntity(new Vector3f(playerStartPosition));
 
         var renderer = new Renderer();
 
@@ -250,8 +241,13 @@ public class Main {
 
             EntityManager.updateComponents(TransformationComponent.class);
             EntityManager.updateComponents(AnimatorComponent.class);
-
             EntityManager.updateComponents(SpinComponent.class);
+            EntityManager.updateComponents(SerializableComponent.class);
+
+            if (Keyboard.isKeyDown(GLFW.GLFW_KEY_G)) {
+                EntitySerializer.serialize();
+                EntitySerializer.deserialize();
+            }
 
             // end comp update
 

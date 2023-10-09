@@ -1,12 +1,10 @@
 package item;
 
 import block.Block;
+import entities.ItemEntity;
 import entity.Entity;
-import entity.EntityManager;
-import entity.TransformationComponent;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import player.PhysicsObjectComponent;
 import render.Model;
 
 public enum ItemType {
@@ -78,8 +76,6 @@ public enum ItemType {
         }
     }
 
-    private static final float ITEM_SIZE = 0.20f;
-
     private int id;
     private Model model;
     private ItemThumbnailAlignment thumbnailAlignment;
@@ -133,22 +129,8 @@ public enum ItemType {
     }
 
     public static Entity makeItem(Vector3i intPos, int itemID) {
-        var item = new Entity();
-
         var position = new Vector3f(intPos.x + 0.5f, intPos.y + 0.5f, intPos.z + 0.5f);
-        var rotation = new Vector3f();
-        EntityManager.addComponent(item, new TransformationComponent(
-                position,
-                rotation,
-                new Vector3f(ITEM_SIZE, ITEM_SIZE, ITEM_SIZE)
-        ));
-
-        var itemSpec = ItemType.getByID(itemID);
-        EntityManager.addComponent(item, new ItemModelComponent(itemSpec.getModel()));
-        EntityManager.addComponent(item, new ItemComponent(itemID));
-        EntityManager.addComponent(item, new PhysicsObjectComponent(new Vector3f(0.05f, 0.05f, 0.05f)));
-
-        return item;
+        return new ItemEntity(position, itemID);
     }
 
 }
