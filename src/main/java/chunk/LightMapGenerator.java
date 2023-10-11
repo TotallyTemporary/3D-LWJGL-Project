@@ -84,7 +84,8 @@ public class LightMapGenerator {
 
         for (int dir = 0; dir < DiagonalDirection.COUNT; dir++) {
             Chunk neighbor = chunk.getNeighbor(dir);
-            if (!neighbor.getIsAirChunk()
+            // TODO bit of a hack, neighbors started being null when chunk (de)serialization was added.
+            if (neighbor != null && !neighbor.getIsAirChunk()
                 && neighbor.getStatus().urgency > Chunk.Status.LIGHTS_GENERATED.urgency) {
                 neighbor.spoil(); // TODO might cause deadlock
             }

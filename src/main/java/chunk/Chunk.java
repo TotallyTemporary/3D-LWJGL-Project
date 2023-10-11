@@ -82,7 +82,9 @@ public class Chunk extends Entity {
     }
 
     public enum Status {
+        SERIALIZING             (-1, true), // chunk is unloaded and writing to disk
         NONE                    (0, false),
+        DESERIALIZING           (1, true),  // chunk is unloaded but reading from disk
         BASIC_TERRAIN_GENERATING(1, true),  // generating simple blocks
         BASIC_TERRAIN_GENERATED (2, false),
         STRUCTURE_GENERATING    (3, true),  // generating structures (needs neighbors for bleed-over)
@@ -268,6 +270,10 @@ public class Chunk extends Entity {
     public void setBlock(int x, int y, int z, byte block) {
         setIsAirChunk(false);
         this.blocks[Chunk.toIndex(x, y, z)] = block;
+    }
+
+    public byte[] getBlocks() {
+        return this.blocks;
     }
 
     public void setBlocks(byte[] blocks) {

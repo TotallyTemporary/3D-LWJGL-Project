@@ -1,33 +1,30 @@
 package block;
 
-import entity.Entity;
-import entity.EntityManager;
+import entity.*;
+import org.joml.Vector3f;
 import org.joml.Vector3i;
 import render.Player;
 
-import java.util.HashMap;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-public abstract class BlockEntity extends Entity {
+public abstract class BlockEntity extends Entity implements SerializableEntity {
 
-    private static final HashMap<Vector3i, BlockEntity> allBlockEntities = new HashMap<>();
+    public BlockEntity() {
+        // only to call `deserialize()` right after
+        this(new Vector3i());
+    }
 
-    private final Vector3i location;
-    private final Block block;
-
-    public BlockEntity(Vector3i location, Block block) {
+    public BlockEntity(Vector3i location) {
         super();
-        this.location = location;
-        this.block = block;
-        allBlockEntities.put(location, this);
         EntityManager.addComponent(this, new BlockEntityComponent());
-    }
-
-    public Vector3i getLocation() {
-        return location;
-    }
-
-    public Block getBlock() {
-        return block;
+        EntityManager.addComponent(this, new SerializableEntityComponent());
+        EntityManager.addComponent(this, new TransformationComponent(
+            new Vector3f(location),
+            new Vector3f(),
+            new Vector3f(1)
+        ));
     }
 
     public abstract void onBreakBlock();
@@ -40,10 +37,10 @@ public abstract class BlockEntity extends Entity {
             return;
         }
 
-        var blockEntity = allBlockEntities.get(location);
-        if (blockEntity != null) {
-            blockEntity.onBreakBlock();
-            EntityManager.removeEntitySafe(blockEntity);
+        BlockEntity entity = findEntityAt(location);
+        if (entity != null) {
+            entity.onBreakBlock();
+            EntityManager.removeEntitySafe(entity);
         }
     }
 
@@ -53,7 +50,10 @@ public abstract class BlockEntity extends Entity {
         }
 
         block.createBlockEntity(location);
-        allBlockEntities.get(location).onPlaceBlock();
+        BlockEntity entity = findEntityAt(location);
+        if (entity != null) {
+            entity.onPlaceBlock();
+        }
     }
 
     public static void onInteractBlock(Player player, Vector3i location, Block block) {
@@ -61,18 +61,37 @@ public abstract class BlockEntity extends Entity {
             return;
         }
 
-        var blockEntity = allBlockEntities.get(location);
-        if (blockEntity != null) {
-            blockEntity.onInteractBlock(player);
+        BlockEntity entity = findEntityAt(location);
+        if (entity != null) {
+            entity.onInteractBlock(player);
         }
     }
 
-    public static BlockEntity getBlockEntityAt(Vector3i position) {
-        return allBlockEntities.get(position);
+    @Override
+    public void serialize(DataOutputStream out) throws IOException {
+        // write position
+        var transform = EntityManager.getComponent(this, TransformationComponent.class);
+        transform.serialize(out);
     }
 
-    protected void removeSelf() {
-        allBlockEntities.remove(this.location);
+    @Override
+    public void deserialize(DataInputStream in) throws IOException {
+        // read position
+        var transform = new TransformationComponent();
+        transform.deserialize(in);
+        EntityManager.addComponent(this, transform);
+    }
+
+    public static BlockEntity findEntityAt(Vector3i location) {
+        var entities = EntityManager.getComponents(BlockEntityComponent.class).keySet();
+        Vector3f floatLocation = new Vector3f(location);
+        for (var entity : entities) {
+            var transform = EntityManager.getComponent(entity, TransformationComponent.class);
+            if (transform != null && transform.getPosition().equals(floatLocation)) {
+                return (BlockEntity) entity;
+            }
+        }
+        return null;
     }
 
 }

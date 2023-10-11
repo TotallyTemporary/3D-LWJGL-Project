@@ -60,6 +60,22 @@ public class ChunkLoader {
         lastPlayerChunkPos = playerChunkPos;
     }
 
+    /** Unload all chunks */
+    public static void stop() {
+        executor.shutdown();
+        while (chunks.size() > 0) {
+            var it = chunks.values().iterator();
+            while (it.hasNext()) {
+                Chunk chunk = it.next();
+                unloadChunk(chunk, true);
+                if (chunk.getStatus() == Chunk.Status.NONE
+                    && hasAllUnloadedNeighbors(chunk)) {
+                    it.remove();
+                }
+            }
+        }
+    }
+
     public static void updatePriorityChunks() {
         while (!spoiledCloseQueue.isEmpty()) {
             Chunk chunk = spoiledCloseQueue.poll();
@@ -76,6 +92,8 @@ public class ChunkLoader {
         executor.submit(() -> {
             try {
                 update(playerPos);
+            } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 readyLatch.countDown();
             }
@@ -167,7 +185,7 @@ public class ChunkLoader {
             if (chunkPos.x < minX || chunkPos.x > maxX
              || chunkPos.y < minY || chunkPos.y > maxY
              || chunkPos.z < minZ || chunkPos.z > maxZ) {
-                unloadChunk(chunk);
+                unloadChunk(chunk, true);
                 if (chunk.getStatus() == Chunk.Status.NONE && hasAllUnloadedNeighbors(chunk)) {
                     it.remove();
                 }
@@ -206,7 +224,7 @@ public class ChunkLoader {
         if (chunk.getStatus().working) return;
 
         // unload current model
-        unloadChunkNow(chunk);
+        unloadChunkNow(chunk, false);
 
         // update lightmap
         chunk.setStatus(Chunk.Status.LIGHTS_GENERATING);
@@ -235,7 +253,8 @@ public class ChunkLoader {
                 + StructureGenerator.getQueueSize()
                 + TerrainModelGenerator.getQueueSize()
                 + TerrainModelLoader.getQueueSize()
-                + LightMapGenerator.getQueueSize();
+                + LightMapGenerator.getQueueSize()
+                + ChunkSerializer.getQueueSize();
     }
 
     public static void setBlockAt(Vector3i pos, byte block) {
@@ -447,7 +466,7 @@ public class ChunkLoader {
         Vector3i pos = new Vector3i(x, y, z);
         if (chunks.containsKey(pos)) {
             var chunk = chunks.get(pos);
-            unloadChunk(chunk);
+            unloadChunk(chunk, true);
             return true;
         }
         return false;
@@ -457,9 +476,15 @@ public class ChunkLoader {
         switch (chunk.getStatus()) {
             // if chunk has no data, load heightmap terrain
             case NONE           -> {
-                chunk.setStatus(Chunk.Status.BASIC_TERRAIN_GENERATING);
-                TerrainGenerator.addChunks(chunk);
-                return true;
+                if (ChunkSerializer.doesSaveExist(chunk)) {
+                    chunk.setStatus(Chunk.Status.DESERIALIZING);
+                    ChunkSerializer.deserialize(chunk);
+                    return true;
+                } else {
+                    chunk.setStatus(Chunk.Status.BASIC_TERRAIN_GENERATING);
+                    TerrainGenerator.addChunks(chunk);
+                    return true;
+                }
             }
             // once chunk and all its neighbors have heightmapped terrain, load structures
             case BASIC_TERRAIN_GENERATED -> {
@@ -533,15 +558,31 @@ public class ChunkLoader {
         return true;
     }
 
-    private static void unloadChunk(Chunk chunk) {
+    private static void unloadChunk(Chunk chunk, boolean serialize) {
         if (chunk.getStatus().working) return; // don't want to unload a chunk that is queued somewhere.
+
+        boolean hasBlocks = chunk.getStatus().urgency > Chunk.Status.BLOCKS_GENERATED.urgency;
+
         EntityManager.removeEntitySafe(chunk);
         chunk.setStatus(Chunk.Status.NONE);
+
+        if (serialize && hasBlocks) {
+            chunk.setStatus(Chunk.Status.SERIALIZING);
+            ChunkSerializer.serialize(chunk);
+        }
     }
 
-    private static void unloadChunkNow(Chunk chunk) {
+    private static void unloadChunkNow(Chunk chunk, boolean serialize) {
         if (chunk.getStatus().working) return;
+
+        boolean hasBlocks = chunk.getStatus().urgency > Chunk.Status.BLOCKS_GENERATED.urgency;
+
         EntityManager.removeEntity(chunk);
         chunk.setStatus(Chunk.Status.NONE);
+
+        if (serialize && hasBlocks) {
+            chunk.setStatus(Chunk.Status.SERIALIZING);
+            ChunkSerializer.serialize(chunk);
+        }
     }
 }

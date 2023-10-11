@@ -27,8 +27,6 @@ import shader.Shader;
 import ui.UIArrayModelComponent;
 import ui.UIModelComponent;
 
-import java.nio.file.Path;
-
 public class Main {
 
     public static final boolean DEBUG = false;
@@ -242,12 +240,6 @@ public class Main {
             EntityManager.updateComponents(TransformationComponent.class);
             EntityManager.updateComponents(AnimatorComponent.class);
             EntityManager.updateComponents(SpinComponent.class);
-            EntityManager.updateComponents(SerializableComponent.class);
-
-            if (Keyboard.isKeyDown(GLFW.GLFW_KEY_G)) {
-                EntitySerializer.serialize();
-                EntitySerializer.deserialize();
-            }
 
             // end comp update
 
@@ -266,6 +258,8 @@ public class Main {
             // glfw stuff
             GLFW.glfwSwapBuffers(display.getWindow());
         }
+        ChunkLoader.stop(); // blocks until all chunks are unloaded
+        ChunkSerializer.stop(); // blocks until all chunks are serialized (should already be from ChunkLoader.stop)
 
         TerrainGenerator.stop();
         StructureGenerator.stop();

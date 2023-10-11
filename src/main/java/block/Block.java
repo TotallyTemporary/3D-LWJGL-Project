@@ -10,6 +10,7 @@ import shader.Shader;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /** Represents data about a particular block.
  * In chunks, blocks are represented by a single byte, which is used to look up the block data from the Block enum.
@@ -121,11 +122,11 @@ public enum Block {
 
     private Model blockBreakModel = null;
 
-    private BiConsumer<Vector3i, Block> blockEntityFactory;
+    private Consumer<Vector3i> blockEntityFactory;
 
     Block(int id, int item, boolean isSolid, BlockFace[] faces,
           float breakTime, ToolType correctBreakTool,
-          BiConsumer<Vector3i, Block> blockEntityFactory) {
+          Consumer<Vector3i> blockEntityFactory) {
         this.id = (byte) id;
         this.item = item;
         this.faces = faces;
@@ -184,8 +185,8 @@ public enum Block {
     }
 
     public void createBlockEntity(Vector3i position) {
-        if (BlockEntity.getBlockEntityAt(position) == null) {
-            blockEntityFactory.accept(position, this);
+        if (BlockEntity.findEntityAt(position) == null) {
+            blockEntityFactory.accept(position);
         }
     }
 

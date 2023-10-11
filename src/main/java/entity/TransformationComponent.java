@@ -3,8 +3,12 @@ package entity;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 /** Contains position, rotating and scale for an entity. */
-public class TransformationComponent extends Component {
+public class TransformationComponent extends Component implements SerializableComponent {
 
     private Vector3f position, rotation, scale;
 
@@ -78,4 +82,36 @@ public class TransformationComponent extends Component {
 
     @Override
     public void destroy(Entity entity) {}
+
+    @Override
+    public void serialize(DataOutputStream out) throws IOException {
+        out.writeFloat(position.x);
+        out.writeFloat(position.y);
+        out.writeFloat(position.z);
+
+        out.writeFloat(rotation.x);
+        out.writeFloat(rotation.y);
+        out.writeFloat(rotation.z);
+
+        out.writeFloat(scale.x);
+        out.writeFloat(scale.y);
+        out.writeFloat(scale.z);
+    }
+
+    @Override
+    public void deserialize(DataInputStream in) throws IOException {
+        position.x = in.readFloat();
+        position.y = in.readFloat();
+        position.z = in.readFloat();
+
+        rotation.x = in.readFloat();
+        rotation.y = in.readFloat();
+        rotation.z = in.readFloat();
+
+        scale.x = in.readFloat();
+        scale.y = in.readFloat();
+        scale.z = in.readFloat();
+
+        forceRecalculate();
+    }
 }

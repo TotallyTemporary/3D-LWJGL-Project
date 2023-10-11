@@ -1,14 +1,10 @@
 package entity;
 
-/** This component is a flag for the chunk unloading system to consider this entity for serialization. */
-public class SerializableComponent extends Component {
-    @Override
-    public void apply(Entity entity) {
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-    }
-
-    @Override
-    public void destroy(Entity entity) {
-
-    }
+public interface SerializableComponent {
+    void serialize(DataOutputStream out) throws IOException;
+    void deserialize(DataInputStream in) throws IOException;
 }

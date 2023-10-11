@@ -4,5 +4,7 @@ package entities;
 public class EntityType {
 
     public static final int
-        MAXWELL = 0;
+        MAXWELL = 0,
+        CRAFTING_TABLE = 1,
+        ITEM = 2;
 }

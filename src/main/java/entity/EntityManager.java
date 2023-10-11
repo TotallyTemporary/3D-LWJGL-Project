@@ -48,6 +48,7 @@ public class EntityManager {
         toBeRemovedEntities.clear();
     }
 
+    /** NOTE: if component already exists, `destroy()` won't get called on it. */
     public static synchronized void addComponent(Entity entity, Component component) {
         var clazz = component.getClass();
         var classMap = map.get(clazz);
@@ -67,9 +68,6 @@ public class EntityManager {
     public static synchronized <T extends Component> T removeComponent(Entity entity, Class<T> clazz) {
         var classMap = map.get(clazz);
         if (classMap == null) return null;
-        if (classMap.containsKey(entity)) {
-            classMap.get(entity).destroy(entity);
-        }
 
         return (T) classMap.remove(entity);
     }
